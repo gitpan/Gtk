@@ -114,4 +114,17 @@ gtk_tree_set_view_lines(self, flag)
 	Gtk::Tree	self
 	unsigned int	flag
 
+void
+selection(list)
+	Gtk::Tree	list
+	PPCODE:
+	{
+		GList * selection = list->selection;
+		while(selection) {
+			EXTEND(sp,1);
+			PUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(selection->data),0)));
+			selection=selection->next;
+		}
+	}
+
 #endif

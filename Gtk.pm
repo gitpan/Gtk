@@ -6,7 +6,7 @@ require AutoLoader;
 
 use Carp;
 
-$VERSION = '0.2_03';
+$VERSION = '0.2_04';
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -68,7 +68,7 @@ package Gtk::Object;
 use Carp;
 
 sub AUTOLOAD {
-    # This AUTOLOAD is used to automatically perform settor/gettor functions
+    # This AUTOLOAD is used to automatically perform accessor/mutator functions
     # for Gtk object data members, in lieu of defined functions.
     
     my($result);

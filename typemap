@@ -17,9 +17,11 @@ Gtk::SelectionData      T_MISCPTROBJ
 
 Gtk::Widget_Up		T_GtkPTROBJUp
 Gtk::Widget_Sink_Up		T_GtkPTROBJSinkUp
+Gtk::Widget_OrNULL_Up		T_GtkPTROBJOrNULLUp
 
 Gtk::Object_Up		T_GtkPTROBJUp
 Gtk::Object_Sink_Up		T_GtkPTROBJSinkUp
+Gtk::Object_OrNULL_Up		T_GtkPTROBJOrNULLUp
 
 Gtk::Gdk::Event		T_SimpleVal
 Gtk::Gdk::Region	T_SimpleVal
@@ -115,6 +117,13 @@ T_GtkPTROBJOrNULL
 T_GtkPTROBJUp
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));
 	SvREFCNT_dec(SvRV($arg));
+
+T_GtkPTROBJOrNULLUp
+	if ($var) {
+		sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));
+		SvREFCNT_dec(SvRV($arg));
+	} else
+		sv_setsv($arg, newSVsv(&sv_undef));
 
 T_GtkPTROBJSinkUp
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));

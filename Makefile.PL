@@ -11,6 +11,22 @@ use ExtUtils::MakeMaker;
 #	--with-gnome  
 #
 
+# Search for a gnomeConf.sh file (waiting for gnome-config) ...
+# One can also 'source' in the shell the proper gnomeConf.sh file
+# before running perl Makefile.PL.
+if (!defined $ENV{GTKXMHTML_LIBS} || !defined $ENV{GNOMEUI_LIBS}) {
+	foreach (qw{/usr/local/lib /usr/lib /usr/X11R6/lib /opt/gnome/lib }) {
+		open(GNOMEC, "$_/gnomeConf.sh") || next;
+		my $f= join('', <GNOMEC>);
+		close GNOMEC;
+		# simple sh2pl hack
+		$f =~ s/$/;/gm;
+		$f =~ s/^(\w+)=/\$ENV{\1}=/gm;
+		eval $f;
+		last;
+	}
+}
+
 $AUTOLOAD_GTK_CLASSES = 0; # Experimental stuff
 
 @defs = ();
@@ -62,7 +78,7 @@ if (grep {/^--with-gtkxmhtml/i} @ARGV) {
 	push(@defs, 'gtkxmhtml.defs.maybe');
 	# we need to know what libraries are used by the
 	# gtkxmhtml lib we are going to link to....
-	$libs =~ s/-l/-lgtkxmhtml -lXpm -lpng -ljpeg -lz -l/; # hack hack
+	$libs =~ s/-l/$ENV{GTKXMHTML_LIBS} -l/; # hack hack
 	#print EXT boot_code("boot_Gtk__XmHTML");
 } else {
 	delete $xfiles->{'GtkXmHTML.xs'};
@@ -92,10 +108,11 @@ if (grep {/^--with-gnome/i} @ARGV) {
 	$object .= ' Gnome.o ';
 	push(@$typemap, 'typemap.gnome');
 	push(@defs, 'gnome.defs.maybe');
-	push(@headers, "<libgnomesupport/argp.h>", "<libgnomeui/libgnomeui.h>");
+	push(@headers, "<argp.h>", "<libgnomeui/libgnomeui.h>");
 	$pm->{'Gnome.pm'} = '$(INST_LIBDIR)/Gtk/Gnome.pm';
 	# use gnomeConf.sh...
-	$libs =~ s/-l/-lgnome -lgnomesupport -lintl -lgnomeui -lSM -lICE -l/; #hack hack
+	$inc = $ENV{GNOME_INCLUDEDIR} . " " . $inc;
+	$libs =~ s/-l/$ENV{GNOMEUI_LIBS} -l/; #hack hack
 	push(@boot_code, "boot_Gtk__Gnome");
 } else {
 	foreach (qw(
@@ -103,6 +120,7 @@ if (grep {/^--with-gnome/i} @ARGV) {
 		GnomeApp           GnomeEntry         GnomeMessageBox    GnomeScores
 		GtkTed
 		GtkClock
+		GtkPlug            GtkSocket
 	)) {
 		delete $xfiles->{"$_.xs"};
 		push @clean, "$_.c";

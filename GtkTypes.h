@@ -13,11 +13,13 @@ typedef GtkSelectionData * Gtk__SelectionData;
 
 typedef GtkWidget * Gtk__Widget_Up;
 typedef GtkWidget * Gtk__Widget_Sink_Up;
+typedef GtkWidget * Gtk__Widget_OrNULL_Up;
 
 #define CastupGtk__Widget GTK_WIDGET
 
 typedef GtkObject * Gtk__Object_Up;
 typedef GtkObject * Gtk__Object_Sink_Up;
+typedef GtkObject * Gtk__Object_OrNULL_Up;
 
 #define CastupGtk__Object GTK_OBJECT
 

@@ -78,7 +78,7 @@ gtk_spin_button_set_numeric(self, numeric)
 void
 gtk_spin_button_spin(self, direction, step)
 	Gtk::SpinButton self
-	int	direction
+	Gtk::ArrowType	direction
 	gfloat	step
 
 void

@@ -2017,6 +2017,13 @@ gdk_window_get_size(window)
 		PUSHs(sv_2mortal(newSViv(width)));
 	}
 
+Gtk::Gdk::Event
+event_get_graphics_expose(window)
+	Gtk::Gdk::Window	window
+	CODE:
+	RETVAL = gdk_event_get_graphics_expose(window);
+	OUTPUT:
+	RETVAL
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Pixmap	PREFIX = gdk_
 
@@ -2312,9 +2319,9 @@ MODULE = Gtk		PACKAGE = Gtk::Gdk::Cursor
 Gtk::Gdk::Cursor
 new(Class, type)
 	SV *	Class
-	SV *	type
+	int	type
 	CODE:
-	RETVAL = gdk_cursor_new(SvGdkCursorType(type));
+	RETVAL = gdk_cursor_new(type); /*SvGdkCursorType(type));*/
 	OUTPUT:
 	RETVAL
 

@@ -1,4 +1,8 @@
 
+# Changes:
+# 19980616 PMC <pmc@iskon.hr> clist demo as much as possible like in testgtk
+# 19980618 PMC <pmc@iskon.hr> tree demo synced with testgtk
+
 use Gtk;
 use Gtk::Atoms;
 
@@ -14,26 +18,6 @@ sub destroy_tooltips {
 	$$window = undef;
 }
 
-
-sub cursor_expose_event {
-	my($widget, $event, $data) = @_;
-	my($darea, $drawable, $black_gc, $gray_gc, $white_gc, $max_width, $max_height);
-	
-	$darea = $widget;
-	$drawable = $widget->window;
-	$white_gc = $widget->style->white_gc;
-	$gray_gc = $widget->style->bc_gc('normal');
-	$black_gc = $widget->style->black_gc;
-	$max_width = $widget->allocation->{width};
-	$max_height = $widget->allocation->{width};
-	
-	$drawable->draw_rectangle($white_gc, 1, 0, 0, $max_width, $max_height/2);
-	$drawable->draw_rectangle($black_gc, 1, 0, $max_height/2, $max_width, $max_height/2);
-	$drawable->draw_rectangle($gray_gc, 1, $max_width/3, $max_height/3, $max_width/3, $max_height/3);
-	
-	1;
-}
-
 sub set_cursor {
 	my($spinner, $widget) = @_;
 	my($c, $cursor);
@@ -42,126 +26,114 @@ sub set_cursor {
 	$c = 0 if $c < 0;
 	$c = 152 if $c > 152;
 	
-	$cursor = new Gtk::Gdk::Cusor $c;
+	$cursor = new Gtk::Gdk::Cursor $c;
 	$widget->window->set_cursor($cursor);
 	
 }
 
+sub cursor_expose_event {
+	my($widget) = @_;
+	my($drawable) = $widget->window;
+	my($white_gc) = $widget->style->white_gc;
+	my($gray_gc) = $widget->style->bg_gc('normal');
+	my($black_gc) = $widget->style->black_gc;
+	
+	my($width) = $widget->allocation->[2];
+	my($height) = $widget->allocation->[3];
+	
+	$drawable->draw_rectangle($white_gc, 1, 0, 0, $width, $height / 2);
+	$drawable->draw_rectangle($black_gc, 1, 0, $height/2, $width, $height/2);
+	$drawable->draw_rectangle($gray_gc, 1, $width/3, $height/3, $width/3, $height/3);
+	
+	return 1;
+}
+
 sub cursor_event {
-	my($widget,$event,$spinner) = @_;
-	if ($event->{type} eq 'button-press' and ($event->{button} == 1 or $event->{button} == 3)) {
-		$spinner->spin($event->{button} == 1 ? 'up' : 'down', $spinner->adjustment->step_increment);
+	my($widget,$spinner, $event) = @_;
+	if ($event->{type} eq 'button_press' and ($event->{button} == 1 or $event->{button} == 3)) {
+		$spinner->spin(($event->{button} == 1) ? 'up' : 'down', $spinner->get_adjustment->step_increment);
 		return 1;
 	}
 	return 0;
 }
 
-#static void
-#create_cursors ()
-#{
-#  static GtkWidget *window = NULL;
-#  GtkWidget *frame;
-#  GtkWidget *hbox;
-#  GtkWidget *main_vbox;
-#  GtkWidget *vbox;
-#  GtkWidget *darea;
-#  GtkWidget *spinner;
-#  GtkWidget *button;
-#  GtkWidget *label;
-#  GtkWidget *any;
-#  GtkAdjustment *adj;
-#
-#  if (!window)
-#    {
-#      window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-#      
-#      gtk_signal_connect (GTK_OBJECT (window), "destroy",
-#                          GTK_SIGNAL_FUNC (gtk_widget_destroyed),
-#                          &window);
-#      
-#      gtk_window_set_title (GTK_WINDOW (window), "Cursors");
-#      
-#      main_vbox = gtk_vbox_new (FALSE, 5);
-#      gtk_container_border_width (GTK_CONTAINER (main_vbox), 0);
-#      gtk_container_add (GTK_CONTAINER (window), main_vbox);
-#
-#      vbox =
-#        gtk_widget_new (gtk_vbox_get_type (),
-#                        "GtkBox::homogeneous", FALSE,
-#                        "GtkBox::spacing", 5,
-#                        "GtkContainer::border_width", 10,
-#                        "GtkWidget::parent", main_vbox,
-#                        "GtkWidget::visible", TRUE,
-#                        NULL);
-#
-#      hbox = gtk_hbox_new (FALSE, 0);
-#      gtk_container_border_width (GTK_CONTAINER (hbox), 5);
-#      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
-#      
-#      label = gtk_label_new ("Cursor Value:");
-#      gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
-#      gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
-#      
-#      adj = (GtkAdjustment *) gtk_adjustment_new (0,
-#                                                  0, 152,
-#                                                  2,
-#                                                  10, 0);
-#      spinner = gtk_spin_button_new (adj, 0, 0);
-#      gtk_box_pack_start (GTK_BOX (hbox), spinner, TRUE, TRUE, 0);
-#
-#      frame =
-#        gtk_widget_new (gtk_frame_get_type (),
-#                        "GtkFrame::shadow", GTK_SHADOW_ETCHED_IN,
-#                        "GtkFrame::label_xalign", 0.5,
-#                        "GtkFrame::label", "Cursor Area",
-#                        "GtkContainer::border_width", 10,
-#                        "GtkWidget::parent", vbox,
-#                        "GtkWidget::visible", TRUE,
-#                        NULL);
-#
-#      darea = gtk_drawing_area_new ();
-#      gtk_widget_set_usize (darea, 80, 80);
-#      gtk_container_add (GTK_CONTAINER (frame), darea);
-#      gtk_signal_connect (GTK_OBJECT (darea),
-#                          "expose_event",
-#                          GTK_SIGNAL_FUNC (cursor_expose_event),
-#                          NULL);
-#      gtk_widget_set_events (darea, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK);
-#      gtk_signal_connect (GTK_OBJECT (darea),
-#                          "button_press_event",
-#                          GTK_SIGNAL_FUNC (cursor_event),
-#                          spinner);
-#      gtk_widget_show (darea);
-#
-#      gtk_signal_connect (GTK_OBJECT (spinner), "changed",
-#                          GTK_SIGNAL_FUNC (set_cursor),
-#                          darea);
-#
-#      any =
-#        gtk_widget_new (gtk_hseparator_get_type (),
-#                        "GtkWidget::visible", TRUE,
-#                        NULL);
-#      gtk_box_pack_start (GTK_BOX (main_vbox), any, FALSE, TRUE, 0);
-#  
-#      hbox = gtk_hbox_new (FALSE, 0);
-#      gtk_container_border_width (GTK_CONTAINER (hbox), 10);
-#      gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, TRUE, 0);
-#
-#      button = gtk_button_new_with_label ("Close");
-#      gtk_signal_connect_object (GTK_OBJECT (button), "clicked",
-#                                 GTK_SIGNAL_FUNC (gtk_widget_destroy),
-#                                 GTK_OBJECT (window));
-#      gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 5);
-#
-#      gtk_widget_show_all (window);
-#
-#      set_cursor (spinner, darea);
-#    }
-#  else
-#    gtk_widget_destroy (window);
-#}
+sub create_cursors
+{
+	if (not defined $cursors_window) {
+		$cursors_window = new Gtk::Window -toplevel;
+		
+		$cursors_window->signal_connect(destroy => \&Gtk::Widget::destroyed, \$cursors_window);
+		$cursors_window->set_title("Cursors");
+		
+		my($main_vbox) = new Gtk::VBox 0, 5;
+		border_width $main_vbox 0;
+		$cursors_window->add($main_vbox);
+		
+		my($vbox) = new Gtk::Widget 'Gtk::VBox',
+									homogeneous => 0,
+									spacing => 5,
+									border_width => 10,
+									parent => $main_vbox,
+									visible => 1;
+		
+		my($hbox) = new Gtk::HBox 0, 0;
+		$hbox->border_width(5);
+		$vbox->pack_start($hbox, 0, 1, 0);
+		
+		my($label) = new Gtk::Label "Cursor Value:";
+		$label->set_alignment(0, 0.5);
+		$hbox->pack_start($label, 0, 1, 0);
+		
+		my($adj) = new Gtk::Adjustment 0,	0, 152,	2,	10,	0;
+		
+		my($spinner) = new Gtk::SpinButton $adj, 0, 0;
+		
+		$hbox->pack_start($spinner, 1, 1, 0);
+		
+		my($frame) = new Gtk::Widget 'Gtk::Frame',
+									#shadow => 'etched_in',
+									label_xalign => 0.5,
+									label => "Cursor Area",
+									border_width => 10,
+									parent => $vbox,
+									visible => 1;
 
-
+		# FIXME		
+		$frame->set_shadow_type('etched_in');
+		
+		my($darea) = new Gtk::DrawingArea;
+		
+		$darea->set_usize(80,80);
+		$frame->add($darea);
+		
+		$darea->signal_connect(expose_event => \&cursor_expose_event);
+		$darea->signal_connect(button_press_event => \&cursor_event, $spinner);
+		$darea->set_events(['exposure_mask', 'button_press_mask']);
+		show $darea;
+		
+		signal_connect $spinner "changed" => \&set_cursor, $darea;
+		
+		my($any) = new Gtk::Widget "Gtk::HSeparator",
+									visible => 1;
+								
+		$main_vbox->pack_start($any, 0, 1, 0);
+		
+		$hbox = new Gtk::HBox(0, 0);
+		$hbox->border_width(10);
+		$main_vbox->pack_start($hbox, 0, 1, 0);
+		
+		my($button) = new Gtk::Button "Close";
+		signal_connect $button "clicked" => sub {destroy $cursors_window};
+		$hbox->pack_start($button, 1, 1, 5);
+		
+		show_all $cursors_window;
+		
+		set_cursor ($spinner, $darea);
+		
+	} else {
+		destroy $cursors_window;
+	}
+}
 
 sub create_bbox_window {
 	my($horizontal, $title, $pos, $spacing, $child_w, $child_h, $layout) = @_;
@@ -554,6 +526,60 @@ sub create_shapes {
 	}
 }
 
+sub create_wmhints {
+	my($circles,$mask,$box1,$box2,$separator,$label,$button);
+	
+	if (not defined $wmhints_window) {
+		$wmhints_window = new Gtk::Window 'toplevel';
+		signal_connect $wmhints_window "destroy", \&destroy_window, \$wmhints_window;
+		signal_connect $wmhints_window "delete_event", \&destroy_window, \$wmhints_window;
+		$wmhints_window->set_title("WM Hints");
+		$wmhints_window->border_width(0);
+		
+		$wmhints_window->realize;
+		
+		($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm($wmhints_window->window, $wmhints_window->style->white, "circles.xpm");
+		
+		$wmhints_window->window->set_icon(undef, $circles, $mask);
+
+		$wmhints_window->window->set_icon_name("WMHints Test Icon");
+		
+		$wmhints_window->window->set_decorations(['all', 'menu']);
+		$wmhints_window->window->set_functions(['all', 'resize']);
+
+		$box1 = new Gtk::VBox 0, 0;
+		$wmhints_window->add($box1);
+		$box1->show;
+		
+		$label = new Gtk::Label "Try iconizing me!";
+		$label->set_usize(150,50);
+		$box1->pack_start($label, 1, 1, 0);
+		$label->show;
+		
+		$separator = new Gtk::HSeparator;
+		$box1->pack_start($separator, 0, 1, 0);
+		$separator->show;
+		
+		$box2 = new Gtk::VBox 0, 10;
+		$box2->border_width(10);
+		$box1->pack_start($box2, 0, 1, 0);
+		$box2->show;
+		
+		$button = new Gtk::Button "close";
+		
+		$button->signal_connect( clicked => sub {destroy $wmhints_window});
+		$box2->pack_start($button, 1, 1, 0);
+		$button->can_default(1);
+		$button->grab_default();
+		$button->show;
+	}
+	if (not $wmhints_window->visible) {
+		$wmhints_window->show;
+	} else {	
+		destroy $wmhints_window;
+	}
+}
+
 
 sub create_buttons {
 	my($box1, $box2, $table, @button, $separator);
@@ -635,7 +661,6 @@ sub create_buttons {
 	} else {	
 		destroy $buttons_window;
 	}
-	
 }
 
 sub create_toggle_buttons {
@@ -689,6 +714,60 @@ sub create_toggle_buttons {
 		$tb_window->show;
 	} else {
 		destroy $tb_window;
+	}
+}
+
+sub create_check_buttons {
+	my($box1, $box2, $button, $separator);
+	if (not defined $cb_window) {
+		$cb_window = new Gtk::Window -toplevel;
+		$cb_window->signal_connect('destroy', \&destroy_window, \$cb_window);
+		$cb_window->signal_connect('delete_event', \&destroy_window, \$cb_window);
+		$cb_window->set_title('check buttons');
+		$cb_window->border_width(0);
+		
+		$box1 = new Gtk::VBox 0, 0;
+		$cb_window->add($box1);
+		$box1->show;
+		
+		$box2 = new Gtk::VBox 0, 10;
+		$box2->border_width(10);
+		$box1->pack_start($box2, 1, 1, 0);
+		$box2->show;
+		
+		$button = new Gtk::CheckButton 'button1';
+		$box2->pack_start($button, 1, 1, 0);
+		$button->show;
+		
+		$button = new Gtk::CheckButton 'button2';
+		$box2->pack_start($button, 1, 1, 0);
+		$button->show;
+		
+		$button = new Gtk::CheckButton 'button3';
+		$box2->pack_start($button, 1, 1, 0);
+		$button->show;
+		
+		$separator = new Gtk::HSeparator;
+		$box1->pack_start($separator, 0, 1, 0);
+		$separator->show;
+		
+		$box2 = new Gtk::VBox 0, 10;
+		$box2->border_width(10);
+		$box1->pack_start($box2, 0, 1, 0);
+		$box2->show;
+		
+		$button = new Gtk::Button 'close';
+		$button->signal_connect( 'clicked', sub {destroy $cb_window });
+		$box2->pack_start($button, 1, 1, 0);
+		$button->can_default(1);
+		$button->grab_default;
+		$button->show;
+	}
+	
+	if (!$cb_window->visible) {
+		$cb_window->show;
+	} else {
+		destroy $cb_window;
 	}
 }
 
@@ -779,6 +858,7 @@ sub create_toolbar_window {
 	}
 }
 
+
 sub make_toolbar {
 	my ($toplevel) = shift;
 	my ($window, $color, $toolbar, $entry);
@@ -833,6 +913,397 @@ sub make_toolbar {
 	$button->signal_connect('clicked', sub {$toolbar->set_tooltips(0)});
 
 	$toolbar;
+}
+
+my $tree_default_items = 3.0;
+my $tree_default_depth = 3.0;
+
+my $tree_single_button;
+my $tree_browse_button;
+my $tree_multiple_button;
+
+my $tree_draw_line_button;
+my $tree_view_line_button;
+my $tree_without_root_button;
+
+my $tree_items_spinner;
+my $tree_depth_spinner;
+
+my $tree_add_button;
+my $tree_remove_button;
+my $tree_subtree_button;
+
+my $tree_nb_item_add = 1;
+
+sub cb_add_new_item
+{
+	my($widget, $tree)=@_;
+	my(@selected_list, $subtree, $selected_item, $item_new);
+
+	@selected_list=$tree->selection;
+	if($#selected_list == -1 ) {
+		$subtree=$tree;
+	} else {
+		$selected_item=$selected_list[0];
+		$subtree=$selected_item->subtree;
+		if(not defined $subtree) {
+			$subtree = new Gtk::Tree;
+			$selected_item->set_subtree($subtree);
+		}
+	}
+	$item_new = new_with_label Gtk::TreeItem "item add $tree_nb_item_add";
+	$subtree->append($item_new);
+	$item_new->show;
+	$tree_nb_item_add++;
+}
+
+sub cb_remove_item
+{
+	my($widget, $tree)=@_;
+	my(@selected_list);
+
+	@selected_list=$tree->selection;
+	$tree->remove_items(@selected_list);
+}
+
+sub cb_remove_subtree
+{
+	my($widget, $tree)=@_;
+	my(@selected_list, $item);
+
+	@selected_list=$tree->selection;
+	if($#selected_list != -1) {
+		$item=$selected_list[0];
+		if(defined $item->subtree){
+			$item->remove_subtree;
+		}
+	}
+}
+
+sub cb_tree_changed
+{
+	my($tree)=@_;
+	my(@selected_list, $nb_selected);
+
+	@selected_list=$tree->selection;
+	$nb_selected=$#selected_list + 1;
+	if ( $nb_selected == 0 ) {
+		if (not defined $tree->children ) {
+			$tree_add_button->set_sensitive(1);
+		} else {
+			$tree_add_button->set_sensitive(0);
+		}
+		$tree_remove_button->set_sensitive(0);
+		$tree_subtree_button->set_sensitive(0);
+	} else {
+		$tree_remove_button->set_sensitive(1);
+		$tree_add_button->set_sensitive($nb_selected == 1);
+		$tree_subtree_button->set_sensitive($nb_selected == 1);
+	}
+}
+
+sub create_subtree
+{
+	my($item, $level, $nb_item_max, $recursion_level_max) = @_;
+
+	my(
+		$item_subtree,
+		$item_new,
+		$nb_item,
+		$no_root_item
+	);
+
+	if ( $level == $recursion_level_max ) {
+		return;
+	};
+	if ( $level == -1 ) {
+		$level = 0;
+		$item_subtree = $item;
+		$no_root_item = 1;
+	} else {
+		$item_subtree = new Gtk::Tree;
+		$no_root_item = 0;
+	}
+	for $nb_item ( 0 .. $nb_item_max - 1 ) {
+		$item_new = new_with_label Gtk::TreeItem "item $level - $nb_item";
+		$item_subtree->append($item_new);
+		create_subtree($item_new, $level + 1, $nb_item_max, $recursion_level_max);
+		$item_new->show;
+	}
+	if (not $no_root_item ) {
+		$item->set_subtree($item_subtree);
+	}
+}
+
+sub create_tree_sample
+{
+	my($selection_mode, $draw_line, $view_line, $no_root_item, $nb_item_max, $recursion_level_max) = @_;
+
+	my(
+		$tree_sample_window,
+		$box1,
+		$box2,
+		$separator,
+		$button,
+		$scrolled_win,
+		$root_tree,
+		$root_item
+	);
+
+	$tree_sample_window = new Gtk::Window -toplevel;
+	$tree_sample_window->signal_connect('destroy', \&destroy_window, \$tree_sample_window);
+	$tree_sample_window->signal_connect('delete_event', \&destroy_window, \$tree_sample_window);
+	$tree_sample_window->set_title('Tree Sample');
+	$tree_sample_window->border_width(0);
+
+	$box1 = new Gtk::VBox 0, 0;
+	$tree_sample_window->add($box1);
+	$box1->show;
+
+	$box2 = new Gtk::VBox 0, 0;
+	$box2->border_width(5);
+	$box1->pack_start($box2, 1, 1, 0);
+	$box2->show;
+
+	$scrolled_win = new Gtk::ScrolledWindow(undef, undef);
+	$scrolled_win->set_policy('automatic', 'automatic');
+	$scrolled_win->set_usize(200, 200);
+	$box2->pack_start($scrolled_win, 1, 1, 0);
+	$scrolled_win->show;
+
+	$root_tree = new Gtk::Tree;
+	$root_tree->signal_connect('selection_changed', \&cb_tree_changed);
+	$root_tree->set_selection_mode($selection_mode);
+	$root_tree->set_view_lines($draw_line);
+
+	if ( $view_line ) {
+		$root_tree->set_view_mode('line');
+	} else {
+		$root_tree->set_view_mode('item');
+	}
+	$scrolled_win->add($root_tree);
+	$root_tree->show;
+
+	if ( $no_root_item ) {
+		$root_item = $root_tree;
+	} else {
+		$root_item = new_with_label Gtk::TreeItem 'root item';
+		$root_tree->append($root_item);
+		$root_item->show();
+	}
+
+	create_subtree($root_item, - $no_root_item, $nb_item_max, $recursion_level_max);
+
+	$box2 = new Gtk::VBox 0, 0;
+	$box2->border_width(5);
+	$box1->pack_start($box2, 0, 0, 0);
+	$box2->show;
+
+	$button = new Gtk::Button 'Add Item';
+	$tree_add_button = $button;
+	$button->set_sensitive(0);
+	$button->signal_connect('clicked', \&cb_add_new_item, $root_tree);
+	$box2->pack_start($button, 1, 1, 0);
+	$button->show;
+
+	$button = new Gtk::Button 'Remove Item(s)';
+	$tree_remove_button = $button;
+	$button->set_sensitive(0);
+	$button->signal_connect('clicked', \&cb_remove_item, $root_tree);
+	$box2->pack_start($button, 1, 1, 0);
+	$button->show;
+
+	$button = new Gtk::Button 'Remove Subtree';
+	$tree_subtree_button = $button;
+	$button->set_sensitive(0);
+	$button->signal_connect('clicked', \&cb_remove_subtree, $root_tree);
+	$box2->pack_start($button, 1, 1, 0);
+	$button->show;
+
+	$separator = new Gtk::HSeparator;
+	$box1->pack_start($separator, 0, 0, 0);
+	$separator->show;
+
+	$box2 = new Gtk::VBox 0, 0;
+	$box2->border_width(5);
+	$box1->pack_start($box2, 0, 0, 0);
+	$box2->show;
+
+	$button = new Gtk::Button 'Close';
+	$button->signal_connect('clicked', sub {destroy $tree_sample_window});
+	$box2->pack_start($button, 1, 1, 0);
+	$button->show;
+
+	$tree_sample_window->show;
+}
+
+sub cb_create_tree
+{
+	my $selection_mode = 'single';
+	my $view_line;
+	my $draw_line;
+	my $no_root_item;
+	my $items;
+	my $depth;
+
+	if ( $tree_single_button->active ) {
+		$selection_mode = 'single';
+	} elsif ( $tree_browse_button->active ) {
+		$selection_mode = 'browse';
+	} elsif ( $tree_multiple_button->active ) {
+		$selection_mode = 'multiple';
+	}
+	$view_line = $tree_view_line_button->active;
+	$draw_line = $tree_draw_line_button->active;
+	$items = $tree_items_spinner->get_value_as_int;
+	$depth = $tree_depth_spinner->get_value_as_int;
+	$no_root_item = $tree_without_root_button->active;
+
+	create_tree_sample($selection_mode, $draw_line, $view_line, $no_root_item, $items, $depth);
+}
+
+sub create_tree_mode_window
+{
+	my ($box1, $box2, $box3, $frame, $box4, $box5, $label, $adj, $spinner, $button);
+
+	if (not defined $tree_mode_window) {
+		$tree_mode_window = new Gtk::Window -toplevel;
+    		$tree_mode_window->signal_connect('destroy', \&destroy_window, \$tree_mode_window);
+		$tree_mode_window->signal_connect('delete_event', \&destroy_window, \$tree_mode_window);
+		$tree_mode_window->set_title("Tree Mode Selection Window");
+		$tree_mode_window->border_width(0);
+
+		$box1 = new Gtk::VBox 0, 0;
+		$tree_mode_window->add($box1);
+		$box1->show;
+
+		$box2 = new Gtk::VBox 0, 5;
+		$box2->border_width(5);
+		$box1->pack_start($box2, 1, 1, 0);
+		$box2->show;
+
+		$box3 = new Gtk::HBox 0, 5;
+		$box2->pack_start($box3, 1, 1, 0);
+		$box3->show;
+
+		$frame = new Gtk::Frame 'Selection Mode';
+		$box3->pack_start($frame, 1, 1, 0);
+		$frame->show;
+
+		$box4 = new Gtk::VBox 0, 0;
+		$box4->border_width(5);
+		$frame->add($box4);
+		$box4->show;
+
+		$button = new Gtk::RadioButton 'SINGLE';
+		$tree_single_button = $button;
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$button = new Gtk::RadioButton 'BROWSE', $button;
+		$tree_browse_button = $button;
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$button = new Gtk::RadioButton 'MULTIPLE', $button;
+		$tree_multiple_button = $button;
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$frame = new Gtk::Frame 'Options';
+		$box3->pack_start($frame, 1, 1, 0);
+		$frame->show;
+
+		$box4 = new Gtk::VBox 0, 0;
+		$box4->border_width(5);
+		$frame->add($box4);
+		$box4->show;
+
+		$button = new Gtk::CheckButton 'Draw line';
+		$tree_draw_line_button = $button;
+		$button->set_state(1);
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$button = new Gtk::CheckButton 'View line mode';
+		$tree_view_line_button = $button;
+		$button->set_state(1);
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$button = new Gtk::CheckButton 'Without Root item';
+		$tree_without_root_button = $button;
+		$box4->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$frame = new Gtk::Frame 'Size parameters';
+		$box2->pack_start($frame, 1, 1, 0);
+		$frame->show;
+
+		$box4 = new Gtk::HBox 0, 5;
+		$box4->border_width(5);
+		$frame->add($box4);
+		$box4->show;
+
+		$box5 = new Gtk::HBox 0, 5;
+		$box4->pack_start($box5, 0, 0, 0);
+		$box5->show;
+
+		$label = new Gtk::Label 'Number of Items';
+		$label->set_alignment(0, 0.5);
+		$box5->pack_start($label, 0, 1, 0);
+		$label->show;
+
+		$adj = new Gtk::Adjustment $tree_default_items, 1.0, 255.0, 1.0, 5.0, 0.0;
+
+		$spinner = new Gtk::SpinButton $adj, 0, 0;
+		$tree_items_spinner = $spinner;
+		$box5->pack_start($spinner, 0, 1, 0);
+		$spinner->show;
+
+		$box5 = new Gtk::HBox 0, 5;
+		$box4->pack_start($box5, 0, 0, 0);
+		$box5->show;
+
+		$label = new Gtk::Label 'Depth Level';
+		$label->set_alignment(0, 0.5);
+		$box5->pack_start($label, 0, 1, 0);
+		$label->show;
+
+		$adj = new Gtk::Adjustment $tree_default_depth, 0.0, 255.0, 1.0, 5.0, 0.0;
+
+		$spinner = new Gtk::SpinButton $adj, 0, 0;
+		$tree_depth_spinner = $spinner;
+		$box5->pack_start($spinner, 0, 1, 0);
+		$spinner->show;
+
+		$separator = new Gtk::HSeparator;
+		$box1->pack_start($separator, 0, 0, 0);
+		$separator->show;
+
+		$box2 = new Gtk::HBox 0, 0;
+		$box2->border_width(5);
+		$box1->pack_start($box2, 0, 0, 0);
+		$box2->show;
+
+		$button = new Gtk::Button 'Create Sample Tree';
+		$button->signal_connect("clicked", \&cb_create_tree);
+		$box2->pack_start($button, 1, 1, 0);
+		$button->show;
+
+		$button = new Gtk::Button 'Colse';
+		$button->signal_connect("clicked", sub {destroy $tree_mode_window});
+		$box2->pack_start($button, 1, 1, 0);
+		$button->show;
+
+	}
+
+	if (!$tree_mode_window->visible) {
+		show $tree_mode_window;
+	} else {
+		destroy $tree_mode_window;
+	}
+
 }
 
 sub create_handlebox {
@@ -1385,16 +1856,16 @@ sub create_list
 {
 	my(@list_items) = 
 	(
-		"hello",
-	    "world",
-	    "blah",
-	    "foo",
-	    "bar",
-	    "argh",
-	    "spencer",
-	    "is a",
-	    "wussy",
-	    "programmer",
+	    'hello',
+	    'world',
+	    'blah',
+	    'foo',
+	    'bar',
+	    'argh',
+	    'spencer',
+	    'is a',
+	    'wussy',
+	    'programmer',
 	);
 	my($box1,$box2,$scrolled_win,$list,$list_item,$button,$separator,$i);
 	
@@ -1467,8 +1938,122 @@ sub create_list
 	}
 }
 
+# clist
 
-# FIXME: clist signal handling..
+my $clist_selected_row = 0;
+my $clist_rows = 0;
+
+sub select_clist
+{
+  my($widget, $row, $column, $event) = @_;
+  my($i);
+  
+  print "Gtk::CList Selection: row $row column $column button ", $event ? $event->{button} : 0, "\n";
+  
+  for($i=0;$i<$widget->columns;$i++) {
+  	my($type) = $widget->get_cell_type($row, $i);
+  	if ($type eq "text") {
+  		print "CELL $i GTK_CELL_TEXT\n";
+  		print "TEXT: ", $widget->get_text($row,$i), "\n";
+  	} elsif ($type eq "pixmap") {
+  		print "CELL $i GTK_CELL_PIXMAP\n";
+  		my($pixmap, $mask) = $widget->get_pixmap($row,$i);
+  		print "PIXMAP: $pixmap\n";
+  		print "MASK: $mask\n";
+  	} elsif ($type eq "pixtext") {
+  		print "CELL $i GTK_CELL_PIXTEXT\n";
+  		my($text,$spacing,$pixmap, $mask) = $widget->get_pixtext($row,$i);
+  		print "TEXT: $text\n";
+  		print "SPACING: $spacing\n";
+  		print "PIXMAP: $pixmap\n";
+  		print "MASK: $mask\n";
+  	}
+  }
+  
+  print "\nSelected rows:";
+  foreach ($widget->selection) {
+  	print " $_ ";
+  }
+  print "\n";
+
+  $clist_selected_row=$row;
+}
+
+sub unselect_clist
+{
+  my($widget, $row, $column, $event) = @_;
+  my($i);
+  
+  print "Gtk::CList Unselection: row $row column $column button ", $event ? $event->{button} : 0, "\n";
+  
+  for($i=0;$i<$widget->columns;$i++) {
+  	my($type) = $widget->get_cell_type($row, $i);
+  	if ($type eq "text") {
+  		print "CELL $i GTK_CELL_TEXT\n";
+  		print "TEXT: ", $widget->get_text($row,$i), "\n";
+  	} elsif ($type eq "pixmap") {
+  		print "CELL $i GTK_CELL_PIXMAP\n";
+  		my($pixmap, $mask) = $widget->get_pixmap($row,$i);
+  		print "PIXMAP: $pixmap\n";
+  		print "MASK: $mask\n";
+  	} elsif ($type eq "pixtext") {
+  		print "CELL $i GTK_CELL_PIXTEXT\n";
+  		my($text,$spacing,$pixmap, $mask) = $widget->get_pixtext($row,$i);
+  		print "TEXT: $text\n";
+  		print "SPACING: $spacing\n";
+  		print "PIXMAP: $pixmap\n";
+  		print "MASK: $mask\n";
+  	}
+  }
+  
+  print "\nSelected rows:";
+  foreach ($widget->selection) {
+  	print " $_ ";
+  }
+  print "\n";
+
+  $clist_selected_row=$row;
+}
+
+sub add1000_clist
+{
+  my($widget, $clist)= @_;
+  
+  my($pixmap, $mask) = Gtk::Gdk::Pixmap->create_from_xpm($clist->clist_window, $clist->style->white, "test.xpm");
+
+  my $row_nr = 0;
+
+  my @text = ( 'Right', 'Center', 'Column 3', 'Column 4', 'Column 5', 'Column 6' );
+
+  $clist->freeze();
+
+  for $i ( 1 .. 1000 ) {
+    $row_nr = $clist_rows + $i;
+    $clist->append( "Row $row_nr", @text);
+    $clist->set_pixtext($row_nr, 3, "Testing", 5, $pixmap, $mask);
+  }
+
+  $clist->thaw();
+
+  $clist_rows += 1000;
+}
+
+sub add10000_clist
+{
+  my($widget, $clist)= @_;
+
+  my $row_nr = 0;
+
+  $clist->freeze();
+  for $i ( 1 .. 10000 ) {
+    $row_nr = $clist_rows + $i;
+    $clist->append( ( "Row $row_nr" , 'Right', 'Center', 'Column 3', 'Column 4', 'Column 5', 'Column 6' ), @text);
+  }
+  $clist->thaw();
+
+  $clist_rows += 1000;
+}
+
 sub create_clist {
 	my (@titles, @text, $clist, $box1, $box2, $button, $separator);
 
@@ -1498,16 +2083,17 @@ sub create_clist {
 		$box1->pack_start($box2, 0, 0, 0);
 		$box2->show;
 
-		$clist = new Gtk::CList($#titles);
+		$clist = new_with_titles Gtk::CList(@titles);
+#		$clist = new Gtk::CList($#titles + 1);
 		
-		$button = new Gtk::Button('Add 1,000 Rows');
+		$button = new Gtk::Button('Add 1,000 Rows with pixmaps');
 		$button->show;
-		$button->signal_connect('clicked', \&add1000_clist); # FIXME
+		$button->signal_connect('clicked', \&add1000_clist, $clist);
 		$box2->pack_start($button, 1, 1, 0);
 
 		$button = new Gtk::Button('Add 10,000 Rows');
 		$button->show;
-		$button->signal_connect('clicked', \&add10000_clist);
+		$button->signal_connect('clicked', \&add10000_clist, $clist);
 		$box2->pack_start($button, 1, 1, 0);
 
 		$button = new Gtk::Button('Clear list');
@@ -1517,7 +2103,27 @@ sub create_clist {
 
 		$button = new Gtk::Button('Remove Row');
 		$button->show;
-		$button->signal_connect('clicked', sub {$clist->remove_row(0); $clist_rows--;});
+		$button->signal_connect('clicked', sub {$clist->remove($clist_selected_row); $clist_rows--;});
+		$box2->pack_start($button, 1, 1, 0);
+
+		$box2 = new Gtk::HBox(0, 10);
+		$box2->border_width(10);
+		$box1->pack_start($box2, 0, 0, 0);
+		$box2->show;
+
+		$button = new Gtk::Button('Insert Row');
+		$button->show;
+		$button->signal_connect('clicked', sub {$clist->insert( $clist_selected_row, ( 'This', 'is', 'a', 'inserted', 'row', 'la la la la la', 'la la la la' ) ); $clist_rows++;});
+		$box2->pack_start($button, 1, 1, 0);
+
+		$button = new Gtk::Button('Show Title Buttons');
+		$button->show;
+		$button->signal_connect('clicked', sub {$clist->column_titles_show();});
+		$box2->pack_start($button, 1, 1, 0);
+
+		$button = new Gtk::Button('Hide Title Buttons');
+		$button->show;
+		$button->signal_connect('clicked', sub {$clist->column_titles_hide();});
 		$box2->pack_start($button, 1, 1, 0);
 
 		$box2 = new Gtk::VBox(0, 10);
@@ -1527,24 +2133,30 @@ sub create_clist {
 
 		$clist->set_row_height(20);
 
-		for $i ( 1 .. scalar(@titles) - 1 ) {
-			$clist->set_column_width($i, 80);
-		}
-		$clist->set_selection_mode('browse');
-		$clist->set_policy ('automatic', 'automatic');
-		$clist->set_column_justification(1, 'right');
-		$clist->set_column_justification(2, 'left');
+		$clist->signal_connect('select_row', \&select_clist);
+		$clist->signal_connect('unselect_row', \&unselect_clist);
 
-		for $i ( 0 .. scalar(@titles) - 1 ) {
+		$clist->set_column_width(0, 100);
+		for $i ( 1 .. scalar(@titles) ) {
+			$clist->set_column_width($i, 80);
 			$text[$i] = "Column $i";
 		}
+		$clist->set_selection_mode('browse');
+		$clist->set_policy('automatic', 'automatic');
+		$clist->set_column_justification(1, 'right');
+		$clist->set_column_justification(2, 'center');
+#		$clist->column_titles_show();
+
 		$text[1] = 'Right';
 		$text[2] = 'Center';
-		shift( @text );
-		# FIXME
-		for  $i ( 0 .. 100 ) {
-			$clist->append("Row $i", @text);
+		shift(@text);
+
+		for $i ( 0 .. 100 ) {
+			$clist->append( "Row $i", @text);
 		}
+
+		$clist_rows=100;
+		$clist_selected_row=0;
 
 		$clist->border_width(5);
 		$box2->pack_start($clist, 1, 1, 0);
@@ -1556,7 +2168,7 @@ sub create_clist {
 
 		$box2 = new Gtk::VBox(0, 10);
 		$box2->border_width(10);
-		$box1->pack_start($box2, 1, 1, 0);
+		$box1->pack_start($box2, 0, 1, 0);
 		$box2->show;
 
 		$button = new Gtk::Button('close');
@@ -2066,12 +2678,12 @@ sub create_pages {
 	for ($i=$start; $i <= $end; $i++) {
 		$buffer = "Page $i";
 		
-		if ((i % 4) == 3) {
+		if (($i % 4) == 3) {
 			$child = new Gtk::Button $buffer;
 			$child->border_width(10);
-		} elsif((i % 4) == 2) {
+		} elsif(($i % 4) == 2) {
 			$child = new Gtk::Label $buffer;
-		} elsif((i % 4) == 1) {
+		} elsif(($i % 4) == 1) {
 			$child = new Gtk::Frame $buffer;
 			$child->border_width(10);
 			
@@ -2555,6 +3167,145 @@ sub create_gamma_curve {
 	$curve_count++;
 }
 
+$scroll_test_pos = 0;
+$scroll_test_gc = undef;
+
+sub scroll_test_expose {
+	my($widget, $adj, $event) = @_;
+	my($i,$j,$imin,$jmin,$imax,$jmax);
+	
+	$imin = $event->{area}->[0] / 10;
+	$imax = ($event->{area}->[0] + $event->{area}->[2] + 9) / 10;
+
+	$jmin = ($adj->get_value + $event->{area}->[1]) / 10;
+	$jmax = ($adj->get_value + $event->{area}->[1] + $event->{area}->[3] + 9) / 10;
+	
+	$widget->window->clear_area($event->{area}->[0], $event->{area}->[1], 
+								$event->{area}->[2], $event->{area}->[3]);
+	
+	for ($i=$imin; $i<$imax; $i++) {
+		for ($j=$jmin; $j<$jmax; $j++) {
+			if (($i+$j) % 2) {
+				$widget->window->draw_rectangle($widget->style->black_gc, 1, 10*$i, 10*$j - $adj->get_value, 1+$i%10, 1+$j%10);
+			}
+		}
+	}
+	
+	return 1;
+}
+
+sub scroll_test_configure {
+	my($widget, $adj, $event) = @_;
+	$adj->page_increment($widget->allocation->[3] * 0.9);
+	$adj->page_size($widget->allocation->[3]);
+	$adj->signal_emit("changed");
+}
+
+#FIXME
+sub scroll_test_adjustment_changed {
+	my($adj, $widget) = @_;
+	
+	my($source_min) = $adj->value - $scroll_test_pos;
+	my($source_max) = $source_min + $widget->allocation->[3];
+	my($dest_min) = 0;
+	my($dest_max) = $widget->allocation->[3];
+	my($r);
+	
+	$scroll_test_pos = $adj->value;
+	
+	return if not $widget->drawable;
+	
+	if ($source_min < 0) {
+		$r = [0, 0, $widget->allocation->[2],-$source_min];
+		if ($r->[3] > $widget->allocation->[3]) {
+			$r->[3] = $widget->allocation->[3];
+		}
+		
+		$source_min = 0;
+		$dest_min = $r->[3];
+	} else {
+		$r = [0, 2*$widget->allocation->[3]-$source_max, $widget->allocation->[2], 0];
+		if ($r->[1] < 0) {
+			$r->[1] = 0;
+		}
+		$r->[3] = $widget->allocation->[3] - $r[1];
+		
+		$source_max = $widget->allocation->[3];
+		$dest_max = $r->[1];
+	}
+	
+	if ($source_min != $source_max) {
+		if (not defined $scroll_test_gc) {
+			$scroll_test_gc = new Gtk::Gdk::GC $widget->window;
+			$scroll_test_gc->set_exposures(1);
+		}
+		
+		$widget->window->draw_pixmap($scroll_test_gc, $widget->window, 0, $source_min, 0, $dest_min, $widget->allocation->[2], $source_max - $source_min);
+		
+		my($event);
+		
+		while (defined ($event = $widget->window->event_get_graphics_expose)) {
+			$widget->event($event);
+			print "event = $event, type = $event->{type}\n";
+			if ($event->{count} == 0) {
+				last;
+			}
+		}
+		
+	}
+	
+	if ($r->[3] != 0) {
+		$widget->draw($r);
+	}
+}
+
+
+sub create_scroll_test {
+    if (not defined $scroll_window) {
+		$scroll_window = new Gtk::Dialog;
+		$scroll_window->signal_connect ("destroy", \&destroy_window, \$dialog_window);
+
+		$scroll_window->set_title ("Scroll Test");
+		$scroll_window->border_width (0);
+		
+		my $hbox = new Gtk::HBox (0, 0);
+		$hbox->border_width (10);
+		$scroll_window->vbox->pack_start ($hbox, 1, 1, 0);
+		$hbox->show;
+		
+		my $drawing_area = new Gtk::DrawingArea;
+		$drawing_area->size(200, 200);
+		$hbox->pack_start($drawing_area, 1, 1, 0);
+		show $drawing_area;
+		
+		$drawing_area->set_events('exposure_mask');
+		
+		my $adj = new Gtk::Adjustment (0.0, 0.0, 1000.0, 1.0, 180.0, 200.0);
+		$scroll_test_pos = 0.0;
+		
+		my $scrollbar = new Gtk::VScrollbar $adj;
+		$hbox->pack_start($scrollbar, 0, 0, 0);
+		show $scrollbar;
+		
+		$drawing_area->signal_connect(expose_event => \&scroll_test_expose, $adj);
+		$drawing_area->signal_connect(configure_event => \&scroll_test_configure, $adj);
+
+		$adj->signal_connect(value_changed => \&scroll_test_adjustment_changed, $drawing_area);
+		
+		my $button = new Gtk::Button "Quit";
+		$scroll_window->action_area->pack_start($button, 1, 1, 0);
+		
+		$button->signal_connect(clicked => sub {destroy $scroll_window});
+		show $button;
+    }
+	
+    if (!$scroll_window->visible) {
+		$scroll_window->show;
+    } else {
+		$scroll_window->destroy;
+    }
+}
+
 sub selection_test_received
 {
     my ($list, $selection_data) = @_;
@@ -2826,27 +3577,42 @@ sub create_idle_test {
 	}
 }
 
-sub test_destroy {
-	my($widget, $windowref) = @_;
-	destroy_window($widget, $windowref);
+sub mainloop_destroyed {
+	my($window, $var) = @_;
+	$$var = undef;
 	Gtk->main_quit;
 }
 
-sub create_test {
-	if (not defined $test_window) {
-		$test_window = new Gtk::Window("toplevel");
-		$test_window->signal_connect("destroy" => \&test_destroy, \$test_window);
-		$test_window->signal_connect("delete_event" => \&test_destroy, \$test_window);
-		$test_window->set_title("test");
-		$test_window->border_width(0);
+sub create_mainloop {
+	my ($button, $label);
+	if (not defined $mainloop_window) {
+		$mainloop_window = new Gtk::Dialog;
+
+		$mainloop_window->set_title("Test Main Loop");
+		
+		signal_connect $mainloop_window destroy => \&mainloop_destroyed, \$mainloop_window;
+		
+		$label = new Gtk::Label "In recursive main loop...";
+		$label->set_padding(20, 20);
+		
+		$mainloop_window->vbox->pack_start($label, 1, 1, 0);
+		$label->show;
+		
+		$button = new Gtk::Button "Leave";
+		$mainloop_window->action_area->pack_start($button, 0, 1, 0);
+
+		$button->signal_connect("clicked", sub { $mainloop_window->destroy });
+		$button->can_default(1);
+		$button->grab_default();
+		$button->show;
 	}
-	if (!$test_window->visible) {
-		$test_window->show;
-		Gtk->print("create_test: start\n");
+	if (!$mainloop_window->visible) {
+		show $mainloop_window;
+		print "create_mainloop: start\n";
 		Gtk->main;
-		Gtk->print("create_test: done\n");
+		print "create_mainloop: done\n";
 	} else {
-		$test_window->destroy;
+		destroy $mainloop_window;
 	}
 }
 
@@ -2857,40 +3623,46 @@ sub do_exit {
 sub create_main_window {
 	my(@buttons,$window,$box1,$scw, $box2,$button,$separator, $buffer, $label);
 	@buttons = (
-		"button box", \&create_button_box,
-		"buttons",	\&create_buttons,
-		"toggle buttons", \&create_toggle_buttons,
-		"radio buttons", \&create_radio_buttons,
-		"toolbar", \&create_toolbar_window,
-		"handlebox", \&create_handlebox,
-		"reparent", \&create_reparent,
-		"pixmap", \&create_pixmap,
-		"create tooltips", \&create_tooltips,
-		"menus", \&create_menus,
-		"create scrolled windows", \&create_scrolled_windows,
-		"drawing areas", undef,
-		"entry", \&create_entry,
-		"list", \&create_list,
-		"clist", \&create_clist,
-		"color selection", \&create_color_selection,
-      	"file selection", \&create_file_selection,
-      	"range controls", \&create_range_controls,
-      	"rulers", \&create_rulers,
-      	"shapes", \&create_shapes,
-		"text", \&create_text,
-      	"notebook", \&create_notebook,
-      	"panes", \&create_panes,
-      	"progress bar", \&create_progress_bar,
-      	"color preview", \&create_color_preview,
-      	"gray preview", \&create_gray_preview,
-		"dialog",	\&create_dialog,
-      	"gamma curve", \&create_gamma_curve,
-		"test selection", \&create_selection_test,
-		"test timeout", \&create_timeout_test,
-		"spinbutton", \&create_spins,
-		"statusbar", \&create_statusbar,
-		"test idle", \&create_idle_test,
-		"create test",	\&create_test,
+		'button box',		\&create_button_box,
+		'buttons',			\&create_buttons,
+		'check buttons',	\&create_check_buttons,
+		'clist',			\&create_clist,
+		'color selection',	\&create_color_selection,
+		'cursors',			\&create_cursors,
+		'dialog',			\&create_dialog,
+		'dnd',				undef, #\&create_dnd,
+		'entry',			\&create_entry,
+		'file selection',	\&create_file_selection,
+		'gamma curve',		\&create_gamma_curve,
+		'handle box',		\&create_handlebox,
+		'list',				\&create_list,
+		'menus',			\&create_menus,
+		'miscellaneous',	undef,
+		'notebook',			\&create_notebook,
+		'panes',			\&create_panes,
+		'pixmap',			\&create_pixmap,
+		'preview color',	\&create_color_preview,
+		'preview gray',		\&create_gray_preview,
+		'progress bar',		\&create_progress_bar,
+		'radio buttons',	\&create_radio_buttons,
+		'range controls',	\&create_range_controls,
+		'reparent',			\&create_reparent,
+		'rulers',			\&create_rulers,
+		'scrolled windows',	\&create_scrolled_windows,
+		'shapes',			\&create_shapes,
+		'spinbutton',		\&create_spins,
+		'statusbar',		\&create_statusbar,
+		'test idle',		\&create_idle_test,
+		'test mainloop',	\&create_mainloop,
+		'test scrolling',	\&create_scroll_test,
+		'test selection',	\&create_selection_test,
+		'test timeout',		\&create_timeout_test,
+		'text',				\&create_text,
+		'toggle buttons',	\&create_toggle_buttons,
+		'toolbar',			\&create_toolbar_window,
+		'tooltips',			\&create_tooltips,
+		'tree',				\&create_tree_mode_window,
+		'WM hints',			\&create_wmhints,
 	);
 	
 	$window = new Gtk::Window('toplevel');

@@ -82,6 +82,7 @@ GtkOptionMenu.xs
 GtkPacker.xs
 GtkPaned.xs
 GtkPixmap.xs
+GtkPlug.xs
 GtkPreview.xs
 GtkProgressBar.xs
 GtkRadioButton.xs
@@ -93,6 +94,7 @@ GtkScrollbar.xs
 GtkScrolledWindow.xs
 GtkSelection.xs
 GtkSeparator.xs
+GtkSocket.xs
 GtkSpinButton.xs
 GtkStatusbar.xs
 GtkTable.xs

@@ -1,4 +1,14 @@
 
+0.2_04		Sat Aug  1, 1998	Kenneth Albanowski
+
+	Uses gtk+-1.0.5.
+	
+	Added Marin Purgar's <pmc@iskon.hr> patches and test.pl improvements.
+	
+	Added test.pl support for scrolling (buggy, though), mainloop, etc.
+	
+	Added Brian Warner's patch for notebook test.
+	
 0.2_03		Sun Jun  7, 1998	Kenneth Albanowski
 
 	Uses gtk+-1.0.4.

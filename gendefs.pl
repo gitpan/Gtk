@@ -1428,6 +1428,11 @@ __END__;
 ;  gdk_font_ref
 ;  gdk_font_unref)
 
+(define-enum GtkVisibility
+  (none GTK_VISIBILITY_NONE)
+  (partial GTK_VISIBILITY_PARTIAL)
+  (full GTK_VISIBILITY_FULL))
+
 (define-enum GdkInputSource
   (mouse GDK_SOURCE_MOUSE)
   (pen GDK_SOURCE_PEN)

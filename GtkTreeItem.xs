@@ -66,4 +66,12 @@ void
 gtk_tree_item_collapse(tree_item)
 	Gtk::TreeItem	tree_item
 
+Gtk::Widget_OrNULL_Up
+subtree(tree_item)
+	Gtk::TreeItem   tree_item
+	CODE:
+	RETVAL=GTK_TREE_ITEM_SUBTREE(tree_item);
+	OUTPUT:
+	RETVAL
+
 #endif

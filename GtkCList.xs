@@ -137,7 +137,7 @@ gtk_clist_moveto(self, row, column, row_align, column_align)
 	double	row_align
 	double	column_align
 
-bool
+Gtk::Visibility
 gtk_clist_row_is_visible (self, row)
 	Gtk::CList  self
 	int     row
@@ -307,27 +307,51 @@ gtk_clist_set_row_data(self, row, data)
 	int		row
 	SV *	data
 	CODE:
-	SvREFCNT_inc(data);
-	gtk_clist_set_row_data_full(self, row, data, svrefcnt_dec);
+	{
+		SV * sv = (SV*)SvRV(data);
+		
+		/*\ Hearken: we are given a reference, called 'data', which refers to
+		 *          some SV, called 'sv'. The RV is ephemeral, and we must
+		 *          not form a permanent reference to it. Instead, we
+		 *          increment the refcount of the target sv, and store that
+		 *          sv's pointer as the row data. When the row data is
+		 *          deallocated, the sv's refcount will be decremented.
+		\*/
+
+		if (!sv)
+			croak("Data must be a reference");
+			
+		SvREFCNT_inc(sv);
+		
+		gtk_clist_set_row_data_full(self, row, sv, svrefcnt_dec);
+	}
 
 SV*
 gtk_clist_get_row_data(self, row)
 	Gtk::CList  self
 	int		row
 	CODE:
-	RETVAL = newSVsv(gtk_clist_get_row_data(self, row));
+	{
+		SV * sv = gtk_clist_get_row_data(self, row);
+		RETVAL = sv ? newRV(sv) : newSV(&sv_undef);
+	}
 	OUTPUT:
 	RETVAL
-
-#if 0
 
 int
 gtk_clist_find_row_from_data (self, data)
 	Gtk::CList  self
 	SV *    data
+	CODE:
+	{
+		SV * sv = (SV*)SvRV(data);
+		
+		if (!sv)
+			croak("Data must be a reference");
+		
+		RETVAL = gtk_clist_find_row_from_data(self, sv);
+	}
 	
-#endif
-
 void
 gtk_clist_select_row(self, row, column)
 	Gtk::CList  self
@@ -343,6 +367,14 @@ gtk_clist_unselect_row(self, row, column)
 void
 gtk_clist_clear(self)
 	Gtk::CList  self
+
+Gtk::Gdk::Window
+clist_window (self)
+	Gtk::CList      self
+	CODE:
+	RETVAL = self->clist_window;
+	OUTPUT:
+	RETVAL
 
 int
 rows(self)
@@ -360,7 +392,18 @@ columns(self)
 	OUTPUT:
 	RETVAL
 
-#if 0
+void
+selection (self)
+	Gtk::CList      self
+	PPCODE:
+	{
+		GList * selection = self->selection;
+		while(selection) {
+			EXTEND(sp, 1);
+			PUSHs(sv_2mortal(newSVgint(GPOINTER_TO_INT(selection->data))));
+			selection=g_list_next(selection);
+		}
+	}
 
 void
 gtk_clist_get_selection_info (self, x, y)
@@ -370,10 +413,12 @@ gtk_clist_get_selection_info (self, x, y)
 	PPCODE:
 	{
 		int row, column;
-		gtk_clist_get_selection_info (self, x, y, &row, &column);
+		if (gtk_clist_get_selection_info (self, x, y, &row, &column)) {
+			EXTEND(sp, 2);
+			PUSHs(sv_2mortal(newSViv(row)));
+			PUSHs(sv_2mortal(newSViv(column)));
+		}
 	}
-
-#endif
 
 #endif
 

@@ -45,4 +45,70 @@ gtk_adjustment_get_value (self)
 	OUTPUT:
 	RETVAL
 
+gfloat
+gtk_adjustment_value (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->value;
+	if (items==2)
+		self->value = change;
+	OUTPUT:
+	RETVAL
+
+gfloat
+gtk_adjustment_lower (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->lower;
+	if (items==2)
+		self->lower = change;
+	OUTPUT:
+	RETVAL
+
+gfloat
+gtk_adjustment_upper (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->upper;
+	if (items==2)
+		self->upper = change;
+	OUTPUT:
+	RETVAL
+
+gfloat
+gtk_adjustment_step_increment (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->step_increment;
+	if (items==2)
+		self->step_increment = change;
+	OUTPUT:
+	RETVAL
+
+gfloat
+gtk_adjustment_page_increment (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->page_increment;
+	if (items==2)
+		self->page_increment = change;
+	OUTPUT:
+	RETVAL
+
+gfloat
+gtk_adjustment_page_size (self, change=0)
+	Gtk::Adjustment self
+	gfloat	change
+	CODE:
+	RETVAL = self->page_size;
+	if (items==2)
+		self->page_size = change;
+	OUTPUT:
+	RETVAL
+
 #endif

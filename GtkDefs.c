@@ -1,0 +1,1695 @@
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+#include <gtk/gtk.h>
+
+#include "GtkTypes.h"
+#include "GdkTypes.h"
+#include "MiscTypes.h"
+#include "GtkDefs.h"
+
+HV * pGtkType[51];
+char * pGtkTypeName[51];
+HV * pG_EnumHash;
+HV * pG_FlagsHash;
+
+AV * gtk_typecasts = 0;
+static HV * types = 0;
+
+static void add_typecast(int type, char * name)
+{
+	GtkObjectClass * klass = gtk_type_class(type);
+	av_extend(gtk_typecasts, klass->type);
+	av_store(gtk_typecasts, klass->type, newSVpv(name, 0));
+	hv_store(types, name, strlen(name), newSViv(type), 0);
+}
+
+int type_name(char * name) {
+	SV ** s = hv_fetch(types, name, strlen(name), 0);
+	if (s)
+		return SvIV(*s);
+	else
+		return 0;
+}
+
+
+SV * newSVGdkColormap(GdkColormap * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Gdk::Colormap", &n);
+	if (n)
+		gdk_colormap_ref(value);
+	return result;
+}
+
+GdkColormap * SvGdkColormap(SV * value) { return (GdkColormap*)SvMiscRef(value, "Gtk::Gdk::Colormap"); }
+
+SV * newSVGdkFont(GdkFont * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Gdk::Font", &n);
+	if (n)
+		gdk_font_ref(value);
+	return result;
+}
+
+GdkFont * SvGdkFont(SV * value) { return (GdkFont*)SvMiscRef(value, "Gtk::Gdk::Font"); }
+
+SV * newSVGdkPixmap(GdkPixmap * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Gdk::Pixmap", &n);
+	if (n)
+		gdk_window_ref(value);
+	return result;
+}
+
+GdkPixmap * SvGdkPixmap(SV * value) { return (GdkPixmap*)SvMiscRef(value, "Gtk::Gdk::Pixmap"); }
+
+SV * newSVGdkVisual(GdkVisual * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Gdk::Visual", &n);
+	if (n)
+		gdk_visual_ref(value);
+	return result;
+}
+
+GdkVisual * SvGdkVisual(SV * value) { return (GdkVisual*)SvMiscRef(value, "Gtk::Gdk::Visual"); }
+
+SV * newSVGtkAcceleratorTable(GtkAcceleratorTable * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::AcceleratorTable", &n);
+	if (n)
+		gtk_accelerator_table_ref(value);
+	return result;
+}
+
+GtkAcceleratorTable * SvGtkAcceleratorTable(SV * value) { return (GtkAcceleratorTable*)SvMiscRef(value, "Gtk::AcceleratorTable"); }
+
+SV * newSVGtkStyle(GtkStyle * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Style", &n);
+	if (n)
+		gtk_style_ref(value);
+	return result;
+}
+
+GtkStyle * SvGtkStyle(SV * value) { return (GtkStyle*)SvMiscRef(value, "Gtk::Style"); }
+
+SV * newSVGtkTooltips(GtkTooltips * value) {
+	int n = 0;
+	SV * result = newSVMiscRef(value, "Gtk::Tooltips", &n);
+	if (n)
+		gtk_tooltips_ref(value);
+	return result;
+}
+
+GtkTooltips * SvGtkTooltips(SV * value) { return (GtkTooltips*)SvMiscRef(value, "Gtk::Tooltips"); }
+
+SV * GtkGetArg(GtkArg * a)
+{
+	SV * result;
+	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
+		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); return;
+		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); return;
+		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); return;
+		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); return;
+		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); return;
+		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); return;
+		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); return;	
+		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); return;
+		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); return;
+		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); return;
+		case GTK_TYPE_SIGNAL:
+		{
+			AV * args = (AV*)GTK_VALUE_SIGNAL(*a).d;
+			SV ** s;
+			if ((GTK_VALUE_SIGNAL(*a).f != 0) ||
+				(!args) ||
+				(SvTYPE(args) != SVt_PVAV) ||
+				(av_len(args) < 3) ||
+				!(s = av_fetch(args, 2, 0))
+				)
+				croak("Unable to return a foreign signal type to Perl");
+
+			result = newSVsv(*s);
+			return;
+		}
+		case GTK_TYPE_ENUM:
+#ifdef GTK_TYPE_GDK_AXIS_USE
+			if (a->type == GTK_TYPE_GDK_AXIS_USE)
+				result = newSVGdkAxisUse(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_BYTE_ORDER
+			if (a->type == GTK_TYPE_GDK_BYTE_ORDER)
+				result = newSVGdkByteOrder(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CAP_STYLE
+			if (a->type == GTK_TYPE_GDK_CAP_STYLE)
+				result = newSVGdkCapStyle(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CURSOR_TYPE
+			if (a->type == GTK_TYPE_GDK_CURSOR_TYPE)
+				result = newSVGdkCursorType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_DND_TYPE
+			if (a->type == GTK_TYPE_GDK_DND_TYPE)
+				result = newSVGdkDndType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_EVENT_TYPE
+			if (a->type == GTK_TYPE_GDK_EVENT_TYPE)
+				result = newSVGdkEventType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FILL
+			if (a->type == GTK_TYPE_GDK_FILL)
+				result = newSVGdkFill(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FUNCTION
+			if (a->type == GTK_TYPE_GDK_FUNCTION)
+				result = newSVGdkFunction(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_IMAGE_TYPE
+			if (a->type == GTK_TYPE_GDK_IMAGE_TYPE)
+				result = newSVGdkImageType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_MODE
+			if (a->type == GTK_TYPE_GDK_INPUT_MODE)
+				result = newSVGdkInputMode(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_SOURCE
+			if (a->type == GTK_TYPE_GDK_INPUT_SOURCE)
+				result = newSVGdkInputSource(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_JOIN_STYLE
+			if (a->type == GTK_TYPE_GDK_JOIN_STYLE)
+				result = newSVGdkJoinStyle(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_LINE_STYLE
+			if (a->type == GTK_TYPE_GDK_LINE_STYLE)
+				result = newSVGdkLineStyle(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_NOTIFY_TYPE
+			if (a->type == GTK_TYPE_GDK_NOTIFY_TYPE)
+				result = newSVGdkNotifyType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROP_MODE
+			if (a->type == GTK_TYPE_GDK_PROP_MODE)
+				result = newSVGdkPropMode(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROPERTY_STATE
+			if (a->type == GTK_TYPE_GDK_PROPERTY_STATE)
+				result = newSVGdkPropertyState(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SELECTION
+			if (a->type == GTK_TYPE_GDK_SELECTION)
+				result = newSVGdkSelection(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_STATUS
+			if (a->type == GTK_TYPE_GDK_STATUS)
+				result = newSVGdkStatus(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SUBWINDOW_MODE
+			if (a->type == GTK_TYPE_GDK_SUBWINDOW_MODE)
+				result = newSVGdkSubwindowMode(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL_TYPE
+			if (a->type == GTK_TYPE_GDK_VISUAL_TYPE)
+				result = newSVGdkVisualType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_CLASS
+			if (a->type == GTK_TYPE_GDK_WINDOW_CLASS)
+				result = newSVGdkWindowClass(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_TYPE)
+				result = newSVGdkWindowType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_ARROW_TYPE
+			if (a->type == GTK_TYPE_ARROW_TYPE)
+				result = newSVGtkArrowType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_CURVE_TYPE
+			if (a->type == GTK_TYPE_CURVE_TYPE)
+				result = newSVGtkCurveType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_DIRECTION_TYPE
+			if (a->type == GTK_TYPE_DIRECTION_TYPE)
+				result = newSVGtkDirectionType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_JUSTIFICATION
+			if (a->type == GTK_TYPE_JUSTIFICATION)
+				result = newSVGtkJustification(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_MENU_FACTORY_TYPE
+			if (a->type == GTK_TYPE_MENU_FACTORY_TYPE)
+				result = newSVGtkMenuFactoryType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_METRIC_TYPE
+			if (a->type == GTK_TYPE_METRIC_TYPE)
+				result = newSVGtkMetricType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_PACK_TYPE
+			if (a->type == GTK_TYPE_PACK_TYPE)
+				result = newSVGtkPackType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_POLICY_TYPE
+			if (a->type == GTK_TYPE_POLICY_TYPE)
+				result = newSVGtkPolicyType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_POSITION_TYPE
+			if (a->type == GTK_TYPE_POSITION_TYPE)
+				result = newSVGtkPositionType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_PREVIEW_TYPE
+			if (a->type == GTK_TYPE_PREVIEW_TYPE)
+				result = newSVGtkPreviewType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SCROLL_TYPE
+			if (a->type == GTK_TYPE_SCROLL_TYPE)
+				result = newSVGtkScrollType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SELECTION_MODE
+			if (a->type == GTK_TYPE_SELECTION_MODE)
+				result = newSVGtkSelectionMode(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SHADOW_TYPE
+			if (a->type == GTK_TYPE_SHADOW_TYPE)
+				result = newSVGtkShadowType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_STATE_TYPE
+			if (a->type == GTK_TYPE_STATE_TYPE)
+				result = newSVGtkStateType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_DIRECTION
+			if (a->type == GTK_TYPE_SUBMENU_DIRECTION)
+				result = newSVGtkSubmenuDirection(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_PLACEMENT
+			if (a->type == GTK_TYPE_SUBMENU_PLACEMENT)
+				result = newSVGtkSubmenuPlacement(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_TROUGH_TYPE
+			if (a->type == GTK_TYPE_TROUGH_TYPE)
+				result = newSVGtkTroughType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_UPDATE_TYPE
+			if (a->type == GTK_TYPE_UPDATE_TYPE)
+				result = newSVGtkUpdateType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_POSITION
+			if (a->type == GTK_TYPE_WINDOW_POSITION)
+				result = newSVGtkWindowPosition(GTK_VALUE_ENUM(*a));
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_TYPE
+			if (a->type == GTK_TYPE_WINDOW_TYPE)
+				result = newSVGtkWindowType(GTK_VALUE_ENUM(*a));
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_FLAGS:
+#ifdef GTK_TYPE_GDK_EVENT_MASK
+			if (a->type == GTK_TYPE_GDK_EVENT_MASK)
+				result = newSVGdkEventMask(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_GCVALUES_MASK
+			if (a->type == GTK_TYPE_GDK_GCVALUES_MASK)
+				result = newSVGdkGCValuesMask(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_CONDITION
+			if (a->type == GTK_TYPE_GDK_INPUT_CONDITION)
+				result = newSVGdkInputCondition(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_MODIFIER_TYPE
+			if (a->type == GTK_TYPE_GDK_MODIFIER_TYPE)
+				result = newSVGdkModifierType(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE)
+				result = newSVGdkWindowAttributesType(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_HINTS
+			if (a->type == GTK_TYPE_GDK_WINDOW_HINTS)
+				result = newSVGdkWindowHints(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_ATTACH_OPTIONS
+			if (a->type == GTK_TYPE_ATTACH_OPTIONS)
+				result = newSVGtkAttachOptions(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_SIGNAL_RUN_TYPE
+			if (a->type == GTK_TYPE_SIGNAL_RUN_TYPE)
+				result = newSVGtkSignalRunType(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+#ifdef GTK_TYPE_WIDGET_FLAGS
+			if (a->type == GTK_TYPE_WIDGET_FLAGS)
+				result = newSVGtkWidgetFlags(GTK_VALUE_FLAGS(*a));
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_BOXED:
+#ifdef GTK_TYPE_GDK_COLORMAP
+			if (a->type == GTK_TYPE_GDK_COLORMAP)
+				result = newSVGdkColormap(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FONT
+			if (a->type == GTK_TYPE_GDK_FONT)
+				result = newSVGdkFont(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PIXMAP
+			if (a->type == GTK_TYPE_GDK_PIXMAP)
+				result = newSVGdkPixmap(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL
+			if (a->type == GTK_TYPE_GDK_VISUAL)
+				result = newSVGdkVisual(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_ACCELERATOR_TABLE
+			if (a->type == GTK_TYPE_ACCELERATOR_TABLE)
+				result = newSVGtkAcceleratorTable(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_STYLE
+			if (a->type == GTK_TYPE_STYLE)
+				result = newSVGtkStyle(GTK_VALUE_BOXED(*a));
+			else
+#endif
+#ifdef GTK_TYPE_TOOLTIPS
+			if (a->type == GTK_TYPE_TOOLTIPS)
+				result = newSVGtkTooltips(GTK_VALUE_BOXED(*a));
+			else
+#endif
+				goto d_fault;
+			break;
+		d_fault:
+		default:
+			croak("Cannot get argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
+	}
+	return result;
+}
+
+void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
+{
+	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
+		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); return;
+		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); return;
+		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); return;
+		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); return;
+		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); return;
+		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); return;
+		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); return;	
+		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); return;
+		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); return;
+		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_SIGNAL:
+		{
+			AV * args;
+			int i,j;
+			int type;
+			char * c = strchr(a->name, ':');
+			c+=2;
+			c = strchr(c, ':');
+			c += 2;
+			args = newAV();
+
+			type = gtk_signal_lookup(c, Object->klass->type);
+
+			av_push(args, newSVsv(Class));
+			av_push(args, newSVpv(c, 0));
+			av_push(args, newSVsv(v));
+			av_push(args, newSViv(type));
+
+			GTK_VALUE_SIGNAL(*a).f = 0;
+			GTK_VALUE_SIGNAL(*a).d = args;
+			return;
+		}
+		case GTK_TYPE_ENUM:
+#ifdef GTK_TYPE_GDK_AXIS_USE
+			if (a->type == GTK_TYPE_GDK_AXIS_USE)
+				GTK_VALUE_ENUM(*a) = SvGdkAxisUse(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_BYTE_ORDER
+			if (a->type == GTK_TYPE_GDK_BYTE_ORDER)
+				GTK_VALUE_ENUM(*a) = SvGdkByteOrder(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CAP_STYLE
+			if (a->type == GTK_TYPE_GDK_CAP_STYLE)
+				GTK_VALUE_ENUM(*a) = SvGdkCapStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CURSOR_TYPE
+			if (a->type == GTK_TYPE_GDK_CURSOR_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkCursorType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_DND_TYPE
+			if (a->type == GTK_TYPE_GDK_DND_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkDndType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_EVENT_TYPE
+			if (a->type == GTK_TYPE_GDK_EVENT_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkEventType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FILL
+			if (a->type == GTK_TYPE_GDK_FILL)
+				GTK_VALUE_ENUM(*a) = SvGdkFill(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FUNCTION
+			if (a->type == GTK_TYPE_GDK_FUNCTION)
+				GTK_VALUE_ENUM(*a) = SvGdkFunction(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_IMAGE_TYPE
+			if (a->type == GTK_TYPE_GDK_IMAGE_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkImageType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_MODE
+			if (a->type == GTK_TYPE_GDK_INPUT_MODE)
+				GTK_VALUE_ENUM(*a) = SvGdkInputMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_SOURCE
+			if (a->type == GTK_TYPE_GDK_INPUT_SOURCE)
+				GTK_VALUE_ENUM(*a) = SvGdkInputSource(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_JOIN_STYLE
+			if (a->type == GTK_TYPE_GDK_JOIN_STYLE)
+				GTK_VALUE_ENUM(*a) = SvGdkJoinStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_LINE_STYLE
+			if (a->type == GTK_TYPE_GDK_LINE_STYLE)
+				GTK_VALUE_ENUM(*a) = SvGdkLineStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_NOTIFY_TYPE
+			if (a->type == GTK_TYPE_GDK_NOTIFY_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkNotifyType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROP_MODE
+			if (a->type == GTK_TYPE_GDK_PROP_MODE)
+				GTK_VALUE_ENUM(*a) = SvGdkPropMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROPERTY_STATE
+			if (a->type == GTK_TYPE_GDK_PROPERTY_STATE)
+				GTK_VALUE_ENUM(*a) = SvGdkPropertyState(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SELECTION
+			if (a->type == GTK_TYPE_GDK_SELECTION)
+				GTK_VALUE_ENUM(*a) = SvGdkSelection(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_STATUS
+			if (a->type == GTK_TYPE_GDK_STATUS)
+				GTK_VALUE_ENUM(*a) = SvGdkStatus(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SUBWINDOW_MODE
+			if (a->type == GTK_TYPE_GDK_SUBWINDOW_MODE)
+				GTK_VALUE_ENUM(*a) = SvGdkSubwindowMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL_TYPE
+			if (a->type == GTK_TYPE_GDK_VISUAL_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkVisualType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_CLASS
+			if (a->type == GTK_TYPE_GDK_WINDOW_CLASS)
+				GTK_VALUE_ENUM(*a) = SvGdkWindowClass(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGdkWindowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_ARROW_TYPE
+			if (a->type == GTK_TYPE_ARROW_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkArrowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_CURVE_TYPE
+			if (a->type == GTK_TYPE_CURVE_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkCurveType(v);
+			else
+#endif
+#ifdef GTK_TYPE_DIRECTION_TYPE
+			if (a->type == GTK_TYPE_DIRECTION_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkDirectionType(v);
+			else
+#endif
+#ifdef GTK_TYPE_JUSTIFICATION
+			if (a->type == GTK_TYPE_JUSTIFICATION)
+				GTK_VALUE_ENUM(*a) = SvGtkJustification(v);
+			else
+#endif
+#ifdef GTK_TYPE_MENU_FACTORY_TYPE
+			if (a->type == GTK_TYPE_MENU_FACTORY_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkMenuFactoryType(v);
+			else
+#endif
+#ifdef GTK_TYPE_METRIC_TYPE
+			if (a->type == GTK_TYPE_METRIC_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkMetricType(v);
+			else
+#endif
+#ifdef GTK_TYPE_PACK_TYPE
+			if (a->type == GTK_TYPE_PACK_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkPackType(v);
+			else
+#endif
+#ifdef GTK_TYPE_POLICY_TYPE
+			if (a->type == GTK_TYPE_POLICY_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkPolicyType(v);
+			else
+#endif
+#ifdef GTK_TYPE_POSITION_TYPE
+			if (a->type == GTK_TYPE_POSITION_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkPositionType(v);
+			else
+#endif
+#ifdef GTK_TYPE_PREVIEW_TYPE
+			if (a->type == GTK_TYPE_PREVIEW_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkPreviewType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SCROLL_TYPE
+			if (a->type == GTK_TYPE_SCROLL_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkScrollType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SELECTION_MODE
+			if (a->type == GTK_TYPE_SELECTION_MODE)
+				GTK_VALUE_ENUM(*a) = SvGtkSelectionMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_SHADOW_TYPE
+			if (a->type == GTK_TYPE_SHADOW_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkShadowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_STATE_TYPE
+			if (a->type == GTK_TYPE_STATE_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkStateType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_DIRECTION
+			if (a->type == GTK_TYPE_SUBMENU_DIRECTION)
+				GTK_VALUE_ENUM(*a) = SvGtkSubmenuDirection(v);
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_PLACEMENT
+			if (a->type == GTK_TYPE_SUBMENU_PLACEMENT)
+				GTK_VALUE_ENUM(*a) = SvGtkSubmenuPlacement(v);
+			else
+#endif
+#ifdef GTK_TYPE_TROUGH_TYPE
+			if (a->type == GTK_TYPE_TROUGH_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkTroughType(v);
+			else
+#endif
+#ifdef GTK_TYPE_UPDATE_TYPE
+			if (a->type == GTK_TYPE_UPDATE_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkUpdateType(v);
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_POSITION
+			if (a->type == GTK_TYPE_WINDOW_POSITION)
+				GTK_VALUE_ENUM(*a) = SvGtkWindowPosition(v);
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_TYPE
+			if (a->type == GTK_TYPE_WINDOW_TYPE)
+				GTK_VALUE_ENUM(*a) = SvGtkWindowType(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_FLAGS:
+#ifdef GTK_TYPE_GDK_EVENT_MASK
+			if (a->type == GTK_TYPE_GDK_EVENT_MASK)
+				GTK_VALUE_FLAGS(*a) = SvGdkEventMask(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_GCVALUES_MASK
+			if (a->type == GTK_TYPE_GDK_GCVALUES_MASK)
+				GTK_VALUE_FLAGS(*a) = SvGdkGCValuesMask(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_CONDITION
+			if (a->type == GTK_TYPE_GDK_INPUT_CONDITION)
+				GTK_VALUE_FLAGS(*a) = SvGdkInputCondition(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_MODIFIER_TYPE
+			if (a->type == GTK_TYPE_GDK_MODIFIER_TYPE)
+				GTK_VALUE_FLAGS(*a) = SvGdkModifierType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE)
+				GTK_VALUE_FLAGS(*a) = SvGdkWindowAttributesType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_HINTS
+			if (a->type == GTK_TYPE_GDK_WINDOW_HINTS)
+				GTK_VALUE_FLAGS(*a) = SvGdkWindowHints(v);
+			else
+#endif
+#ifdef GTK_TYPE_ATTACH_OPTIONS
+			if (a->type == GTK_TYPE_ATTACH_OPTIONS)
+				GTK_VALUE_FLAGS(*a) = SvGtkAttachOptions(v);
+			else
+#endif
+#ifdef GTK_TYPE_SIGNAL_RUN_TYPE
+			if (a->type == GTK_TYPE_SIGNAL_RUN_TYPE)
+				GTK_VALUE_FLAGS(*a) = SvGtkSignalRunType(v);
+			else
+#endif
+#ifdef GTK_TYPE_WIDGET_FLAGS
+			if (a->type == GTK_TYPE_WIDGET_FLAGS)
+				GTK_VALUE_FLAGS(*a) = SvGtkWidgetFlags(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_BOXED:
+#ifdef GTK_TYPE_GDK_COLORMAP
+			if (a->type == GTK_TYPE_GDK_COLORMAP)
+				GTK_VALUE_BOXED(*a) = SvGdkColormap(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FONT
+			if (a->type == GTK_TYPE_GDK_FONT)
+				GTK_VALUE_BOXED(*a) = SvGdkFont(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PIXMAP
+			if (a->type == GTK_TYPE_GDK_PIXMAP)
+				GTK_VALUE_BOXED(*a) = SvGdkPixmap(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL
+			if (a->type == GTK_TYPE_GDK_VISUAL)
+				GTK_VALUE_BOXED(*a) = SvGdkVisual(v);
+			else
+#endif
+#ifdef GTK_TYPE_ACCELERATOR_TABLE
+			if (a->type == GTK_TYPE_ACCELERATOR_TABLE)
+				GTK_VALUE_BOXED(*a) = SvGtkAcceleratorTable(v);
+			else
+#endif
+#ifdef GTK_TYPE_STYLE
+			if (a->type == GTK_TYPE_STYLE)
+				GTK_VALUE_BOXED(*a) = SvGtkStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_TOOLTIPS
+			if (a->type == GTK_TYPE_TOOLTIPS)
+				GTK_VALUE_BOXED(*a) = SvGtkTooltips(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		d_fault:
+		default:
+			croak("Cannot set argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
+	}
+}
+
+void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
+{
+	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
+		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); return;
+		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); return;
+		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); return;
+		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); return;
+		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); return;
+		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); return;
+		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); return;	
+		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); return;
+		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); return;
+		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_ENUM:
+#ifdef GTK_TYPE_GDK_AXIS_USE
+			if (a->type == GTK_TYPE_GDK_AXIS_USE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkAxisUse(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_BYTE_ORDER
+			if (a->type == GTK_TYPE_GDK_BYTE_ORDER)
+				*GTK_RETLOC_ENUM(*a) = SvGdkByteOrder(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CAP_STYLE
+			if (a->type == GTK_TYPE_GDK_CAP_STYLE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkCapStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_CURSOR_TYPE
+			if (a->type == GTK_TYPE_GDK_CURSOR_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkCursorType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_DND_TYPE
+			if (a->type == GTK_TYPE_GDK_DND_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkDndType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_EVENT_TYPE
+			if (a->type == GTK_TYPE_GDK_EVENT_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkEventType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FILL
+			if (a->type == GTK_TYPE_GDK_FILL)
+				*GTK_RETLOC_ENUM(*a) = SvGdkFill(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FUNCTION
+			if (a->type == GTK_TYPE_GDK_FUNCTION)
+				*GTK_RETLOC_ENUM(*a) = SvGdkFunction(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_IMAGE_TYPE
+			if (a->type == GTK_TYPE_GDK_IMAGE_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkImageType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_MODE
+			if (a->type == GTK_TYPE_GDK_INPUT_MODE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkInputMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_SOURCE
+			if (a->type == GTK_TYPE_GDK_INPUT_SOURCE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkInputSource(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_JOIN_STYLE
+			if (a->type == GTK_TYPE_GDK_JOIN_STYLE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkJoinStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_LINE_STYLE
+			if (a->type == GTK_TYPE_GDK_LINE_STYLE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkLineStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_NOTIFY_TYPE
+			if (a->type == GTK_TYPE_GDK_NOTIFY_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkNotifyType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROP_MODE
+			if (a->type == GTK_TYPE_GDK_PROP_MODE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkPropMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PROPERTY_STATE
+			if (a->type == GTK_TYPE_GDK_PROPERTY_STATE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkPropertyState(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SELECTION
+			if (a->type == GTK_TYPE_GDK_SELECTION)
+				*GTK_RETLOC_ENUM(*a) = SvGdkSelection(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_STATUS
+			if (a->type == GTK_TYPE_GDK_STATUS)
+				*GTK_RETLOC_ENUM(*a) = SvGdkStatus(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_SUBWINDOW_MODE
+			if (a->type == GTK_TYPE_GDK_SUBWINDOW_MODE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkSubwindowMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL_TYPE
+			if (a->type == GTK_TYPE_GDK_VISUAL_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkVisualType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_CLASS
+			if (a->type == GTK_TYPE_GDK_WINDOW_CLASS)
+				*GTK_RETLOC_ENUM(*a) = SvGdkWindowClass(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGdkWindowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_ARROW_TYPE
+			if (a->type == GTK_TYPE_ARROW_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkArrowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_CURVE_TYPE
+			if (a->type == GTK_TYPE_CURVE_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkCurveType(v);
+			else
+#endif
+#ifdef GTK_TYPE_DIRECTION_TYPE
+			if (a->type == GTK_TYPE_DIRECTION_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkDirectionType(v);
+			else
+#endif
+#ifdef GTK_TYPE_JUSTIFICATION
+			if (a->type == GTK_TYPE_JUSTIFICATION)
+				*GTK_RETLOC_ENUM(*a) = SvGtkJustification(v);
+			else
+#endif
+#ifdef GTK_TYPE_MENU_FACTORY_TYPE
+			if (a->type == GTK_TYPE_MENU_FACTORY_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkMenuFactoryType(v);
+			else
+#endif
+#ifdef GTK_TYPE_METRIC_TYPE
+			if (a->type == GTK_TYPE_METRIC_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkMetricType(v);
+			else
+#endif
+#ifdef GTK_TYPE_PACK_TYPE
+			if (a->type == GTK_TYPE_PACK_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkPackType(v);
+			else
+#endif
+#ifdef GTK_TYPE_POLICY_TYPE
+			if (a->type == GTK_TYPE_POLICY_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkPolicyType(v);
+			else
+#endif
+#ifdef GTK_TYPE_POSITION_TYPE
+			if (a->type == GTK_TYPE_POSITION_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkPositionType(v);
+			else
+#endif
+#ifdef GTK_TYPE_PREVIEW_TYPE
+			if (a->type == GTK_TYPE_PREVIEW_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkPreviewType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SCROLL_TYPE
+			if (a->type == GTK_TYPE_SCROLL_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkScrollType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SELECTION_MODE
+			if (a->type == GTK_TYPE_SELECTION_MODE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkSelectionMode(v);
+			else
+#endif
+#ifdef GTK_TYPE_SHADOW_TYPE
+			if (a->type == GTK_TYPE_SHADOW_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkShadowType(v);
+			else
+#endif
+#ifdef GTK_TYPE_STATE_TYPE
+			if (a->type == GTK_TYPE_STATE_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkStateType(v);
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_DIRECTION
+			if (a->type == GTK_TYPE_SUBMENU_DIRECTION)
+				*GTK_RETLOC_ENUM(*a) = SvGtkSubmenuDirection(v);
+			else
+#endif
+#ifdef GTK_TYPE_SUBMENU_PLACEMENT
+			if (a->type == GTK_TYPE_SUBMENU_PLACEMENT)
+				*GTK_RETLOC_ENUM(*a) = SvGtkSubmenuPlacement(v);
+			else
+#endif
+#ifdef GTK_TYPE_TROUGH_TYPE
+			if (a->type == GTK_TYPE_TROUGH_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkTroughType(v);
+			else
+#endif
+#ifdef GTK_TYPE_UPDATE_TYPE
+			if (a->type == GTK_TYPE_UPDATE_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkUpdateType(v);
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_POSITION
+			if (a->type == GTK_TYPE_WINDOW_POSITION)
+				*GTK_RETLOC_ENUM(*a) = SvGtkWindowPosition(v);
+			else
+#endif
+#ifdef GTK_TYPE_WINDOW_TYPE
+			if (a->type == GTK_TYPE_WINDOW_TYPE)
+				*GTK_RETLOC_ENUM(*a) = SvGtkWindowType(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_FLAGS:
+#ifdef GTK_TYPE_GDK_EVENT_MASK
+			if (a->type == GTK_TYPE_GDK_EVENT_MASK)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkEventMask(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_GCVALUES_MASK
+			if (a->type == GTK_TYPE_GDK_GCVALUES_MASK)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkGCValuesMask(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_INPUT_CONDITION
+			if (a->type == GTK_TYPE_GDK_INPUT_CONDITION)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkInputCondition(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_MODIFIER_TYPE
+			if (a->type == GTK_TYPE_GDK_MODIFIER_TYPE)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkModifierType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE
+			if (a->type == GTK_TYPE_GDK_WINDOW_ATTRIBUTES_TYPE)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkWindowAttributesType(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_WINDOW_HINTS
+			if (a->type == GTK_TYPE_GDK_WINDOW_HINTS)
+				*GTK_RETLOC_FLAGS(*a) = SvGdkWindowHints(v);
+			else
+#endif
+#ifdef GTK_TYPE_ATTACH_OPTIONS
+			if (a->type == GTK_TYPE_ATTACH_OPTIONS)
+				*GTK_RETLOC_FLAGS(*a) = SvGtkAttachOptions(v);
+			else
+#endif
+#ifdef GTK_TYPE_SIGNAL_RUN_TYPE
+			if (a->type == GTK_TYPE_SIGNAL_RUN_TYPE)
+				*GTK_RETLOC_FLAGS(*a) = SvGtkSignalRunType(v);
+			else
+#endif
+#ifdef GTK_TYPE_WIDGET_FLAGS
+			if (a->type == GTK_TYPE_WIDGET_FLAGS)
+				*GTK_RETLOC_FLAGS(*a) = SvGtkWidgetFlags(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		case GTK_TYPE_BOXED:
+#ifdef GTK_TYPE_GDK_COLORMAP
+			if (a->type == GTK_TYPE_GDK_COLORMAP)
+				GTK_VALUE_BOXED(*a) = SvGdkColormap(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_FONT
+			if (a->type == GTK_TYPE_GDK_FONT)
+				GTK_VALUE_BOXED(*a) = SvGdkFont(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_PIXMAP
+			if (a->type == GTK_TYPE_GDK_PIXMAP)
+				GTK_VALUE_BOXED(*a) = SvGdkPixmap(v);
+			else
+#endif
+#ifdef GTK_TYPE_GDK_VISUAL
+			if (a->type == GTK_TYPE_GDK_VISUAL)
+				GTK_VALUE_BOXED(*a) = SvGdkVisual(v);
+			else
+#endif
+#ifdef GTK_TYPE_ACCELERATOR_TABLE
+			if (a->type == GTK_TYPE_ACCELERATOR_TABLE)
+				GTK_VALUE_BOXED(*a) = SvGtkAcceleratorTable(v);
+			else
+#endif
+#ifdef GTK_TYPE_STYLE
+			if (a->type == GTK_TYPE_STYLE)
+				GTK_VALUE_BOXED(*a) = SvGtkStyle(v);
+			else
+#endif
+#ifdef GTK_TYPE_TOOLTIPS
+			if (a->type == GTK_TYPE_TOOLTIPS)
+				GTK_VALUE_BOXED(*a) = SvGtkTooltips(v);
+			else
+#endif
+				goto d_fault;
+			break;
+		d_fault:
+		default:
+			croak("Cannot set argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
+	}
+}
+
+void initPerlGtkDefs(void) {
+	int i;
+	HV * h;
+	pG_EnumHash = newHV();
+	pG_FlagsHash = newHV();
+	
+
+	h = newHV();
+	pGtkType[0] = h;
+	pGtkTypeName[0] = "Gtk::Gdk::AxisUse";
+	hv_store(h, "ignore", 6, newSViv(GDK_AXIS_IGNORE), 0);
+	hv_store(h, "x", 1, newSViv(GDK_AXIS_X), 0);
+	hv_store(h, "y", 1, newSViv(GDK_AXIS_Y), 0);
+	hv_store(h, "pressure", 8, newSViv(GDK_AXIS_PRESSURE), 0);
+	hv_store(h, "xtilt", 5, newSViv(GDK_AXIS_XTILT), 0);
+	hv_store(h, "ytilt", 5, newSViv(GDK_AXIS_YTILT), 0);
+	hv_store(h, "last", 4, newSViv(GDK_AXIS_LAST), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::AxisUse", 17, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[1] = h;
+	pGtkTypeName[1] = "Gtk::Gdk::ByteOrder";
+	hv_store(h, "lsb-first", 9, newSViv(GDK_LSB_FIRST), 0);
+	hv_store(h, "msb-first", 9, newSViv(GDK_MSB_FIRST), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::ByteOrder", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[2] = h;
+	pGtkTypeName[2] = "Gtk::Gdk::CapStyle";
+	hv_store(h, "not-last", 8, newSViv(GDK_CAP_NOT_LAST), 0);
+	hv_store(h, "butt", 4, newSViv(GDK_CAP_BUTT), 0);
+	hv_store(h, "round", 5, newSViv(GDK_CAP_ROUND), 0);
+	hv_store(h, "projecting", 10, newSViv(GDK_CAP_PROJECTING), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::CapStyle", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[3] = h;
+	pGtkTypeName[3] = "Gtk::Gdk::CursorType";
+	hv_store(h, "cursor", 6, newSViv(GDK_LAST_CURSOR), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::CursorType", 20, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[4] = h;
+	pGtkTypeName[4] = "Gtk::Gdk::DndType";
+	hv_store(h, "not-dnd", 7, newSViv(GDK_DNDTYPE_NOTDND), 0);
+	hv_store(h, "unknown", 7, newSViv(GDK_DNDTYPE_UNKNOWN), 0);
+	hv_store(h, "raw-data", 8, newSViv(GDK_DNDTYPE_RAWDATA), 0);
+	hv_store(h, "file", 4, newSViv(GDK_DNDTYPE_FILE), 0);
+	hv_store(h, "files", 5, newSViv(GDK_DNDTYPE_FILES), 0);
+	hv_store(h, "text", 4, newSViv(GDK_DNDTYPE_TEXT), 0);
+	hv_store(h, "dir", 3, newSViv(GDK_DNDTYPE_DIR), 0);
+	hv_store(h, "link", 4, newSViv(GDK_DNDTYPE_LINK), 0);
+	hv_store(h, "exe", 3, newSViv(GDK_DNDTYPE_EXE), 0);
+	hv_store(h, "url", 3, newSViv(GDK_DNDTYPE_URL), 0);
+	hv_store(h, "mime", 4, newSViv(GDK_DNDTYPE_MIME), 0);
+	hv_store(h, "end", 3, newSViv(GDK_DNDTYPE_END), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::DndType", 17, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[5] = h;
+	pGtkTypeName[5] = "Gtk::Gdk::EventType";
+	hv_store(h, "nothing", 7, newSViv(GDK_NOTHING), 0);
+	hv_store(h, "delete", 6, newSViv(GDK_DELETE), 0);
+	hv_store(h, "destroy", 7, newSViv(GDK_DESTROY), 0);
+	hv_store(h, "expose", 6, newSViv(GDK_EXPOSE), 0);
+	hv_store(h, "motion-notify", 13, newSViv(GDK_MOTION_NOTIFY), 0);
+	hv_store(h, "button-press", 12, newSViv(GDK_BUTTON_PRESS), 0);
+	hv_store(h, "2button-press", 13, newSViv(GDK_2BUTTON_PRESS), 0);
+	hv_store(h, "3button-press", 13, newSViv(GDK_3BUTTON_PRESS), 0);
+	hv_store(h, "button-release", 14, newSViv(GDK_BUTTON_RELEASE), 0);
+	hv_store(h, "key-press", 9, newSViv(GDK_KEY_PRESS), 0);
+	hv_store(h, "key-release", 11, newSViv(GDK_KEY_RELEASE), 0);
+	hv_store(h, "enter-notify", 12, newSViv(GDK_ENTER_NOTIFY), 0);
+	hv_store(h, "leave-notify", 12, newSViv(GDK_LEAVE_NOTIFY), 0);
+	hv_store(h, "focus-change", 12, newSViv(GDK_FOCUS_CHANGE), 0);
+	hv_store(h, "configure", 9, newSViv(GDK_CONFIGURE), 0);
+	hv_store(h, "map", 3, newSViv(GDK_MAP), 0);
+	hv_store(h, "unmap", 5, newSViv(GDK_UNMAP), 0);
+	hv_store(h, "property-notify", 15, newSViv(GDK_PROPERTY_NOTIFY), 0);
+	hv_store(h, "selection-clear", 15, newSViv(GDK_SELECTION_CLEAR), 0);
+	hv_store(h, "selection-request", 17, newSViv(GDK_SELECTION_REQUEST), 0);
+	hv_store(h, "selection-notify", 16, newSViv(GDK_SELECTION_NOTIFY), 0);
+	hv_store(h, "other-event", 11, newSViv(GDK_OTHER_EVENT), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::EventType", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[6] = h;
+	pGtkTypeName[6] = "Gtk::Gdk::Fill";
+	hv_store(h, "solid", 5, newSViv(GDK_SOLID), 0);
+	hv_store(h, "tiled", 5, newSViv(GDK_TILED), 0);
+	hv_store(h, "stippled", 8, newSViv(GDK_STIPPLED), 0);
+	hv_store(h, "opaque-stippled", 15, newSViv(GDK_OPAQUE_STIPPLED), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::Fill", 14, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[7] = h;
+	pGtkTypeName[7] = "Gtk::Gdk::Function";
+	hv_store(h, "copy", 4, newSViv(GDK_COPY), 0);
+	hv_store(h, "invert", 6, newSViv(GDK_INVERT), 0);
+	hv_store(h, "xor", 3, newSViv(GDK_XOR), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::Function", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[8] = h;
+	pGtkTypeName[8] = "Gtk::Gdk::ImageType";
+	hv_store(h, "normal", 6, newSViv(GDK_IMAGE_NORMAL), 0);
+	hv_store(h, "shared", 6, newSViv(GDK_IMAGE_SHARED), 0);
+	hv_store(h, "fastest", 7, newSViv(GDK_IMAGE_FASTEST), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::ImageType", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[9] = h;
+	pGtkTypeName[9] = "Gtk::Gdk::InputMode";
+	hv_store(h, "disabled", 8, newSViv(GDK_MODE_DISABLED), 0);
+	hv_store(h, "screen", 6, newSViv(GDK_MODE_SCREEN), 0);
+	hv_store(h, "window", 6, newSViv(GDK_MODE_WINDOW), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::InputMode", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[10] = h;
+	pGtkTypeName[10] = "Gtk::Gdk::InputSource";
+	hv_store(h, "mouse", 5, newSViv(GDK_SOURCE_MOUSE), 0);
+	hv_store(h, "pen", 3, newSViv(GDK_SOURCE_PEN), 0);
+	hv_store(h, "eraser", 6, newSViv(GDK_SOURCE_ERASER), 0);
+	hv_store(h, "cursor", 6, newSViv(GDK_SOURCE_CURSOR), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::InputSource", 21, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[11] = h;
+	pGtkTypeName[11] = "Gtk::Gdk::JoinStyle";
+	hv_store(h, "miter", 5, newSViv(GDK_JOIN_MITER), 0);
+	hv_store(h, "round", 5, newSViv(GDK_JOIN_ROUND), 0);
+	hv_store(h, "bevel", 5, newSViv(GDK_JOIN_BEVEL), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::JoinStyle", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[12] = h;
+	pGtkTypeName[12] = "Gtk::Gdk::LineStyle";
+	hv_store(h, "solid", 5, newSViv(GDK_LINE_SOLID), 0);
+	hv_store(h, "on-off-dash", 11, newSViv(GDK_LINE_ON_OFF_DASH), 0);
+	hv_store(h, "double-dash", 11, newSViv(GDK_LINE_DOUBLE_DASH), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::LineStyle", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[13] = h;
+	pGtkTypeName[13] = "Gtk::Gdk::NotifyType";
+	hv_store(h, "ancestor", 8, newSViv(GDK_NOTIFY_ANCESTOR), 0);
+	hv_store(h, "virtual", 7, newSViv(GDK_NOTIFY_VIRTUAL), 0);
+	hv_store(h, "inferior", 8, newSViv(GDK_NOTIFY_INFERIOR), 0);
+	hv_store(h, "nonlinear", 9, newSViv(GDK_NOTIFY_NONLINEAR), 0);
+	hv_store(h, "nonlinear-virtual", 17, newSViv(GDK_NOTIFY_NONLINEAR_VIRTUAL), 0);
+	hv_store(h, "unknown", 7, newSViv(GDK_NOTIFY_UNKNOWN), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::NotifyType", 20, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[14] = h;
+	pGtkTypeName[14] = "Gtk::Gdk::PropMode";
+	hv_store(h, "replace", 7, newSViv(GDK_PROP_MODE_REPLACE), 0);
+	hv_store(h, "prepend", 7, newSViv(GDK_PROP_MODE_PREPEND), 0);
+	hv_store(h, "append", 6, newSViv(GDK_PROP_MODE_APPEND), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::PropMode", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[15] = h;
+	pGtkTypeName[15] = "Gtk::Gdk::PropertyState";
+	hv_store(h, "new-value", 9, newSViv(GDK_PROPERTY_NEW_VALUE), 0);
+	hv_store(h, "delete", 6, newSViv(GDK_PROPERTY_DELETE), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::PropertyState", 23, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[16] = h;
+	pGtkTypeName[16] = "Gtk::Gdk::Selection";
+	hv_store(h, "primary", 7, newSViv(GDK_SELECTION_PRIMARY), 0);
+	hv_store(h, "secondary", 9, newSViv(GDK_SELECTION_SECONDARY), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::Selection", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[17] = h;
+	pGtkTypeName[17] = "Gtk::Gdk::Status";
+	hv_store(h, "ok", 2, newSViv(GDK_OK), 0);
+	hv_store(h, "error", 5, newSViv(GDK_ERROR), 0);
+	hv_store(h, "error-param", 11, newSViv(GDK_ERROR_PARAM), 0);
+	hv_store(h, "error-file", 10, newSViv(GDK_ERROR_FILE), 0);
+	hv_store(h, "error-mem", 9, newSViv(GDK_ERROR_MEM), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::Status", 16, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[18] = h;
+	pGtkTypeName[18] = "Gtk::Gdk::SubwindowMode";
+	hv_store(h, "clip-by-children", 16, newSViv(GDK_CLIP_BY_CHILDREN), 0);
+	hv_store(h, "include-inferiors", 17, newSViv(GDK_INCLUDE_INFERIORS), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::SubwindowMode", 23, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[19] = h;
+	pGtkTypeName[19] = "Gtk::Gdk::VisualType";
+	hv_store(h, "static-gray", 11, newSViv(GDK_VISUAL_STATIC_GRAY), 0);
+	hv_store(h, "grayscale", 9, newSViv(GDK_VISUAL_GRAYSCALE), 0);
+	hv_store(h, "static-color", 12, newSViv(GDK_VISUAL_STATIC_COLOR), 0);
+	hv_store(h, "pseudo-color", 12, newSViv(GDK_VISUAL_PSEUDO_COLOR), 0);
+	hv_store(h, "true-color", 10, newSViv(GDK_VISUAL_TRUE_COLOR), 0);
+	hv_store(h, "direct-color", 12, newSViv(GDK_VISUAL_DIRECT_COLOR), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::VisualType", 20, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[20] = h;
+	pGtkTypeName[20] = "Gtk::Gdk::WindowClass";
+	hv_store(h, "input-output", 12, newSViv(GDK_INPUT_OUTPUT), 0);
+	hv_store(h, "input-only", 10, newSViv(GDK_INPUT_ONLY), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::WindowClass", 21, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[21] = h;
+	pGtkTypeName[21] = "Gtk::Gdk::WindowType";
+	hv_store(h, "root", 4, newSViv(GDK_WINDOW_ROOT), 0);
+	hv_store(h, "toplevel", 8, newSViv(GDK_WINDOW_TOPLEVEL), 0);
+	hv_store(h, "child", 5, newSViv(GDK_WINDOW_CHILD), 0);
+	hv_store(h, "dialog", 6, newSViv(GDK_WINDOW_DIALOG), 0);
+	hv_store(h, "temp", 4, newSViv(GDK_WINDOW_TEMP), 0);
+	hv_store(h, "pixmap", 6, newSViv(GDK_WINDOW_PIXMAP), 0);
+	hv_store(pG_EnumHash, "Gtk::Gdk::WindowType", 20, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[22] = h;
+	pGtkTypeName[22] = "Gtk::ArrowType";
+	hv_store(h, "up", 2, newSViv(GTK_ARROW_UP), 0);
+	hv_store(h, "down", 4, newSViv(GTK_ARROW_DOWN), 0);
+	hv_store(h, "left", 4, newSViv(GTK_ARROW_LEFT), 0);
+	hv_store(h, "right", 5, newSViv(GTK_ARROW_RIGHT), 0);
+	hv_store(pG_EnumHash, "Gtk::ArrowType", 14, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[23] = h;
+	pGtkTypeName[23] = "Gtk::CurveType";
+	hv_store(h, "linear", 6, newSViv(GTK_CURVE_TYPE_LINEAR), 0);
+	hv_store(h, "spline", 6, newSViv(GTK_CURVE_TYPE_SPLINE), 0);
+	hv_store(h, "free", 4, newSViv(GTK_CURVE_TYPE_FREE), 0);
+	hv_store(pG_EnumHash, "Gtk::CurveType", 14, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[24] = h;
+	pGtkTypeName[24] = "Gtk::DirectionType";
+	hv_store(h, "tab-forward", 11, newSViv(GTK_DIR_TAB_FORWARD), 0);
+	hv_store(h, "tab-backward", 12, newSViv(GTK_DIR_TAB_BACKWARD), 0);
+	hv_store(h, "up", 2, newSViv(GTK_DIR_UP), 0);
+	hv_store(h, "down", 4, newSViv(GTK_DIR_DOWN), 0);
+	hv_store(h, "left", 4, newSViv(GTK_DIR_LEFT), 0);
+	hv_store(h, "right", 5, newSViv(GTK_DIR_RIGHT), 0);
+	hv_store(pG_EnumHash, "Gtk::DirectionType", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[25] = h;
+	pGtkTypeName[25] = "Gtk::Justification";
+	hv_store(h, "left", 4, newSViv(GTK_JUSTIFY_LEFT), 0);
+	hv_store(h, "right", 5, newSViv(GTK_JUSTIFY_RIGHT), 0);
+	hv_store(h, "center", 6, newSViv(GTK_JUSTIFY_CENTER), 0);
+	hv_store(h, "fill", 4, newSViv(GTK_JUSTIFY_FILL), 0);
+	hv_store(pG_EnumHash, "Gtk::Justification", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[26] = h;
+	pGtkTypeName[26] = "Gtk::MenuFactoryType";
+	hv_store(h, "menu", 4, newSViv(GTK_MENU_FACTORY_MENU), 0);
+	hv_store(h, "menu-bar", 8, newSViv(GTK_MENU_FACTORY_MENU_BAR), 0);
+	hv_store(h, "option-menu", 11, newSViv(GTK_MENU_FACTORY_OPTION_MENU), 0);
+	hv_store(pG_EnumHash, "Gtk::MenuFactoryType", 20, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[27] = h;
+	pGtkTypeName[27] = "Gtk::MetricType";
+	hv_store(h, "pixels", 6, newSViv(GTK_PIXELS), 0);
+	hv_store(h, "inches", 6, newSViv(GTK_INCHES), 0);
+	hv_store(h, "centimeters", 11, newSViv(GTK_CENTIMETERS), 0);
+	hv_store(pG_EnumHash, "Gtk::MetricType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[28] = h;
+	pGtkTypeName[28] = "Gtk::PackType";
+	hv_store(h, "start", 5, newSViv(GTK_PACK_START), 0);
+	hv_store(h, "end", 3, newSViv(GTK_PACK_END), 0);
+	hv_store(pG_EnumHash, "Gtk::PackType", 13, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[29] = h;
+	pGtkTypeName[29] = "Gtk::PolicyType";
+	hv_store(h, "always", 6, newSViv(GTK_POLICY_ALWAYS), 0);
+	hv_store(h, "automatic", 9, newSViv(GTK_POLICY_AUTOMATIC), 0);
+	hv_store(pG_EnumHash, "Gtk::PolicyType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[30] = h;
+	pGtkTypeName[30] = "Gtk::PositionType";
+	hv_store(h, "left", 4, newSViv(GTK_POS_LEFT), 0);
+	hv_store(h, "right", 5, newSViv(GTK_POS_RIGHT), 0);
+	hv_store(h, "top", 3, newSViv(GTK_POS_TOP), 0);
+	hv_store(h, "bottom", 6, newSViv(GTK_POS_BOTTOM), 0);
+	hv_store(pG_EnumHash, "Gtk::PositionType", 17, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[31] = h;
+	pGtkTypeName[31] = "Gtk::PreviewType";
+	hv_store(h, "color", 5, newSViv(GTK_PREVIEW_COLOR), 0);
+	hv_store(h, "grayscale", 9, newSViv(GTK_PREVIEW_GRAYSCALE), 0);
+	hv_store(pG_EnumHash, "Gtk::PreviewType", 16, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[32] = h;
+	pGtkTypeName[32] = "Gtk::ScrollType";
+	hv_store(h, "none", 4, newSViv(GTK_SCROLL_NONE), 0);
+	hv_store(h, "step-backward", 13, newSViv(GTK_SCROLL_STEP_BACKWARD), 0);
+	hv_store(h, "step-forward", 12, newSViv(GTK_SCROLL_STEP_FORWARD), 0);
+	hv_store(h, "page-backward", 13, newSViv(GTK_SCROLL_PAGE_BACKWARD), 0);
+	hv_store(h, "page-forward", 12, newSViv(GTK_SCROLL_PAGE_FORWARD), 0);
+	hv_store(pG_EnumHash, "Gtk::ScrollType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[33] = h;
+	pGtkTypeName[33] = "Gtk::SelectionMode";
+	hv_store(h, "single", 6, newSViv(GTK_SELECTION_SINGLE), 0);
+	hv_store(h, "browse", 6, newSViv(GTK_SELECTION_BROWSE), 0);
+	hv_store(h, "multiple", 8, newSViv(GTK_SELECTION_MULTIPLE), 0);
+	hv_store(h, "extended", 8, newSViv(GTK_SELECTION_EXTENDED), 0);
+	hv_store(pG_EnumHash, "Gtk::SelectionMode", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[34] = h;
+	pGtkTypeName[34] = "Gtk::ShadowType";
+	hv_store(h, "none", 4, newSViv(GTK_SHADOW_NONE), 0);
+	hv_store(h, "in", 2, newSViv(GTK_SHADOW_IN), 0);
+	hv_store(h, "out", 3, newSViv(GTK_SHADOW_OUT), 0);
+	hv_store(h, "etched-in", 9, newSViv(GTK_SHADOW_ETCHED_IN), 0);
+	hv_store(h, "etched-out", 10, newSViv(GTK_SHADOW_ETCHED_OUT), 0);
+	hv_store(pG_EnumHash, "Gtk::ShadowType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[35] = h;
+	pGtkTypeName[35] = "Gtk::StateType";
+	hv_store(h, "normal", 6, newSViv(GTK_STATE_NORMAL), 0);
+	hv_store(h, "active", 6, newSViv(GTK_STATE_ACTIVE), 0);
+	hv_store(h, "prelight", 8, newSViv(GTK_STATE_PRELIGHT), 0);
+	hv_store(h, "selected", 8, newSViv(GTK_STATE_SELECTED), 0);
+	hv_store(h, "insensitive", 11, newSViv(GTK_STATE_INSENSITIVE), 0);
+	hv_store(pG_EnumHash, "Gtk::StateType", 14, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[36] = h;
+	pGtkTypeName[36] = "Gtk::SubmenuDirection";
+	hv_store(h, "left", 4, newSViv(GTK_DIRECTION_LEFT), 0);
+	hv_store(h, "right", 5, newSViv(GTK_DIRECTION_RIGHT), 0);
+	hv_store(pG_EnumHash, "Gtk::SubmenuDirection", 21, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[37] = h;
+	pGtkTypeName[37] = "Gtk::SubmenuPlacement";
+	hv_store(h, "top-bottom", 10, newSViv(GTK_TOP_BOTTOM), 0);
+	hv_store(h, "left-right", 10, newSViv(GTK_LEFT_RIGHT), 0);
+	hv_store(pG_EnumHash, "Gtk::SubmenuPlacement", 21, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[38] = h;
+	pGtkTypeName[38] = "Gtk::TroughType";
+	hv_store(h, "none", 4, newSViv(GTK_TROUGH_NONE), 0);
+	hv_store(h, "start", 5, newSViv(GTK_TROUGH_START), 0);
+	hv_store(h, "end", 3, newSViv(GTK_TROUGH_END), 0);
+	hv_store(pG_EnumHash, "Gtk::TroughType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[39] = h;
+	pGtkTypeName[39] = "Gtk::UpdateType";
+	hv_store(h, "continuous", 10, newSViv(GTK_UPDATE_CONTINUOUS), 0);
+	hv_store(h, "discontinuous", 13, newSViv(GTK_UPDATE_DISCONTINUOUS), 0);
+	hv_store(h, "delayed", 7, newSViv(GTK_UPDATE_DELAYED), 0);
+	hv_store(pG_EnumHash, "Gtk::UpdateType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[40] = h;
+	pGtkTypeName[40] = "Gtk::WindowPosition";
+	hv_store(h, "none", 4, newSViv(GTK_WIN_POS_NONE), 0);
+	hv_store(h, "center", 6, newSViv(GTK_WIN_POS_CENTER), 0);
+	hv_store(h, "mouse", 5, newSViv(GTK_WIN_POS_MOUSE), 0);
+	hv_store(pG_EnumHash, "Gtk::WindowPosition", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[41] = h;
+	pGtkTypeName[41] = "Gtk::WindowType";
+	hv_store(h, "toplevel", 8, newSViv(GTK_WINDOW_TOPLEVEL), 0);
+	hv_store(h, "dialog", 6, newSViv(GTK_WINDOW_DIALOG), 0);
+	hv_store(h, "popup", 5, newSViv(GTK_WINDOW_POPUP), 0);
+	hv_store(pG_EnumHash, "Gtk::WindowType", 15, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[42] = h;
+	pGtkTypeName[42] = "Gtk::Gdk::EventMask";
+	hv_store(h, "exposure-mask", 13, newSViv(GDK_EXPOSURE_MASK), 0);
+	hv_store(h, "pointer-motion-mask", 19, newSViv(GDK_POINTER_MOTION_MASK), 0);
+	hv_store(h, "pointer-motion-hint-mask", 24, newSViv(GDK_POINTER_MOTION_HINT_MASK), 0);
+	hv_store(h, "button-motion-mask", 18, newSViv(GDK_BUTTON_MOTION_MASK), 0);
+	hv_store(h, "button1-motion-mask", 19, newSViv(GDK_BUTTON1_MOTION_MASK), 0);
+	hv_store(h, "button2-motion-mask", 19, newSViv(GDK_BUTTON2_MOTION_MASK), 0);
+	hv_store(h, "button3-motion-mask", 19, newSViv(GDK_BUTTON3_MOTION_MASK), 0);
+	hv_store(h, "button-press-mask", 17, newSViv(GDK_BUTTON_PRESS_MASK), 0);
+	hv_store(h, "button-release-mask", 19, newSViv(GDK_BUTTON_RELEASE_MASK), 0);
+	hv_store(h, "key-press-mask", 14, newSViv(GDK_KEY_PRESS_MASK), 0);
+	hv_store(h, "key-release-mask", 16, newSViv(GDK_KEY_RELEASE_MASK), 0);
+	hv_store(h, "enter-notify-mask", 17, newSViv(GDK_ENTER_NOTIFY_MASK), 0);
+	hv_store(h, "leave-notify-mask", 17, newSViv(GDK_LEAVE_NOTIFY_MASK), 0);
+	hv_store(h, "focus-change-mask", 17, newSViv(GDK_FOCUS_CHANGE_MASK), 0);
+	hv_store(h, "structure-mask", 14, newSViv(GDK_STRUCTURE_MASK), 0);
+	hv_store(h, "all-events-mask", 15, newSViv(GDK_ALL_EVENTS_MASK), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::EventMask", 19, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[43] = h;
+	pGtkTypeName[43] = "Gtk::Gdk::GCValuesMask";
+	hv_store(h, "foreground", 10, newSViv(GDK_GC_FOREGROUND), 0);
+	hv_store(h, "background", 10, newSViv(GDK_GC_BACKGROUND), 0);
+	hv_store(h, "font", 4, newSViv(GDK_GC_FONT), 0);
+	hv_store(h, "function", 8, newSViv(GDK_GC_FUNCTION), 0);
+	hv_store(h, "fill", 4, newSViv(GDK_GC_FILL), 0);
+	hv_store(h, "tile", 4, newSViv(GDK_GC_TILE), 0);
+	hv_store(h, "stipple", 7, newSViv(GDK_GC_STIPPLE), 0);
+	hv_store(h, "clip-mask", 9, newSViv(GDK_GC_CLIP_MASK), 0);
+	hv_store(h, "subwindow", 9, newSViv(GDK_GC_SUBWINDOW), 0);
+	hv_store(h, "ts-x-origin", 11, newSViv(GDK_GC_TS_X_ORIGIN), 0);
+	hv_store(h, "ts-y-origin", 11, newSViv(GDK_GC_TS_Y_ORIGIN), 0);
+	hv_store(h, "clip-x-origin", 13, newSViv(GDK_GC_CLIP_X_ORIGIN), 0);
+	hv_store(h, "clip-y-origin", 13, newSViv(GDK_GC_CLIP_Y_ORIGIN), 0);
+	hv_store(h, "exposures", 9, newSViv(GDK_GC_EXPOSURES), 0);
+	hv_store(h, "line-width", 10, newSViv(GDK_GC_LINE_WIDTH), 0);
+	hv_store(h, "line-style", 10, newSViv(GDK_GC_LINE_STYLE), 0);
+	hv_store(h, "cap-style", 9, newSViv(GDK_GC_CAP_STYLE), 0);
+	hv_store(h, "join-style", 10, newSViv(GDK_GC_JOIN_STYLE), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::GCValuesMask", 22, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[44] = h;
+	pGtkTypeName[44] = "Gtk::Gdk::InputCondition";
+	hv_store(h, "read", 4, newSViv(GDK_INPUT_READ), 0);
+	hv_store(h, "write", 5, newSViv(GDK_INPUT_WRITE), 0);
+	hv_store(h, "exception", 9, newSViv(GDK_INPUT_EXCEPTION), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::InputCondition", 24, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[45] = h;
+	pGtkTypeName[45] = "Gtk::Gdk::ModifierType";
+	hv_store(h, "shift-mask", 10, newSViv(GDK_SHIFT_MASK), 0);
+	hv_store(h, "lock-mask", 9, newSViv(GDK_LOCK_MASK), 0);
+	hv_store(h, "control-mask", 12, newSViv(GDK_CONTROL_MASK), 0);
+	hv_store(h, "mod1-mask", 9, newSViv(GDK_MOD1_MASK), 0);
+	hv_store(h, "mod2-mask", 9, newSViv(GDK_MOD2_MASK), 0);
+	hv_store(h, "mod3-mask", 9, newSViv(GDK_MOD3_MASK), 0);
+	hv_store(h, "mod4-mask", 9, newSViv(GDK_MOD4_MASK), 0);
+	hv_store(h, "mod5-mask", 9, newSViv(GDK_MOD5_MASK), 0);
+	hv_store(h, "button1-mask", 12, newSViv(GDK_BUTTON1_MASK), 0);
+	hv_store(h, "button2-mask", 12, newSViv(GDK_BUTTON2_MASK), 0);
+	hv_store(h, "button3-mask", 12, newSViv(GDK_BUTTON3_MASK), 0);
+	hv_store(h, "button4-mask", 12, newSViv(GDK_BUTTON4_MASK), 0);
+	hv_store(h, "button5-mask", 12, newSViv(GDK_BUTTON5_MASK), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::ModifierType", 22, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[46] = h;
+	pGtkTypeName[46] = "Gtk::Gdk::WindowAttributesType";
+	hv_store(h, "title", 5, newSViv(GDK_WA_TITLE), 0);
+	hv_store(h, "x", 1, newSViv(GDK_WA_X), 0);
+	hv_store(h, "y", 1, newSViv(GDK_WA_Y), 0);
+	hv_store(h, "cursor", 6, newSViv(GDK_WA_CURSOR), 0);
+	hv_store(h, "colormap", 8, newSViv(GDK_WA_COLORMAP), 0);
+	hv_store(h, "visual", 6, newSViv(GDK_WA_VISUAL), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::WindowAttributesType", 30, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[47] = h;
+	pGtkTypeName[47] = "Gtk::Gdk::WindowHints";
+	hv_store(h, "pos", 3, newSViv(GDK_HINT_POS), 0);
+	hv_store(h, "min-size", 8, newSViv(GDK_HINT_MIN_SIZE), 0);
+	hv_store(h, "max-size", 8, newSViv(GDK_HINT_MAX_SIZE), 0);
+	hv_store(pG_FlagsHash, "Gtk::Gdk::WindowHints", 21, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[48] = h;
+	pGtkTypeName[48] = "Gtk::AttachOptions";
+	hv_store(h, "expand", 6, newSViv(GTK_EXPAND), 0);
+	hv_store(h, "shrink", 6, newSViv(GTK_SHRINK), 0);
+	hv_store(h, "fill", 4, newSViv(GTK_FILL), 0);
+	hv_store(pG_FlagsHash, "Gtk::AttachOptions", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[49] = h;
+	pGtkTypeName[49] = "Gtk::SignalRunType";
+	hv_store(h, "first", 5, newSViv(GTK_RUN_FIRST), 0);
+	hv_store(h, "last", 4, newSViv(GTK_RUN_LAST), 0);
+	hv_store(h, "both", 4, newSViv(GTK_RUN_BOTH), 0);
+	hv_store(h, "mask", 4, newSViv(GTK_RUN_MASK), 0);
+	hv_store(h, "no-recurse", 10, newSViv(GTK_RUN_NO_RECURSE), 0);
+	hv_store(pG_FlagsHash, "Gtk::SignalRunType", 18, newRV((SV*)h), 0);
+
+	h = newHV();
+	pGtkType[50] = h;
+	pGtkTypeName[50] = "Gtk::WidgetFlags";
+	hv_store(h, "visible", 7, newSViv(GTK_VISIBLE), 0);
+	hv_store(h, "mapped", 6, newSViv(GTK_MAPPED), 0);
+	hv_store(h, "unmapped", 8, newSViv(GTK_UNMAPPED), 0);
+	hv_store(h, "realized", 8, newSViv(GTK_REALIZED), 0);
+	hv_store(h, "sensitive", 9, newSViv(GTK_SENSITIVE), 0);
+	hv_store(h, "parent-sensitive", 16, newSViv(GTK_PARENT_SENSITIVE), 0);
+	hv_store(h, "no-window", 9, newSViv(GTK_NO_WINDOW), 0);
+	hv_store(h, "has-focus", 9, newSViv(GTK_HAS_FOCUS), 0);
+	hv_store(h, "can-focus", 9, newSViv(GTK_CAN_FOCUS), 0);
+	hv_store(h, "has-default", 11, newSViv(GTK_HAS_DEFAULT), 0);
+	hv_store(h, "can-default", 11, newSViv(GTK_CAN_DEFAULT), 0);
+	hv_store(h, "propagate-state", 15, newSViv(GTK_PROPAGATE_STATE), 0);
+	hv_store(h, "anchored", 8, newSViv(GTK_ANCHORED), 0);
+	hv_store(h, "basic", 5, newSViv(GTK_BASIC), 0);
+	hv_store(h, "user-style", 10, newSViv(GTK_USER_STYLE), 0);
+	hv_store(pG_FlagsHash, "Gtk::WidgetFlags", 16, newRV((SV*)h), 0);
+
+	/*for(i=0;i<51;i++) {
+		HV * p = perl_get_hv(pGtkTypeName[i], TRUE);
+		sv_setsv((SV*)p, (SV*)pGtkType[i]);
+	}*/
+
+	gtk_typecasts = newAV();
+
+	add_typecast(gtk_adjustment_get_type(),		"Gtk::Adjustment");
+	add_typecast(gtk_alignment_get_type(),		"Gtk::Alignment");
+	add_typecast(gtk_arrow_get_type(),		"Gtk::Arrow");
+	add_typecast(gtk_aspect_frame_get_type(),		"Gtk::AspectFrame");
+	add_typecast(gtk_bin_get_type(),		"Gtk::Bin");
+	add_typecast(gtk_box_get_type(),		"Gtk::Box");
+	add_typecast(gtk_button_get_type(),		"Gtk::Button");
+	add_typecast(gtk_button_box_get_type(),		"Gtk::ButtonBox");
+	add_typecast(gtk_check_button_get_type(),		"Gtk::CheckButton");
+	add_typecast(gtk_check_menu_item_get_type(),		"Gtk::CheckMenuItem");
+	add_typecast(gtk_color_selection_get_type(),		"Gtk::ColorSelection");
+	add_typecast(gtk_color_selection_dialog_get_type(),		"Gtk::ColorSelectionDialog");
+	add_typecast(gtk_container_get_type(),		"Gtk::Container");
+	add_typecast(gtk_curve_get_type(),		"Gtk::Curve");
+	add_typecast(gtk_data_get_type(),		"Gtk::Data");
+	add_typecast(gtk_dialog_get_type(),		"Gtk::Dialog");
+	add_typecast(gtk_drawing_area_get_type(),		"Gtk::DrawingArea");
+	add_typecast(gtk_entry_get_type(),		"Gtk::Entry");
+	add_typecast(gtk_event_box_get_type(),		"Gtk::EventBox");
+	add_typecast(gtk_file_selection_get_type(),		"Gtk::FileSelection");
+	add_typecast(gtk_fixed_get_type(),		"Gtk::Fixed");
+	add_typecast(gtk_frame_get_type(),		"Gtk::Frame");
+	add_typecast(gtk_gamma_curve_get_type(),		"Gtk::GammaCurve");
+	add_typecast(gtk_hbox_get_type(),		"Gtk::HBox");
+	add_typecast(gtk_hbutton_box_get_type(),		"Gtk::HButtonBox");
+	add_typecast(gtk_hpaned_get_type(),		"Gtk::HPaned");
+	add_typecast(gtk_hruler_get_type(),		"Gtk::HRuler");
+	add_typecast(gtk_hscale_get_type(),		"Gtk::HScale");
+	add_typecast(gtk_hscrollbar_get_type(),		"Gtk::HScrollbar");
+	add_typecast(gtk_hseparator_get_type(),		"Gtk::HSeparator");
+	add_typecast(gtk_image_get_type(),		"Gtk::Image");
+	add_typecast(gtk_input_dialog_get_type(),		"Gtk::InputDialog");
+	add_typecast(gtk_item_get_type(),		"Gtk::Item");
+	add_typecast(gtk_label_get_type(),		"Gtk::Label");
+	add_typecast(gtk_list_get_type(),		"Gtk::List");
+	add_typecast(gtk_list_item_get_type(),		"Gtk::ListItem");
+	add_typecast(gtk_menu_get_type(),		"Gtk::Menu");
+	add_typecast(gtk_menu_bar_get_type(),		"Gtk::MenuBar");
+	add_typecast(gtk_menu_item_get_type(),		"Gtk::MenuItem");
+	add_typecast(gtk_menu_shell_get_type(),		"Gtk::MenuShell");
+	add_typecast(gtk_misc_get_type(),		"Gtk::Misc");
+	add_typecast(gtk_notebook_get_type(),		"Gtk::Notebook");
+	add_typecast(gtk_object_get_type(),		"Gtk::Object");
+	add_typecast(gtk_option_menu_get_type(),		"Gtk::OptionMenu");
+	add_typecast(gtk_paned_get_type(),		"Gtk::Paned");
+	add_typecast(gtk_pixmap_get_type(),		"Gtk::Pixmap");
+	add_typecast(gtk_preview_get_type(),		"Gtk::Preview");
+	add_typecast(gtk_progress_bar_get_type(),		"Gtk::ProgressBar");
+	add_typecast(gtk_radio_button_get_type(),		"Gtk::RadioButton");
+	add_typecast(gtk_radio_menu_item_get_type(),		"Gtk::RadioMenuItem");
+	add_typecast(gtk_range_get_type(),		"Gtk::Range");
+	add_typecast(gtk_ruler_get_type(),		"Gtk::Ruler");
+	add_typecast(gtk_scale_get_type(),		"Gtk::Scale");
+	add_typecast(gtk_scrollbar_get_type(),		"Gtk::Scrollbar");
+	add_typecast(gtk_scrolled_window_get_type(),		"Gtk::ScrolledWindow");
+	add_typecast(gtk_separator_get_type(),		"Gtk::Separator");
+	add_typecast(gtk_table_get_type(),		"Gtk::Table");
+	add_typecast(gtk_text_get_type(),		"Gtk::Text");
+	add_typecast(gtk_toggle_button_get_type(),		"Gtk::ToggleButton");
+	add_typecast(gtk_tree_get_type(),		"Gtk::Tree");
+	add_typecast(gtk_tree_item_get_type(),		"Gtk::TreeItem");
+	add_typecast(gtk_vbox_get_type(),		"Gtk::VBox");
+	add_typecast(gtk_vbutton_box_get_type(),		"Gtk::VButtonBox");
+	add_typecast(gtk_vpaned_get_type(),		"Gtk::VPaned");
+	add_typecast(gtk_vruler_get_type(),		"Gtk::VRuler");
+	add_typecast(gtk_vscale_get_type(),		"Gtk::VScale");
+	add_typecast(gtk_vscrollbar_get_type(),		"Gtk::VScrollbar");
+	add_typecast(gtk_vseparator_get_type(),		"Gtk::VSeparator");
+	add_typecast(gtk_viewport_get_type(),		"Gtk::Viewport");
+	add_typecast(gtk_widget_get_type(),		"Gtk::Widget");
+	add_typecast(gtk_window_get_type(),		"Gtk::Window");
+}

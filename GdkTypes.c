@@ -6,18 +6,13 @@
    This code may be distributed under the same terms as Perl itself. */
    
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #include "MiscTypes.h"
 #include "GdkTypes.h"
 
-struct _GdkDeviceTimeCoord {
-	guint32 time;
-	gdouble x;
-	gdouble y;
-	gdouble pressure;
-	gdouble xtilt;
-	gdouble ytilt;
-};
+#include "GtkDefs.h"
 
+#if 0
 static struct opts event_types[] = {
 	{ GDK_NOTHING, "NOTHING"} ,
 	{ GDK_DELETE, "DELETE"} ,
@@ -45,8 +40,8 @@ static struct opts event_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkEventType(SV * value) { return SvOpt(value, "GdkEventType", event_types); }
-SV * newSVGtkGdkEventType(int value) { return newSVOpt(value, "GdkEventType", event_types); }
+int SvGdkEventType(SV * value) { return SvOpt(value, "GdkEventType", event_types); }
+SV * newSVGdkEventType(int value) { return newSVOpt(value, "GdkEventType", event_types); }
 
 static struct opts notify_types[] = {
 	{ GDK_NOTIFY_ANCESTOR, "ANCESTOR"} ,
@@ -58,8 +53,8 @@ static struct opts notify_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkNotifyType(SV * value) { return SvOpt(value, "GdkNotifyType", notify_types); }
-SV * newSVGtkGdkNotifyType(int value) { return newSVOpt(value, "GdkNotifyType", notify_types); }
+int SvGdkNotifyType(SV * value) { return SvOpt(value, "GdkNotifyType", notify_types); }
+SV * newSVGdkNotifyType(int value) { return newSVOpt(value, "GdkNotifyType", notify_types); }
 
 static struct opts input_sources[] = {
 	{ GDK_SOURCE_MOUSE, "MOUSE"},
@@ -69,8 +64,8 @@ static struct opts input_sources[] = {
 	{0,0}	
 };
 
-int SvGtkGdkInputSource(SV * value) { return SvOpt(value, "GdkInputSource", input_sources); }
-SV * newSVGtkGdkInputSource(int value) { return newSVOpt(value, "GdkInputSource", input_sources); }
+int SvGdkInputSource(SV * value) { return SvOpt(value, "GdkInputSource", input_sources); }
+SV * newSVGdkInputSource(int value) { return newSVOpt(value, "GdkInputSource", input_sources); }
 
 static struct opts input_modes[] = {
 	{ GDK_MODE_DISABLED, "DISABLED"},
@@ -79,8 +74,8 @@ static struct opts input_modes[] = {
 	{0,0}	
 };
 
-int SvGtkGdkInputMode(SV * value) { return SvOpt(value, "GdkInputMode", input_modes); }
-SV * newSVGtkGdkInputMode(int value) { return newSVOpt(value, "GdkInputMode", input_modes); }
+int SvGdkInputMode(SV * value) { return SvOpt(value, "GdkInputMode", input_modes); }
+SV * newSVGdkInputMode(int value) { return newSVOpt(value, "GdkInputMode", input_modes); }
 
 static struct opts axes[] = {
 	{ GDK_AXIS_IGNORE, "IGNORE"},
@@ -93,8 +88,8 @@ static struct opts axes[] = {
 	{0,0}	
 };
 
-int SvGtkGdkAxisUse(SV * value) { return SvOpt(value, "GdkAxisUse", axes); }
-SV * newSVGtkGdkAxisUse(int value) { return newSVOpt(value, "GdkAxisUse", axes); }
+int SvGdkAxisUse(SV * value) { return SvOpt(value, "GdkAxisUse", axes); }
+SV * newSVGdkAxisUse(int value) { return newSVOpt(value, "GdkAxisUse", axes); }
 
 static struct opts window_types[] = {
 	{ GDK_WINDOW_ROOT,	"ROOT"},
@@ -106,8 +101,8 @@ static struct opts window_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkWindowType(SV * value) { return SvOpt(value, "GdkWindowType", window_types); }
-SV * newSVGtkGdkWindowType(int value) { return newSVOpt(value, "GdkWindowType", window_types); }
+int SvGdkWindowType(SV * value) { return SvOpt(value, "GdkWindowType", window_types); }
+SV * newSVGdkWindowType(int value) { return newSVOpt(value, "GdkWindowType", window_types); }
 
 static struct opts event_masks[] = {
 	{GDK_EXPOSURE_MASK,		"EXPOSURE"},
@@ -131,8 +126,8 @@ static struct opts event_masks[] = {
 	{0,0}	
 };
 
-int SvGtkGdkEventMask(SV * value) { return SvOptFlags(value, "GdkEventMask", event_masks); }
-SV * newSVGtkGdkEventMask(int value) { return newSVOptFlags(value, "GdkEventMask", event_masks, 1); }
+int SvGdkEventMask(SV * value) { return SvOptFlags(value, "GdkEventMask", event_masks); }
+SV * newSVGdkEventMask(int value) { return newSVOptFlags(value, "GdkEventMask", event_masks, 1); }
 
 static struct opts visual_types[] = {
 	{ GDK_VISUAL_STATIC_GRAY, "STATIC_GRAY"} ,
@@ -144,8 +139,8 @@ static struct opts visual_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkVisualType(SV * value) { return SvOpt(value, "GdkVisualType", visual_types); }
-SV * newSVGtkGdkVisualType(int value) { return newSVOpt(value, "GdkVisualType", visual_types); }
+int SvGdkVisualType(SV * value) { return SvOpt(value, "GdkVisualType", visual_types); }
+SV * newSVGdkVisualType(int value) { return newSVOpt(value, "GdkVisualType", visual_types); }
 
 static struct opts wclasses[] = {
 	{ GDK_INPUT_OUTPUT, "INPUT_OUTPUT"} ,
@@ -153,8 +148,8 @@ static struct opts wclasses[] = {
 	{0,0}	
 };
 
-int SvGtkGdkWindowClass(SV * value) { return SvOpt(value, "GdkWindowClass", wclasses); }
-SV * newSVGtkGdkWindowClass(int value) { return newSVOpt(value, "GdkWindowClass", wclasses); }
+int SvGdkWindowClass(SV * value) { return SvOpt(value, "GdkWindowClass", wclasses); }
+SV * newSVGdkWindowClass(int value) { return newSVOpt(value, "GdkWindowClass", wclasses); }
 
 static struct opts image_types[] = {
 	{ GDK_IMAGE_NORMAL, "NORMAL"},
@@ -163,8 +158,8 @@ static struct opts image_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkImageType(SV * value) { return SvOpt(value, "GdkImageType", image_types); }
-SV * newSVGtkGdkImageType(int value) { return newSVOpt(value, "GdkImageType", image_types); }
+int SvGdkImageType(SV * value) { return SvOpt(value, "GdkImageType", image_types); }
+SV * newSVGdkImageType(int value) { return newSVOpt(value, "GdkImageType", image_types); }
 
 static struct opts input_conditions[] = {
 	{GDK_INPUT_READ,		"READ"},
@@ -173,8 +168,8 @@ static struct opts input_conditions[] = {
 	{0,0}	
 };
 
-int SvGtkGdkInputCondition(SV * value) { return SvOptFlags(value, "GdkInputCondition", input_conditions); }
-SV * newSVGtkGdkInputCondition(int value) { return newSVOptFlags(value, "GdkInputCondition", input_conditions, 1); }
+int SvGdkInputCondition(SV * value) { return SvOptFlags(value, "GdkInputCondition", input_conditions); }
+SV * newSVGdkInputCondition(int value) { return newSVOptFlags(value, "GdkInputCondition", input_conditions, 1); }
 
 static struct opts subwindow_modes[] = {
 	{ GDK_CLIP_BY_CHILDREN,	"CLIP_BY_CHILDREN"},
@@ -182,8 +177,8 @@ static struct opts subwindow_modes[] = {
 	{0,0}	
 };
 
-int SvGtkGdkSubwindowMode(SV * value) { return SvOpt(value, "GdkSubwindowMode", subwindow_modes); }
-SV * newSVGtkGdkSubwindowMode(int value) { return newSVOpt(value, "GdkSubwindowMode", subwindow_modes); }
+int SvGdkSubwindowMode(SV * value) { return SvOpt(value, "GdkSubwindowMode", subwindow_modes); }
+SV * newSVGdkSubwindowMode(int value) { return newSVOpt(value, "GdkSubwindowMode", subwindow_modes); }
 
 static struct opts line_styles[] = {
 	{ GDK_LINE_SOLID,	"SOLID"},
@@ -192,8 +187,8 @@ static struct opts line_styles[] = {
 	{0,0}	
 };
 
-int SvGtkGdkLineStyle(SV * value) { return SvOpt(value, "GdkLineStyle", line_styles); }
-SV * newSVGtkGdkLineStyle(int value) { return newSVOpt(value, "GdkLineStyle", line_styles); }
+int SvGdkLineStyle(SV * value) { return SvOpt(value, "GdkLineStyle", line_styles); }
+SV * newSVGdkLineStyle(int value) { return newSVOpt(value, "GdkLineStyle", line_styles); }
 
 static struct opts cap_styles[] = {
 	{ GDK_CAP_NOT_LAST,	"NOT_LAST"},
@@ -203,8 +198,8 @@ static struct opts cap_styles[] = {
 	{0,0}	
 };
 
-int SvGtkGdkCapStyle(SV * value) { return SvOpt(value, "GdkCapStyle", cap_styles); }
-SV * newSVGtkGdkCapStyle(int value) { return newSVOpt(value, "GdkCapStyle", cap_styles); }
+int SvGdkCapStyle(SV * value) { return SvOpt(value, "GdkCapStyle", cap_styles); }
+SV * newSVGdkCapStyle(int value) { return newSVOpt(value, "GdkCapStyle", cap_styles); }
 
 static struct opts join_styles[] = {
 	{ GDK_JOIN_MITER,	"MITER"},
@@ -213,8 +208,8 @@ static struct opts join_styles[] = {
 	{0,0}	
 };
 
-int SvGtkGdkJoinStyle(SV * value) { return SvOpt(value, "GdkJoinStyle", join_styles); }
-SV * newSVGtkGdkJoinStyle(int value) { return newSVOpt(value, "GdkJoinStyle", join_styles); }
+int SvGdkJoinStyle(SV * value) { return SvOpt(value, "GdkJoinStyle", join_styles); }
+SV * newSVGdkJoinStyle(int value) { return newSVOpt(value, "GdkJoinStyle", join_styles); }
 
 static struct opts fill_styles[] = {
 	{ GDK_SOLID,	"SOLID"},
@@ -223,8 +218,8 @@ static struct opts fill_styles[] = {
 	{0,0}	
 };
 
-int SvGtkGdkFill(SV * value) { return SvOpt(value, "GdkFill", fill_styles); }
-SV * newSVGtkGdkFill(int value) { return newSVOpt(value, "GdkFill", fill_styles); }
+int SvGdkFill(SV * value) { return SvOpt(value, "GdkFill", fill_styles); }
+SV * newSVGdkFill(int value) { return newSVOpt(value, "GdkFill", fill_styles); }
 
 static struct opts functions[] = {
 	{ GDK_COPY,	"COPY"},
@@ -233,8 +228,8 @@ static struct opts functions[] = {
 	{0,0}	
 };
 
-int SvGtkGdkFunction(SV * value) { return SvOpt(value, "GdkFunction", functions); }
-SV * newSVGtkGdkFunction(int value) { return newSVOpt(value, "GdkFunction", functions); }
+int SvGdkFunction(SV * value) { return SvOpt(value, "GdkFunction", functions); }
+SV * newSVGdkFunction(int value) { return newSVOpt(value, "GdkFunction", functions); }
 
 static struct opts modifier_types[] = {
 	{ GDK_SHIFT_MASK,	"SHIFT"},
@@ -253,8 +248,8 @@ static struct opts modifier_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkModifierType(SV * value) { return SvOptFlags(value, "GdkModifierType", modifier_types); }
-SV * newSVGtkGdkModifierType(int value) { return newSVOptFlags(value, "GdkModifierType", modifier_types, 1); }
+int SvGdkModifierType(SV * value) { return SvOptFlags(value, "GdkModifierType", modifier_types); }
+SV * newSVGdkModifierType(int value) { return newSVOptFlags(value, "GdkModifierType", modifier_types, 1); }
 
 static struct opts gc_values[] = {
 	{GDK_GC_FOREGROUND,	"FOREGROUND"},
@@ -278,8 +273,8 @@ static struct opts gc_values[] = {
 	{0,0}	
 };
 
-int SvGtkGdkGCValuesMask(SV * value) { return SvOptFlags(value, "GdkGCValuesMask", gc_values); }
-SV * newSVGtkGdkGCValuesMask(int value) { return newSVOptFlags(value, "GdkGCValuesMask", gc_values, 1); }
+int SvGdkGCValuesMask(SV * value) { return SvOptFlags(value, "GdkGCValuesMask", gc_values); }
+SV * newSVGdkGCValuesMask(int value) { return newSVOptFlags(value, "GdkGCValuesMask", gc_values, 1); }
 
 static struct opts cursor_types[] = {
 	{GDK_NUM_GLYPHS, "NUM_GLYPHS"},
@@ -363,40 +358,41 @@ static struct opts cursor_types[] = {
 	{0,0}	
 };
 
-int SvGtkGdkCursorType(SV * value) { return SvOpt(value, "GdkCursorType", cursor_types); }
-SV * newSVGtkGdkCursorType(int value) { return newSVOpt(value, "GdkCursorType", cursor_types); }
+int SvGdkCursorType(SV * value) { return SvOpt(value, "GdkCursorType", cursor_types); }
+SV * newSVGdkCursorType(int value) { return newSVOpt(value, "GdkCursorType", cursor_types); }
+#endif
 
-SV * newSVGtkGdkWindowRef(GdkWindow * w) { return newSVMiscRef(w, "Gtk::Gdk::Window",0); }
-GdkWindow * SvGtkGdkWindowRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Window"); }
+SV * newSVGdkWindowRef(GdkWindow * w) { return newSVMiscRef(w, "Gtk::Gdk::Window",0); }
+GdkWindow * SvGdkWindowRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Window"); }
 
-SV * newSVGtkGdkPixmapRef(GdkPixmap * w) { return newSVMiscRef(w, "Gtk::Gdk::Pixmap",0); }
-GdkPixmap * SvGtkGdkPixmapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Pixmap"); }
+SV * newSVGdkPixmapRef(GdkPixmap * w) { return newSVMiscRef(w, "Gtk::Gdk::Pixmap",0); }
+GdkPixmap * SvGdkPixmapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Pixmap"); }
 
-SV * newSVGtkGdkBitmapRef(GdkBitmap * w) { return newSVMiscRef(w, "Gtk::Gdk::Bitmap",0); }
-GdkBitmap * SvGtkGdkBitmapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Bitmap"); }
+SV * newSVGdkBitmapRef(GdkBitmap * w) { return newSVMiscRef(w, "Gtk::Gdk::Bitmap",0); }
+GdkBitmap * SvGdkBitmapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Bitmap"); }
 
-SV * newSVGtkGdkColormapRef(GdkColormap * w) { return newSVMiscRef(w, "Gtk::Gdk::Colormap",0); }
-GdkColormap * SvGtkGdkColormapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Colormap"); }
+SV * newSVGdkColormapRef(GdkColormap * w) { return newSVMiscRef(w, "Gtk::Gdk::Colormap",0); }
+GdkColormap * SvGdkColormapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Colormap"); }
 
-SV * newSVGtkGdkColorRef(GdkColor * c) { return newSVMiscRef(c, "Gtk::Gdk::Color",0); }
-GdkColor * SvGtkGdkColorRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Color"); }
+SV * newSVGdkColorRef(GdkColor * c) { return newSVMiscRef(c, "Gtk::Gdk::Color",0); }
+GdkColor * SvGdkColorRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Color"); }
 
-SV * newSVGtkGdkCursorRef(GdkCursor * w) { return newSVMiscRef(w, "Gtk::Gdk::Cursor",0); }
-GdkCursor * SvGtkGdkCursorRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Cursor"); }
+SV * newSVGdkCursorRef(GdkCursor * w) { return newSVMiscRef(w, "Gtk::Gdk::Cursor",0); }
+GdkCursor * SvGdkCursorRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Cursor"); }
 
-SV * newSVGtkGdkVisualRef(GdkVisual * w) { return newSVMiscRef(w, "Gtk::Gdk::Visual",0); }
-GdkVisual * SvGtkGdkVisualRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Visual"); }
+SV * newSVGdkVisualRef(GdkVisual * w) { return newSVMiscRef(w, "Gtk::Gdk::Visual",0); }
+GdkVisual * SvGdkVisualRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Visual"); }
 
-SV * newSVGtkGdkGCRef(GdkGC * g) { return newSVMiscRef(g, "Gtk::Gdk::GC",0); }
-GdkGC * SvGtkGdkGCRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::GC"); }
+SV * newSVGdkGCRef(GdkGC * g) { return newSVMiscRef(g, "Gtk::Gdk::GC",0); }
+GdkGC * SvGdkGCRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::GC"); }
 
-SV * newSVGtkGdkFontRef(GdkFont * f) { return newSVMiscRef(f, "Gtk::Gdk::Font",0); }
-GdkFont * SvGtkGdkFontRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Font"); }
+SV * newSVGdkFontRef(GdkFont * f) { return newSVMiscRef(f, "Gtk::Gdk::Font",0); }
+GdkFont * SvGdkFontRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Font"); }
 
-SV * newSVGtkGdkImageRef(GdkImage * i) { return newSVMiscRef(i, "Gtk::Gdk::Image",0); }
-GdkImage * SvGtkGdkImageRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Image"); }
+SV * newSVGdkImageRef(GdkImage * i) { return newSVMiscRef(i, "Gtk::Gdk::Image",0); }
+GdkImage * SvGdkImageRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Image"); }
 
-SV * newSVGtkGdkRectangle(GdkRectangle * rect)
+SV * newSVGdkRectangle(GdkRectangle * rect)
 {
 	AV * a;
 	SV * r;
@@ -416,7 +412,7 @@ SV * newSVGtkGdkRectangle(GdkRectangle * rect)
 	return r;
 }
 
-GdkRectangle * SvGtkGdkRectangle(SV * data, GdkRectangle * rect)
+GdkRectangle * SvGdkRectangle(SV * data, GdkRectangle * rect)
 {
 	AV * a;
 	SV ** s;
@@ -440,7 +436,7 @@ GdkRectangle * SvGtkGdkRectangle(SV * data, GdkRectangle * rect)
 	return rect;
 }
 
-SV * newSVGtkGdkGCValues(GdkGCValues * v)
+SV * newSVGdkGCValues(GdkGCValues * v)
 {
 	HV * h;
 	SV * r;
@@ -455,26 +451,26 @@ SV * newSVGtkGdkGCValues(GdkGCValues * v)
 	hv_store(h, "foreground", 10, newSVMiscRef(&v->foreground, "Gtk::Gdk::Color",0), 0);
 	hv_store(h, "background", 10, newSVMiscRef(&v->background, "Gtk::Gdk::Color",0), 0);
 	hv_store(h, "font", 4, newSVMiscRef(v->font, "Gtk::Gdk::Font",0), 0);
-	hv_store(h, "function", 8, newSVGtkGdkFunction(v->function), 0);
-	hv_store(h, "fill", 4, newSVGtkGdkFill(v->fill), 0);
+	hv_store(h, "function", 8, newSVGdkFunction(v->function), 0);
+	hv_store(h, "fill", 4, newSVGdkFill(v->fill), 0);
 	hv_store(h, "tile", 4, newSVMiscRef(v->tile, "Gtk::Gdk::Pixmap",0), 0);
 	hv_store(h, "stipple", 7, newSVMiscRef(v->stipple, "Gtk::Gdk::Pixmap",0), 0);
 	hv_store(h, "clip_mask", 9, newSVMiscRef(v->clip_mask, "Gtk::Gdk::Pixmap",0), 0);
-	hv_store(h, "subwindow_mode", 14, newSVGtkGdkSubwindowMode(v->subwindow_mode), 0);
+	hv_store(h, "subwindow_mode", 14, newSVGdkSubwindowMode(v->subwindow_mode), 0);
 	hv_store(h, "ts_x_origin", 11, newSViv(v->ts_x_origin), 0);
 	hv_store(h, "ts_y_origin", 11, newSViv(v->ts_y_origin), 0);
 	hv_store(h, "clip_x_origin", 13, newSViv(v->clip_x_origin), 0);
 	hv_store(h, "clip_x_origin", 13, newSViv(v->clip_y_origin), 0);
 	hv_store(h, "graphics_exposures", 18, newSViv(v->graphics_exposures), 0);
 	hv_store(h, "line_width", 10, newSViv(v->line_width), 0);
-	hv_store(h, "line_style", 10, newSVGtkGdkLineStyle(v->line_style), 0);
-	hv_store(h, "cap_style", 9, newSVGtkGdkCapStyle(v->cap_style), 0);
-	hv_store(h, "join_style", 10, newSVGtkGdkJoinStyle(v->join_style), 0);
+	hv_store(h, "line_style", 10, newSVGdkLineStyle(v->line_style), 0);
+	hv_store(h, "cap_style", 9, newSVGdkCapStyle(v->cap_style), 0);
+	hv_store(h, "join_style", 10, newSVGdkJoinStyle(v->join_style), 0);
 	
 	return r;
 }
 
-GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
+GdkGCValues * SvGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 {
 	HV * h;
 	SV ** s;
@@ -508,11 +504,11 @@ GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 		*m |= GDK_GC_FONT;
 	}
 	if ((s=hv_fetch(h, "function", 8, 0)) && SvOK(*s)) {
-		v->function = SvGtkGdkFunction(*s);
+		v->function = SvGdkFunction(*s);
 		*m |= GDK_GC_FUNCTION;
 	}
 	if ((s=hv_fetch(h, "fill", 4, 0)) && SvOK(*s)) {
-		v->function = SvGtkGdkFill(*s);
+		v->function = SvGdkFill(*s);
 		*m |= GDK_GC_FILL;
 	}
 	if ((s=hv_fetch(h, "tile", 4, 0)) && SvOK(*s)) {
@@ -528,7 +524,7 @@ GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 		*m |= GDK_GC_CLIP_MASK;
 	}
 	if ((s=hv_fetch(h, "subwindow_mode", 14, 0)) && SvOK(*s)) {
-		v->subwindow_mode = SvGtkGdkSubwindowMode(*s);
+		v->subwindow_mode = SvGdkSubwindowMode(*s);
 		*m |= GDK_GC_SUBWINDOW;
 	}
 	if ((s=hv_fetch(h, "ts_x_origin", 11, 0)) && SvOK(*s)) {
@@ -556,21 +552,21 @@ GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 		*m |= GDK_GC_LINE_WIDTH;
 	}
 	if ((s=hv_fetch(h, "line_style", 10, 0)) && SvOK(*s)) {
-		v->line_style= SvGtkGdkLineStyle(*s);
+		v->line_style= SvGdkLineStyle(*s);
 		*m |= GDK_GC_LINE_STYLE;
 	}
 	if ((s=hv_fetch(h, "cap_style", 9, 0)) && SvOK(*s)) {
-		v->cap_style = SvGtkGdkCapStyle(*s);
+		v->cap_style = SvGdkCapStyle(*s);
 		*m |= GDK_GC_CAP_STYLE;
 	}
 	if ((s=hv_fetch(h, "join_style", 10, 0)) && SvOK(*s)) {
-		v->join_style = SvGtkGdkJoinStyle(*s);
+		v->join_style = SvGdkJoinStyle(*s);
 		*m |= GDK_GC_JOIN_STYLE;
 	}
 	return v;
 }
 
-SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * v)
+SV * newSVGdkDeviceInfo(GdkDeviceInfo * v)
 {
 	HV * h;
 	SV * r;
@@ -584,15 +580,15 @@ SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * v)
 
 	hv_store(h, "deviceid", 8, newSViv(v->deviceid), 0);
 	hv_store(h, "name", 4, newSVpv(v->name, 0), 0);
-	hv_store(h, "source", 6, newSVGtkGdkInputSource(v->source), 0);
-	hv_store(h, "mode", 4, newSVGtkGdkInputMode(v->mode), 0);
+	hv_store(h, "source", 6, newSVGdkInputSource(v->source), 0);
+	hv_store(h, "mode", 4, newSVGdkInputMode(v->mode), 0);
 	hv_store(h, "has_cursor", 10, newSViv(v->has_cursor), 0);
 	hv_store(h, "num_axes", 8, newSViv(v->num_axes), 0);
 	if (v->axes) {
 		int i;
 		AV * a = newAV();
 		for(i=0;i<v->num_axes;i++) {
-			av_push(a, newSVGtkGdkAxisUse(v->axes[i]));
+			av_push(a, newSVGdkAxisUse(v->axes[i]));
 		}
 		hv_store(h, "axes", 4, newRV((SV*)a), 0);
 		SvREFCNT_dec(a);
@@ -601,7 +597,7 @@ SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * v)
 	return r;
 }
 
-SV * newSVGtkGdkDeviceTimeCoord(GdkDeviceTimeCoord * v)
+SV * newSVGdkTimeCoord(GdkTimeCoord * v)
 {
 	HV * h;
 	SV * r;
@@ -623,17 +619,17 @@ SV * newSVGtkGdkDeviceTimeCoord(GdkDeviceTimeCoord * v)
 	return r;
 }
 
-SV * newSVGtkGdkAtom(GdkAtom a)
+SV * newSVGdkAtom(GdkAtom a)
 {
 	return newSViv(a);
 }
 
-GdkAtom SvGtkGdkAtom(SV * data)
+GdkAtom SvGdkAtom(SV * data)
 {
 	return SvIV(data);
 }
 
-SV * newSVGtkGdkEvent(GdkEvent * e)
+SV * newSVGdkEvent(GdkEvent * e)
 {
 	HV * h;
 	SV * r;
@@ -645,11 +641,11 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 	r = newRV((SV*)h);
 	SvREFCNT_dec(h);
 	
-	hv_store(h, "type", 4, newSVGtkGdkEventType(e->type), 0);
-	hv_store(h, "window", 6, newSVGtkGdkWindowRef(e->any.window), 0);
+	hv_store(h, "type", 4, newSVGdkEventType(e->type), 0);
+	hv_store(h, "window", 6, newSVGdkWindowRef(e->any.window), 0);
 	switch (e->type) {
 	case GDK_EXPOSE:
-		hv_store(h, "area", 4, newSVGtkGdkRectangle(&e->expose.area), 0);
+		hv_store(h, "area", 4, newSVGdkRectangle(&e->expose.area), 0);
 		hv_store(h, "count", 5, newSViv(e->expose.count), 0);
 		break;
 	case GDK_MOTION_NOTIFY:
@@ -661,7 +657,7 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		hv_store(h, "time", 4, newSViv(e->motion.time), 0);
 		hv_store(h, "state", 5, newSViv(e->motion.state), 0);
 		hv_store(h, "is_hint", 7, newSViv(e->motion.is_hint), 0);
-		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "source", 6, newSVGdkInputSource(e->motion.source), 0);
 		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
 		break;
 	case GDK_BUTTON_PRESS:
@@ -676,7 +672,7 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		hv_store(h, "ytilt", 5, newSVnv(e->motion.ytilt), 0);
 		hv_store(h, "state", 5, newSViv(e->button.state), 0);
 		hv_store(h, "button", 6, newSViv(e->button.button), 0);
-		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "source", 6, newSVGdkInputSource(e->motion.source), 0);
 		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
 		break;
 	case GDK_KEY_PRESS:
@@ -690,9 +686,9 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		break;
 	case GDK_ENTER_NOTIFY:
 	case GDK_LEAVE_NOTIFY:
-		hv_store(h, "window", 6, newSVGtkGdkWindowRef(e->crossing.window), 0);
-		hv_store(h, "subwindow", 9, newSVGtkGdkWindowRef(e->crossing.subwindow), 0);
-		hv_store(h, "detail", 6, newSVGtkGdkNotifyType(e->crossing.detail), 0);
+		hv_store(h, "window", 6, newSVGdkWindowRef(e->crossing.window), 0);
+		hv_store(h, "subwindow", 9, newSVGdkWindowRef(e->crossing.subwindow), 0);
+		hv_store(h, "detail", 6, newSVGdkNotifyType(e->crossing.detail), 0);
 		break;
 	case GDK_CONFIGURE:
 		hv_store(h, "x", 1, newSViv(e->configure.x), 0);
@@ -703,20 +699,20 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 	case GDK_PROPERTY_NOTIFY:
 		hv_store(h, "time", 4, newSViv(e->property.time), 0);
 		hv_store(h, "state", 5, newSViv(e->property.state), 0);
-		hv_store(h, "atom", 4, newSVGtkGdkAtom(e->property.atom), 0);
+		hv_store(h, "atom", 4, newSVGdkAtom(e->property.atom), 0);
 		break;
 	case GDK_SELECTION_CLEAR:
 	case GDK_SELECTION_REQUEST:
 	case GDK_SELECTION_NOTIFY:
 		hv_store(h, "requestor", 9, newSViv(e->selection.requestor), 0);
 		hv_store(h, "time", 4, newSViv(e->selection.time), 0);
-		hv_store(h, "selection", 9, newSVGtkGdkAtom(e->selection.selection), 0);
-		hv_store(h, "property", 8, newSVGtkGdkAtom(e->selection.property), 0);
+		hv_store(h, "selection", 9, newSVGdkAtom(e->selection.selection), 0);
+		hv_store(h, "property", 8, newSVGdkAtom(e->selection.property), 0);
 		break;
 	case GDK_PROXIMITY_IN:
 	case GDK_PROXIMITY_OUT:
 		hv_store(h, "time", 4, newSViv(e->proximity.time), 0);
-		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "source", 6, newSVGdkInputSource(e->motion.source), 0);
 		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
 		break;
 		
@@ -725,7 +721,7 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 	return r;
 }
 
-GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
+GdkEvent * SvGdkEvent(SV * data, GdkEvent * e)
 {
 	HV * h;
 	SV ** s;
@@ -739,18 +735,18 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 	h = (HV*)SvRV(data);
 	
 	if (s=hv_fetch(h, "type", 4, 0))
-		e->type = SvGtkGdkEventType(*s);
+		e->type = SvGdkEventType(*s);
 	else
 		croak("event must contain type");
 	if (s=hv_fetch(h, "window", 6, 0))
-		e->any.window = SvGtkGdkWindowRef(*s);
+		e->any.window = SvGdkWindowRef(*s);
 	else
 		croak("event must contain window");
 	
 	switch (e->type) {
 	case GDK_EXPOSE:
 		if (s=hv_fetch(h, "area", 4, 0))
-			SvGtkGdkRectangle(*s, &e->expose.area);
+			SvGdkRectangle(*s, &e->expose.area);
 		else
 			croak("event must contain area");
 		if (s=hv_fetch(h, "count", 5, 0))
@@ -799,7 +795,7 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 			croak("event must contain is_hint");
 		break;
 		if (s=hv_fetch(h, "source", 6, 0))
-			e->button.source = SvGtkGdkInputSource(*s);
+			e->button.source = SvGdkInputSource(*s);
 		else
 			e->button.source = 0;
 		break;
@@ -852,7 +848,7 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 			croak("event must contain state");
 		break;
 		if (s=hv_fetch(h, "source", 6, 0))
-			e->button.source = SvGtkGdkInputSource(*s);
+			e->button.source = SvGdkInputSource(*s);
 		else
 			e->button.source = 0;
 		break;
@@ -884,15 +880,15 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 	case GDK_ENTER_NOTIFY:
 	case GDK_LEAVE_NOTIFY:
 		if (s=hv_fetch(h, "window", 6, 0))
-			e->crossing.window = SvGtkGdkWindowRef(*s);
+			e->crossing.window = SvGdkWindowRef(*s);
 		else
 			croak("event must contain window");
 		if (s=hv_fetch(h, "subwindow", 9, 0))
-			e->crossing.subwindow = SvGtkGdkWindowRef(*s);
+			e->crossing.subwindow = SvGdkWindowRef(*s);
 		else
 			croak("event must contain subwindow");
 		if (s=hv_fetch(h, "detail", 6, 0))
-			e->crossing.detail = SvGtkGdkNotifyType(*s);
+			e->crossing.detail = SvGdkNotifyType(*s);
 		else
 			croak("event must contain detail");
 		break;
@@ -924,7 +920,7 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 		else
 			croak("event must contain state");
 		if (s=hv_fetch(h, "atom", 4, 0))
-			e->property.atom = SvGtkGdkAtom(*s);
+			e->property.atom = SvGdkAtom(*s);
 		else
 			croak("event must contain atom");
 		break;
@@ -940,11 +936,11 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 		else
 			croak("event must contain time");
 		if (s=hv_fetch(h, "selection", 9, 0))
-			e->selection.selection = SvGtkGdkAtom(*s);
+			e->selection.selection = SvGdkAtom(*s);
 		else
 			croak("event must contain selection");
 		if (s=hv_fetch(h, "property", 8, 0))
-			e->selection.property = SvGtkGdkAtom(*s);
+			e->selection.property = SvGdkAtom(*s);
 		else
 			croak("event must contain property");
 		break;
@@ -964,7 +960,7 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 	return e;
 }
 
-GdkWindowAttr * SvGtkGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask)
+GdkWindowAttr * SvGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask)
 {
 	HV * h;
 	SV ** s;
@@ -997,26 +993,26 @@ GdkWindowAttr * SvGtkGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask)
 	}
 	
 	if (s=hv_fetch(h, "cursor", 6, 0)) {
-		attr->cursor = SvGtkGdkCursorRef(*s);
+		attr->cursor = SvGdkCursorRef(*s);
 		*mask |= GDK_WA_CURSOR;
 	}
 	
 	if (s=hv_fetch(h, "colormap", 8, 0)) {
-		attr->colormap = SvGtkGdkColormapRef(*s);
+		attr->colormap = SvGdkColormapRef(*s);
 		*mask |= GDK_WA_COLORMAP;
 	}
 	
 	if (s=hv_fetch(h, "visual", 6, 0)) {
-		attr->visual = SvGtkGdkVisualRef(*s);
+		attr->visual = SvGdkVisualRef(*s);
 		*mask |= GDK_WA_VISUAL;
 	}
 
 	if (s=hv_fetch(h, "window_type",11, 0))
-		attr->window_type = SvGtkGdkWindowType(*s);
+		attr->window_type = SvGdkWindowType(*s);
 	else
 		croak("window attribute must have window_type");
 	if (s=hv_fetch(h, "event_mask",10, 0))
-		attr->event_mask = SvGtkGdkEventMask(*s);
+		attr->event_mask = SvGdkEventMask(*s);
 	else
 		croak("window attribute must have event_mask");
 	if (s=hv_fetch(h, "width",5, 0))
@@ -1028,7 +1024,7 @@ GdkWindowAttr * SvGtkGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask)
 	else
 		croak("window attribute must have height");
 	if (s=hv_fetch(h, "wclass",6, 0))
-		attr->wclass = SvGtkGdkWindowClass(*s);
+		attr->wclass = SvGdkWindowClass(*s);
 	else
 		attr->wclass = GDK_INPUT_OUTPUT;
 

@@ -16,11 +16,19 @@ sub button_window {
 	}
 }
 
+sub drop_window {
+	print "drop\n";
+}
+
+sub drag_begin_window {
+	print "drag\n";
+}
+
 sub create_buttons {
 	my($box1, $box2, $table, @button, $separator);
 	
 	if (not defined $buttons_window) {
-		$buttons_window = new Gtk::Window "TOPLEVEL";
+		$buttons_window = new Gtk::Window 'toplevel';
 		signal_connect $buttons_window "destroy", \&destroy_window, \$buttons_window;
 		$buttons_window->set_title("buttons");
 		$buttons_window->border_width(0);
@@ -39,39 +47,41 @@ sub create_buttons {
 		for (0..8) { $button[$_] = new Gtk::Button "button".($_+1); }
 		
 		$button[0]->signal_connect("clicked", \&button_window, $button[1]);
-		$table->attach($button[0], 0, 1, 0, 1, {EXPAND=>1,FILL=>1}, {EXPAND=>1,FILL=>1},0,0);
+		$button[0]->signal_connect("drop_notify_event", \&drop_notify_event);
+		$button[0]->signal_connect("drag_begin_notify_event", \&drag_begin_notify_event);
+		$table->attach($button[0], 0, 1, 0, 1, {expand=>1,fill=>1}, {expand=>1,fill=>1},0,0);
 		$button[0]->show;
 
 		$button[1]->signal_connect("clicked", \&button_window, $button[2]);
-		$table->attach($button[1], 1, 2, 1, 2, {EXPAND=>1,FILL=>1}, {EXPAND=>1,FILL=>1},0,0);
+		$table->attach($button[1], 1, 2, 1, 2, {expand=>1,fill=>1}, {expand=>1,fill=>1},0,0);
 		$button[1]->show;
 
 		$button[2]->signal_connect("clicked", \&button_window, $button[3]);
-		$table->attach($button[2], 2, 3, 2, 3, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[2], 2, 3, 2, 3, ["expand","fill"], ["expand","fill"],0,0);
 		$button[2]->show;
 
 		$button[3]->signal_connect("clicked", \&button_window, $button[4]);
-		$table->attach($button[3], 0, 1, 2, 3, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[3], 0, 1, 2, 3, ["expand","fill"], ["expand","fill"],0,0);
 		$button[3]->show;
 
 		$button[4]->signal_connect("clicked", \&button_window, $button[5]);
-		$table->attach($button[4], 2, 3, 0, 1, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[4], 2, 3, 0, 1, ["expand","fill"], ["expand","fill"],0,0);
 		$button[4]->show;
 
 		$button[5]->signal_connect("clicked", \&button_window, $button[6]);
-		$table->attach($button[5], 1, 2, 2, 3, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[5], 1, 2, 2, 3, ["expand","fill"], ["expand","fill"],0,0);
 		$button[5]->show;
 
 		$button[6]->signal_connect("clicked", \&button_window, $button[7]);
-		$table->attach($button[6], 1, 2, 0, 1, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[6], 1, 2, 0, 1, ["expand","fill"], ["expand","fill"],0,0);
 		$button[6]->show;
 
 		$button[7]->signal_connect("clicked", \&button_window, $button[8]);
-		$table->attach($button[7], 2, 3, 1, 2, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[7], 2, 3, 1, 2, ["expand","fill"], ["expand","fill"],0,0);
 		$button[7]->show;
 
 		$button[8]->signal_connect("clicked", \&button_window, $button[8]);
-		$table->attach($button[8], 0, 1, 1, 2, ["EXPAND","FILL"], ["EXPAND","FILL"],0,0);
+		$table->attach($button[8], 0, 1, 1, 2, ["expand","fill"], ["expand","fill"],0,0);
 		$button[8]->show;
 		
 		$separator = new Gtk::HSeparator;
@@ -101,12 +111,14 @@ sub create_buttons {
 sub create_toggle_buttons {
 	my($box1, $box2, $button, $separator);
 	if (not defined $tb_window) {
-		$tb_window = new Gtk::Window "TOPLEVEL";
+		$tb_window = new Gtk::Window -toplevel;
 		$tb_window->signal_connect("destroy", \&destroy_window, \$tb_window);
 		$tb_window->set_title("toggle buttons");
 		$tb_window->border_width(0);
 		
+		#print "Creating box\n";
 		$box1 = new Gtk::VBox(0, 0);
+		#print Dumper($box1);
 		$tb_window->add($box1);
 		$box1->show;
 		
@@ -155,7 +167,7 @@ sub create_radio_buttons {
 	my($box1,$box2,$button,$separator);
 	
 	if (not defined $rb_window) {
-		$rb_window = new Gtk::Window "TOPLEVEL";
+		$rb_window = new Gtk::Window -toplevel;
 		$rb_window->signal_connect("destroy", \&destroy_window, \$rb_window);
 		$rb_window->set_title("radio buttons");
 		$rb_window->border_width(0);
@@ -216,7 +228,7 @@ sub create_reparent {
 	my($box1, $box2, $box3, $frame, $button, $label, $separator);
 	
 	if (not defined $reparent_window) {
-		$reparent_window = new Gtk::Window "TOPLEVEL";
+		$reparent_window = new Gtk::Window "toplevel";
 		$reparent_window->signal_connect("destroy", \&destroy_window, \$reparent_window);
 		$reparent_window->set_title("buttons");
 		$reparent_window->border_width(0);
@@ -293,7 +305,7 @@ sub create_pixmap {
 	my($box1,$box2,$box3,$button,$label,$separator,$pixmapwid,$pixmap,$mask,$style);
 	
 	if (not defined $pixmap_window) {
-		$pixmap_window = new Gtk::Window "TOPLEVEL";
+		$pixmap_window = new Gtk::Window "toplevel";
 		signal_connect $pixmap_window "destroy", \&destroy_window, \$pixmap_window;
 		$pixmap_window->set_title("pixmap");
 		$pixmap_window->border_width(0);
@@ -314,7 +326,7 @@ sub create_pixmap {
 		
 		$style = $button->get_style;
 
-		($pixmap,$mask) = Gtk::Gdk::Pixmap->create_from_xpm($pixmap_window->window, $style->bg('NORMAL'), "test.xpm");
+		($pixmap,$mask) = Gtk::Gdk::Pixmap->create_from_xpm($pixmap_window->window, $style->bg('normal'), "test.xpm");
       	$pixmapwid = new Gtk::Pixmap $pixmap, $mask;
       	
       	$label = new Gtk::Label "Pixmap test\n";
@@ -354,7 +366,7 @@ sub create_tooltips {
 	my($box1,$box2,$button,$separator,$tooltips);
 	
 	if (not defined $tt_window) {
-		$tt_window = new Gtk::Window "TOPLEVEL";
+		$tt_window = new Gtk::Window "toplevel";
 		signal_connect $tt_window "destroy", \&destroy_window, \$tt_window;
 		set_title $tt_window "tooltips";
 		border_width $tt_window 0;
@@ -424,7 +436,7 @@ sub create_scrolled_windows {
 		
 		$scrolled_window = new Gtk::ScrolledWindow(undef,undef);
 		$scrolled_window->border_width(10);
-		$scrolled_window->set_policy("AUTOMATIC","AUTOMATIC");
+		$scrolled_window->set_policy(-automatic, -automatic);
 		$s_window->vbox->pack_start($scrolled_window, 1, 1, 0);
 		$scrolled_window->show;
 		
@@ -462,7 +474,7 @@ sub create_entry {
 	my($box1,$box2,$entry,$button,$separator);
 	
 	if (not defined $entry_window) {
-		$entry_window = new Gtk::Window "TOPLEVEL";
+		$entry_window = new Gtk::Window -toplevel;
 		$entry_window->signal_connect("destroy", \&destroy_window, \$entry_window);
 		$entry_window->set_title("entry");
 		$entry_window->border_width(0);
@@ -536,7 +548,7 @@ sub create_list
 	my($box1,$box2,$scrolled_win,$list,$list_item,$button,$separator,$i);
 	
 	if (not defined $list_window) {
-		$list_window = new Gtk::Window "TOPLEVEL";
+		$list_window = new Gtk::Window -toplevel;
 		$list_window->signal_connect("destroy", \&destroy_window, \$list_window);
 		$list_window->set_title("list");
 		$list_window->border_width(0);
@@ -551,13 +563,13 @@ sub create_list
 		$box2->show;
 		
 		$scrolled_win = new Gtk::ScrolledWindow(undef, undef);
-		$scrolled_win->set_policy("AUTOMATIC", "AUTOMATIC");
+		$scrolled_win->set_policy(-automatic, -automatic);
 		$box2->pack_start($scrolled_win, 1, 1, 0);
 		$scrolled_win->show;
 		
 		$list = new Gtk::List;
-		$list->set_selection_mode("MULTIPLE");
-		$list->set_selection_mode("BROWSE");
+		$list->set_selection_mode(-multiple);
+		$list->set_selection_mode(-browse);
 		$scrolled_win->add($list);
 		$list->show;
 		
@@ -637,7 +649,7 @@ sub create_menus {
 	my($box1,$box2,$button,$menu,$menubar,$menuitem,$optionmenu,$separator);
 	
 	if (not defined $menu_window) {
-		$menu_window = new Gtk::Window "TOPLEVEL";
+		$menu_window = new Gtk::Window -toplevel;
 		signal_connect $menu_window destroy => \&destroy_window, \$menu_window;
 		$menu_window->set_title("menus");
 		$menu_window->border_width(0);
@@ -725,8 +737,8 @@ sub create_color_selection {
 		$cs_window = new Gtk::ColorSelectionDialog "color selection dialog";
 		
 		$cs_window->colorsel->set_opacity(1);
-		$cs_window->colorsel->set_update_policy("CONTINUOUS");
-		$cs_window->position("MOUSE");
+		$cs_window->colorsel->set_update_policy(-continuous);
+		$cs_window->position(-mouse);
 		signal_connect $cs_window destroy => \&destroy_window, \$cs_window;
 		$cs_window->colorsel->signal_connect("color_changed", \&color_selection_changed, $cs_window);
 		$cs_window->ok_button->signal_connect("clicked", \&color_selection_ok, $cs_window);
@@ -751,7 +763,7 @@ sub file_selection_ok {
 sub create_file_selection {
 	if (not defined $fs_window) {
 		$fs_window = new Gtk::FileSelection "file selection dialog";
-		$fs_window->position("MOUSE");
+		$fs_window->position(-mouse);
 		$fs_window->signal_connect("destroy", \&destroy_window, \$fs_window);
 		$fs_window->ok_button->signal_connect("clicked", \&file_selection_ok, $fs_window);
 		$fs_window->cancel_button->signal_connect("clicked", sub { destroy $fs_window });
@@ -768,7 +780,7 @@ sub create_range_controls {
 	my($box1,$box2,$button,$scrollbar,$scale,$separator,$adjustment);
 	
 	if (not defined $range_window) {
-		$range_window = new Gtk::Window 'TOPLEVEL';
+		$range_window = new Gtk::Window -toplevel;
 		$range_window->signal_connect("destroy", \&destroy_window, \$range_window);
 		$range_window->set_title("range controls");
 		$range_window->border_width(0);
@@ -786,14 +798,14 @@ sub create_range_controls {
 		
 		$scale = new Gtk::HScale($adjustment);
 		$scale->set_usize(150,30);
-		$scale->set_update_policy("DELAYED");
+		$scale->set_update_policy(-delayed);
 		$scale->set_digits(1);
 		$scale->set_draw_value(1);
 		$box2->pack_start($scale, 1, 1, 0);
 		$scale->show;
 		
 		$scrollbar = new Gtk::HScrollbar $adjustment;
-		$scrollbar->set_update_policy("CONTINUOUS");
+		$scrollbar->set_update_policy(-continuous);
 		$box2->pack_start($scrollbar, 1, 1, 0);
 		$scrollbar->show;
 		
@@ -824,11 +836,11 @@ sub create_rulers {
 	my($table);
 	
 	if (not defined $ruler_window) {
-		$ruler_window = new Gtk::Window "TOPLEVEL";
+		$ruler_window = new Gtk::Window 'toplevel';
 		$ruler_window->signal_connect("destroy", \&destroy_window, \$ruler_window);
 		$ruler_window->set_title("rulers");
 		$ruler_window->set_usize(300, 300);
-		$ruler_window->set_events(["POINTER_MOTION", "POINTER_MOTION_HINT"]);
+		$ruler_window->set_events(["pointer-motion-mask", "pointer-motion-hint-mask"]);
 		$ruler_window->border_width(0);
 		
 		$table = new Gtk::Table(2,2,0);
@@ -840,7 +852,7 @@ sub create_rulers {
 		$ruler->set_range(5, 15, 0, 20);
 		$ruler_window->signal_connect("motion_notify_event", 
 			sub { my($widget,$event)=@_; $ruler->motion_notify_event($event) });
-		$table->attach($ruler, 1, 2, 0, 1, ["EXPAND", "FILL"], ["FILL"], 0, 0);
+		$table->attach($ruler, 1, 2, 0, 1, [-expand, -fill], [-fill], 0, 0);
 		$ruler->show;
 		}
 
@@ -849,7 +861,7 @@ sub create_rulers {
 		$ruler->set_range(5, 15, 0, 20);
 		$ruler_window->signal_connect("motion_notify_event", 
 			sub { my($widget,$event)=@_; $ruler->motion_notify_event($event) });
-		$table->attach($ruler, 0, 1, 1, 2, ["FILL"], ["EXPAND","FILL"], 0, 0);
+		$table->attach($ruler, 0, 1, 1, 2, [-fill], [-expand, -fill], 0, 0);
 		$ruler->show;
 		}
 		
@@ -865,7 +877,7 @@ sub create_text {
 	my($box1,$box2,$button,$separator,$table,$hscrollbar,$vscrollbar,$text);
 	
 	if (not defined $text_window) {
-		$text_window = new Gtk::Window "TOPLEVEL";
+		$text_window = new Gtk::Window "toplevel";
 		$text_window->set_name("text window");
 		$text_window->signal_connect("destroy", \&destroy_window, \$text_window);
 		$text_window->set_title("test");
@@ -891,11 +903,11 @@ sub create_text {
 		show $text;
 		
 		$hscrollbar = new Gtk::HScrollbar($text->hadj);
-		$table->attach($hscrollbar, 0, 1,1,2,{EXPAND=>1,FILL=>1},{FILL=>1},0,0);
+		$table->attach($hscrollbar, 0, 1,1,2,[-expand,-fill],[-fill],0,0);
 		$hscrollbar->show;
 
 		$vscrollbar = new Gtk::VScrollbar($text->vadj);
-		$table->attach($vscrollbar, 1, 2,0,1,{FILL=>1},{EXPAND=>1,FILL=>1},0,0);
+		$table->attach($vscrollbar, 1, 2,0,1,[-fill],[-expand,-fill],0,0);
 		$vscrollbar->show;
 		
 		$text->freeze;
@@ -922,6 +934,22 @@ sub create_text {
 		$text->insert(undef,$text->style->white,undef, "josephine\n");
 		$text->insert(undef,$text->style->white,undef, "did\n");
 		$text->insert(undef,$text->style->white,undef, "not");
+		$text->insert(undef,$text->style->white,undef, "whereas\n");
+		$text->insert(undef,$text->style->white,undef, "kenneth\n");
+		$text->insert(undef,$text->style->white,undef, "is\n");
+		$text->insert(undef,$text->style->white,undef, "undoubtedly\n");
+		$text->insert(undef,$text->style->white,undef, "more\n");
+		$text->insert(undef,$text->style->white,undef, "wussful\n");
+		$text->insert(undef,$text->style->white,undef, "by default\nn");
+		$text->insert(undef,$text->style->white,undef, "not\n");
+		$text->insert(undef,$text->style->white,undef, "having\n");
+		$text->insert(undef,$text->style->white,undef, "any\n");
+		$text->insert(undef,$text->style->white,undef, "more\n");
+		$text->insert(undef,$text->style->white,undef, "information\n");
+		$text->insert(undef,$text->style->white,undef, "to\n");
+		$text->insert(undef,$text->style->white,undef, "base\n");
+		$text->insert(undef,$text->style->white,undef, "a\n");
+		$text->insert(undef,$text->style->white,undef, "comparison on\n");
 
 		
 		$text->thaw;
@@ -952,14 +980,14 @@ sub create_text {
 
 sub rotate_notebook {
 	my($button,$notebook) = @_;
-	my(%rotate) = (TOP => "RIGHT", RIGHT => "BOTTOM", BOTTOM => "LEFT", LEFT => "TOP");
+	my(%rotate) = (top => "right", right => "bottom", bottom => "left", left => "top");
 	$notebook->set_tab_pos($rotate{$notebook->tab_pos});
 }
 
 sub create_notebook {
 	my($box1,$box2,$button,$separator,$notebook,$frame,$label,$i);
 	if (not defined $notebook_window) {
-		$notebook_window = new Gtk::Window "TOPLEVEL";
+		$notebook_window = new Gtk::Window "toplevel";
 		$notebook_window->signal_connect("destroy", \&destroy_window, \$notebook_window);
 		$notebook_window->set_title("notebook");
 		$notebook_window->border_width(0);
@@ -974,7 +1002,7 @@ sub create_notebook {
 		$box2->show;
 		
 		$notebook = new Gtk::Notebook;
-		$notebook->set_tab_pos("TOP");
+		$notebook->set_tab_pos("top");
 		$box2->pack_start($notebook, 1, 1, 0);
 		$notebook->show;
 		
@@ -1036,7 +1064,7 @@ sub create_notebook {
 sub create_panes {
 	my($frame,$hpaned,$vpaned);
 	if (not defined $paned_window) {
-		$paned_window = new Gtk::Window "TOPLEVEL";
+		$paned_window = new Gtk::Window "toplevel";
 		$paned_window->signal_connect("destroy", \&destroy_window, \$paned_window);
 		$paned_window->set_title("Panes");
 		$paned_window->border_width(0);
@@ -1050,13 +1078,13 @@ sub create_panes {
 		$vpaned->add1($hpaned);
 
 		$frame = new Gtk::Frame;
-		$frame->set_shadow_type("IN");
+		$frame->set_shadow_type("in");
 		$frame->set_usize(60,60);
 		$hpaned->add1($frame);
 		$frame->show;
 
 		$frame = new Gtk::Frame;
-		$frame->set_shadow_type("IN");
+		$frame->set_shadow_type("in");
 		$frame->set_usize(80,60);
 		$hpaned->add2($frame);
 		$frame->show;
@@ -1064,7 +1092,7 @@ sub create_panes {
 		$hpaned->show;
 		
 		$frame = new Gtk::Frame;
-		$frame->set_shadow_type("IN");
+		$frame->set_shadow_type("in");
 		$frame->set_usize(60,80);
 		$vpaned->add2($frame);
 		$frame->show;
@@ -1177,12 +1205,12 @@ sub create_color_preview {
 		Gtk::Widget->push_visual(Gtk::Preview->get_visual);
 		Gtk::Widget->push_colormap(Gtk::Preview->get_cmap);
 		
-		$cp_window = new Gtk::Window "TOPLEVEL";
+		$cp_window = new Gtk::Window "toplevel";
 		$cp_window->signal_connect("destroy", \&color_preview_destroy, \$cp_window);
 		$cp_window->set_title("test");
 		$cp_window->border_width(10);
 		
-		$preview = new Gtk::Preview("COLOR");
+		$preview = new Gtk::Preview("color");
 		$preview->size(32,32);
 		$cp_window->add($preview);
 		$preview->show;
@@ -1249,12 +1277,12 @@ sub create_gray_preview {
 		Gtk::Widget->push_visual(Gtk::Preview->get_visual);
 		Gtk::Widget->push_colormap(Gtk::Preview->get_cmap);
 		
-		$gp_window = new Gtk::Window "TOPLEVEL";
+		$gp_window = new Gtk::Window "toplevel";
 		$gp_window->signal_connect("destroy", \&gray_preview_destroy, \$gp_window);
 		$gp_window->set_title("test");
 		$gp_window->border_width(10);
 		
-		$preview = new Gtk::Preview("GRAYSCALE");
+		$preview = new Gtk::Preview("grayscale");
 		$preview->size(64,64);
 		$gp_window->add($preview);
 		$preview->show;
@@ -1287,7 +1315,7 @@ sub create_gamma_curve {
 	my($curve,@vec,$i,$max);
 
 	if (not defined $curve_window) {
-		$curve_window = new Gtk::Window "TOPLEVEL";
+		$curve_window = new Gtk::Window "toplevel";
 		$curve_window->set_title("test");
 		$curve_window->border_width(10);
 		
@@ -1499,7 +1527,7 @@ sub test_destroy {
 
 sub create_test {
 	if (not defined $test_window) {
-		$test_window = new Gtk::Window("TOPLEVEL");
+		$test_window = new Gtk::Window("toplevel");
 		$test_window->signal_connect("destroy" => \&test_destroy, \$test_window);
 		$test_window->set_title("test");
 		$test_window->border_width(0);
@@ -1549,7 +1577,7 @@ sub create_main_window {
 		"create test",	\&create_test,
 	);
 	
-	$window = new Gtk::Window("TOPLEVEL");
+	$window = new Gtk::Window('toplevel');
 	$window->set_name("main window");
 	$window->set_uposition(20, 20);
 	
@@ -1590,6 +1618,8 @@ sub create_main_window {
 	$button->show;
 	
 	$window->show;
+	
+	#print Dumper($window);
 }
 
 parse Gtk::Rc "testgtkrc";

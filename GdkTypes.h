@@ -3,18 +3,20 @@
    This code may be distributed under the same terms as Perl itself. */
    
 
-typedef GdkWindow * Gtk__Gdk__Window;
-typedef GdkPixmap * Gtk__Gdk__Pixmap;
+/*typedef GdkPixmap * Gtk__Gdk__Pixmap;*/
 typedef GdkBitmap * Gtk__Gdk__Bitmap;
-typedef GdkVisual * Gtk__Gdk__Visual;
-typedef GdkColormap * Gtk__Gdk__Colormap;
+typedef GdkWindow * Gtk__Gdk__Window;
 typedef GdkCursor * Gtk__Gdk__Cursor;
 typedef GdkGC * Gtk__Gdk__GC;
-typedef GdkFont * Gtk__Gdk__Font;
-typedef GdkImage * Gtk__Gdk__Image;
 typedef GdkGCValues * Gtk__Gdk__GCValues;
 typedef GdkDeviceInfo * Gtk__Gdk__DeviceInfo;
-typedef GdkDeviceTimeCoord * Gtk__Gdk__DeviceTimeCoord;
+typedef GdkTimeCoord * Gtk__Gdk__TimeCoord;
+typedef GdkImage * Gtk__Gdk__Image;
+
+/*typedef GdkWindow * Gtk__Gdk__Window;
+typedef GdkVisual * Gtk__Gdk__Visual;
+typedef GdkColormap * Gtk__Gdk__Colormap;
+typedef GdkFont * Gtk__Gdk__Font;*/
 
 typedef GdkEvent * Gtk__Gdk__Event;
 typedef GdkRectangle * Gtk__Gdk__Rectangle;
@@ -22,93 +24,93 @@ typedef GdkColor * Gtk__Gdk__Color;
 typedef GdkImageType Gtk__Gdk__ImageType;
 typedef GdkWindowType Gtk__Gdk__WindowType;
 typedef GdkSubwindowMode Gtk__Gdk__SubwindowMode;
-typedef GdkLineStyle Gtk__Gdk__LineStyle;
+/*typedef GdkLineStyle Gtk__Gdk__LineStyle;
+typedef GdkFill Gtk__Gdk__Fill;*/
 typedef GdkJoinStyle Gtk__Gdk__JoinStyle;
 typedef GdkFunction Gtk__Gdk__Function;
-typedef GdkFill Gtk__Gdk__Fill;
 typedef GdkAtom Gtk__Gdk__Atom;
 typedef GdkCapStyle Gtk__Gdk__CapStyle;
-typedef GdkEventMask Gtk__Gdk__EventMask;
+/*typedef GdkEventMask Gtk__Gdk__EventMask;*/
 typedef GdkInputCondition Gtk__Gdk__InputCondition;
 typedef GdkModifierType Gtk__Gdk__ModifierType;
 typedef GdkGCValuesMask Gtk__Gdk__ValuesMask;
 typedef GdkGCValues Gtk__Gdk__Values;
-typedef GdkInputSource Gtk__Gdk__InputSource;
-typedef GdkInputMode Gtk__Gdk__InputMode;
-typedef GdkAxisUse Gtk__Gdk__AxisUse;
+/*typedef GdkInputSource Gtk__Gdk__InputSource;*/
+/*typedef GdkInputMode Gtk__Gdk__InputMode;*/
+/*typedef GdkAxisUse Gtk__Gdk__AxisUse;*/
 
-extern int SvGtkGdkEventType(SV * value);
-extern SV * newSVGtkGdkEventType(int value);
-extern int SvGtkGdkModifierType(SV * value);
-extern SV * newSVGtkGdkModifierType(int value);
-extern int SvGtkGdkGCValuesMask(SV * value);
-extern SV * newSVGtkGdkGCValuesMask(int value);
-extern SV * newSVGtkGdkGCValues(GdkGCValues * v);
-extern GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m);
-extern int SvGtkGdkWindowType(SV * value);
-extern SV * newSVGtkGdkWindowType(int value);
-extern int SvGtkGdkNotifyType(SV * value);
-extern SV * newSVGtkGdkNotifyType(int value);
-extern int SvGtkGdkVisualType(SV * value);
-extern SV * newSVGtkGdkVisualType(int value);
+extern int SvGdkEventType(SV * value);
+extern SV * newSVGdkEventType(int value);
+extern int SvGdkModifierType(SV * value);
+extern SV * newSVGdkModifierType(int value);
+extern int SvGdkGCValuesMask(SV * value);
+extern SV * newSVGdkGCValuesMask(int value);
+extern SV * newSVGdkGCValues(GdkGCValues * v);
+extern GdkGCValues * SvGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m);
+extern int SvGdkWindowType(SV * value);
+extern SV * newSVGdkWindowType(int value);
+extern int SvGdkNotifyType(SV * value);
+extern SV * newSVGdkNotifyType(int value);
+extern int SvGdkVisualType(SV * value);
+extern SV * newSVGdkVisualType(int value);
 
-extern int SvGtkGdkInputMode(SV * value);
-extern SV * newSVGtkGdkInputMode(int value);
-extern int SvGtkGdkInputSource(SV * value);
-extern SV * newSVGtkGdkInputSource(int value);
-extern int SvGtkGdkAxisUse(SV * value);
-extern SV * newSVGtkGdkAxisUse(int value);
+/*extern int SvGdkInputMode(SV * value);
+extern SV * newSVGdkInputMode(int value);*/
+/*extern int SvGdkInputSource(SV * value);
+extern SV * newSVGdkInputSource(int value);*/
+/*extern int SvGdkAxisUse(SV * value);
+extern SV * newSVGdkAxisUse(int value);*/
 
-extern SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * i);
-extern SV * newSVGtkGdkDeviceTimeCoord(GdkDeviceTimeCoord * i);
+extern SV * newSVGdkDeviceInfo(GdkDeviceInfo * i);
+extern SV * newSVGdkTimeCoord(GdkTimeCoord * i);
 
-extern int SvGtkGdkSubwindowMode(SV * value);
-extern SV * newSVGtkGdkSubwindowMode(int value);
-extern int SvGtkGdkLineStyle(SV * value);
-extern SV * newSVGtkGdkLineStyle(int value);
-extern int SvGtkGdkFunction(SV * value);
-extern SV * newSVGtkGdkFunction(int value);
-extern int SvGtkGdkJoinStyle(SV * value);
-extern SV * newSVGtkGdkJoinStyle(int value);
-extern int SvGtkGdkFill(SV * value);
-extern SV * newSVGtkGdkFill(int value);
-extern int SvGtkGdkCapStyle(SV * value);
-extern SV * newSVGtkGdkCapStyle(int value);
-extern int SvGtkGdkWindowClass(SV * value);
-extern SV * newSVGtkGdkWindowClass(int value);
-extern int SvGtkGdkWindowType(SV * value);
-extern SV * newSVGtkGdkWindowType(int value);
-extern int SvGtkGdkCursorType(SV * value);
-extern SV * newSVGtkGdkCursorType(int value);
-extern int SvGtkGdkEventMask(SV * value);
-extern SV * newSVGtkGdkEventMask(int value);
-extern int SvGtkGdkInputCondition(SV * value);
-extern SV * newSVGtkGdkInputCondition(int value);
-extern SV * newSVGtkGdkWindowRef(GdkWindow * w);
-extern GdkWindow * SvGtkGdkWindowRef(SV * data);
-extern SV * newSVGtkGdkPixmapRef(GdkPixmap * w);
-extern GdkPixmap * SvGtkGdkPixmapRef(SV * data);
-extern SV * newSVGtkGdkBitmapRef(GdkBitmap * w);
-extern GdkBitmap * SvGtkGdkBitmapRef(SV * data);
-extern SV * newSVGtkGdkColormapRef(GdkColormap * w);
-extern GdkColormap * SvGtkGdkColormapRef(SV * data);
-extern SV * newSVGtkGdkCursorRef(GdkCursor * w);
-extern GdkCursor * SvGtkGdkCursorRef(SV * data);
-extern SV * newSVGtkGdkVisualRef(GdkVisual * w);
-extern GdkVisual * SvGtkGdkVisualRef(SV * data);
-extern SV * newSVGtkGdkGCRef(GdkGC * g);
-extern GdkGC * SvGtkGdkGCRef(SV * data);
-extern SV * newSVGtkGdkFontRef(GdkFont * f);
-extern GdkFont * SvGtkGdkFontRef(SV * data);
-extern SV * newSVGtkGdkImageRef(GdkImage * i);
-extern GdkImage * SvGtkGdkImageRef(SV * data);
-extern SV * newSVGtkGdkRectangle(GdkRectangle * rect);
-extern GdkRectangle * SvGtkGdkRectangle(SV * data, GdkRectangle * rect);
-extern SV * newSVGtkGdkColor(GdkColor * color);
-extern GdkColor * SvGtkGdkColor(SV * data, GdkColor * color);
-extern SV * newSVGtkGdkAtom(GdkAtom a);
-extern GdkAtom SvGtkGdkAtom(SV * data);
-extern SV * newSVGtkGdkEvent(GdkEvent * e);
-extern GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e);
-extern GdkWindowAttr * SvGtkGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask);
+extern int SvGdkSubwindowMode(SV * value);
+extern SV * newSVGdkSubwindowMode(int value);
+/*extern int SvGdkLineStyle(SV * value);
+extern SV * newSVGdkLineStyle(int value);*/
+extern int SvGdkFunction(SV * value);
+extern SV * newSVGdkFunction(int value);
+extern int SvGdkJoinStyle(SV * value);
+extern SV * newSVGdkJoinStyle(int value);
+/*extern int SvGdkFill(SV * value);
+extern SV * newSVGdkFill(int value);*/
+extern int SvGdkCapStyle(SV * value);
+extern SV * newSVGdkCapStyle(int value);
+extern int SvGdkWindowClass(SV * value);
+extern SV * newSVGdkWindowClass(int value);
+extern int SvGdkWindowType(SV * value);
+extern SV * newSVGdkWindowType(int value);
+extern int SvGdkCursorType(SV * value);
+extern SV * newSVGdkCursorType(int value);
+/*extern int SvGdkEventMask(SV * value);
+extern SV * newSVGdkEventMask(int value);*/
+extern int SvGdkInputCondition(SV * value);
+extern SV * newSVGdkInputCondition(int value);
+extern SV * newSVGdkWindowRef(GdkWindow * w);
+extern GdkWindow * SvGdkWindowRef(SV * data);
+extern SV * newSVGdkPixmapRef(GdkPixmap * w);
+extern GdkPixmap * SvGdkPixmapRef(SV * data);
+extern SV * newSVGdkBitmapRef(GdkBitmap * w);
+extern GdkBitmap * SvGdkBitmapRef(SV * data);
+extern SV * newSVGdkColormapRef(GdkColormap * w);
+extern GdkColormap * SvGdkColormapRef(SV * data);
+extern SV * newSVGdkCursorRef(GdkCursor * w);
+extern GdkCursor * SvGdkCursorRef(SV * data);
+extern SV * newSVGdkVisualRef(GdkVisual * w);
+extern GdkVisual * SvGdkVisualRef(SV * data);
+extern SV * newSVGdkGCRef(GdkGC * g);
+extern GdkGC * SvGdkGCRef(SV * data);
+extern SV * newSVGdkFontRef(GdkFont * f);
+extern GdkFont * SvGdkFontRef(SV * data);
+extern SV * newSVGdkImageRef(GdkImage * i);
+extern GdkImage * SvGdkImageRef(SV * data);
+extern SV * newSVGdkRectangle(GdkRectangle * rect);
+extern GdkRectangle * SvGdkRectangle(SV * data, GdkRectangle * rect);
+extern SV * newSVGdkColor(GdkColor * color);
+extern GdkColor * SvGdkColor(SV * data, GdkColor * color);
+extern SV * newSVGdkAtom(GdkAtom a);
+extern GdkAtom SvGdkAtom(SV * data);
+extern SV * newSVGdkEvent(GdkEvent * e);
+extern GdkEvent * SvGdkEvent(SV * data, GdkEvent * e);
+extern GdkWindowAttr * SvGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask);
 

@@ -11,33 +11,37 @@
 
 static HV * ObjectCache = 0;
 
-void UnregisterGtkObject(SV * sv_object, GtkObject * gtk_object)
+void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 {
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 
 	if (!ObjectCache)
 		ObjectCache = newHV();
-
-	sv_setiv(sv_object, 0);
 	
-	SvREFCNT(sv_object)+=2;
+	/*sv_setiv(sv_object, 0);*/
+	
+	/*printf("Destroying %d from '%s'\n", hv_object, buffer);*/
+	
+	/*SvREFCNT(sv_object)+=2;*/
 	hv_delete(ObjectCache, buffer, strlen(buffer), G_DISCARD);
-	SvREFCNT(sv_object)--;
+	/*SvREFCNT(sv_object)--;*/
 }
 
-void RegisterGtkObject(SV * sv_object, GtkObject * gtk_object)
+void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 {
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 
 	if (!ObjectCache)
 		ObjectCache = newHV();
+	
+	/*printf("Recording %d as '%s'\n", hv_object, buffer);*/
 
-	hv_store(ObjectCache, buffer, strlen(buffer), sv_object, 0);
+	hv_store(ObjectCache, buffer, strlen(buffer), newSViv((int)hv_object), 0);
 }
 
-SV * RetrieveGtkObject(GtkObject * gtk_object)
+HV * RetrieveGtkObject(GtkObject * gtk_object)
 {
 	char buffer[40];
 	SV ** s;
@@ -47,136 +51,77 @@ SV * RetrieveGtkObject(GtkObject * gtk_object)
 		ObjectCache = newHV();
 
 	s = hv_fetch(ObjectCache, buffer, strlen(buffer), 0);
+
+	/*printf("Retrieving '%s' as %d\n", buffer, (s ? (int)*s : 0));*/
+
 	if (s)
-		return *s;
+		return (HV*)SvIV(*s);
 	else
 		return 0;
 }
 
-static AV * typecasts = 0;
-static HV * types = 0;
-
-static void add_typecast(int type, char * name)
-{
-	GtkObjectClass * klass = gtk_type_class(type);
-	av_extend(typecasts, klass->type);
-	av_store(typecasts, klass->type, newSVpv(name, 0));
-	hv_store(types, name, strlen(name), newSViv(type), 0);
-}
-
-int type_name(char * name) {
-	SV ** s = hv_fetch(types, name, strlen(name), 0);
-	if (s)
-		return SvIV(*s);
-	else
-		return 0;
-}
-
-void init_typecasts()
-{
-	typecasts = newAV();
-
-	add_typecast(gtk_adjustment_get_type(),		"Gtk::Adjustment");
-	add_typecast(gtk_alignment_get_type(),		"Gtk::Alignment");
-	add_typecast(gtk_aspect_frame_get_type(),	"Gtk::AspectFrame");
-	add_typecast(gtk_arrow_get_type(),		"Gtk::Arrow");
-	add_typecast(gtk_bin_get_type(),		"Gtk::Bin");
-	add_typecast(gtk_box_get_type(),		"Gtk::Box");
-	add_typecast(gtk_button_get_type(),		"Gtk::Button");
-	add_typecast(gtk_check_button_get_type(),	"Gtk::CheckButton");
-	add_typecast(gtk_color_selection_dialog_get_type(),	"Gtk::ColorSelectionDialog");
-	add_typecast(gtk_color_selection_get_type(),	"Gtk::ColorSelection");
-	add_typecast(gtk_container_get_type(),		"Gtk::Container");
-	add_typecast(gtk_curve_get_type(),		"Gtk::Curve");
-	add_typecast(gtk_data_get_type(),		"Gtk::Data");
-	add_typecast(gtk_dialog_get_type(),		"Gtk::Dialog");
-	add_typecast(gtk_drawing_area_get_type(),	"Gtk::DrawingArea");
-	add_typecast(gtk_entry_get_type(),		"Gtk::Entry");
-	add_typecast(gtk_file_selection_get_type(),	"Gtk::FileSelection");
-	add_typecast(gtk_frame_get_type(),		"Gtk::Frame");
-	add_typecast(gtk_hbox_get_type(),		"Gtk::HBox");
-	add_typecast(gtk_hruler_get_type(),		"Gtk::HRuler");
-	add_typecast(gtk_hscale_get_type(),		"Gtk::HScale");
-	add_typecast(gtk_hscrollbar_get_type(),		"Gtk::HScrollbar");
-	add_typecast(gtk_hseparator_get_type(),		"Gtk::HSeparator");
-	add_typecast(gtk_image_get_type(),		"Gtk::Image");
-	add_typecast(gtk_item_get_type(),		"Gtk::Item");
-	add_typecast(gtk_label_get_type(),		"Gtk::Label");
-	add_typecast(gtk_list_get_type(),		"Gtk::List");
-	add_typecast(gtk_list_item_get_type(),		"Gtk::ListItem");
-	add_typecast(gtk_menu_bar_get_type(),		"Gtk::MenuBar");
-	add_typecast(gtk_menu_get_type(),		"Gtk::Menu");
-	add_typecast(gtk_menu_item_get_type(),		"Gtk::MenuItem");
-	add_typecast(gtk_menu_shell_get_type(),		"Gtk::MenuShell");
-	add_typecast(gtk_misc_get_type(),		"Gtk::Misc");
-	add_typecast(gtk_notebook_get_type(),		"Gtk::Notebook");
-	add_typecast(gtk_object_get_type(),		"Gtk::Object");
-	add_typecast(gtk_option_menu_get_type(),	"Gtk::OptionMenu");
-	add_typecast(gtk_pixmap_get_type(),		"Gtk::Pixmap");
-	add_typecast(gtk_preview_get_type(),		"Gtk::Preview");
-	add_typecast(gtk_progress_bar_get_type(),	"Gtk::ProgressBar");
-	add_typecast(gtk_radio_button_get_type(),	"Gtk::RadioButton");
-	add_typecast(gtk_radio_menu_item_get_type(),	"Gtk::RadioMenuItem");
-	add_typecast(gtk_range_get_type(),		"Gtk::Range");
-	add_typecast(gtk_ruler_get_type(),		"Gtk::Ruler");
-	add_typecast(gtk_scale_get_type(),		"Gtk::Scale");
-	add_typecast(gtk_scrollbar_get_type(),		"Gtk::Scrollbar");
-	add_typecast(gtk_scrolled_window_get_type(),	"Gtk::ScrolledWindow");
-	add_typecast(gtk_separator_get_type(),		"Gtk::Separator");
-	add_typecast(gtk_table_get_type(),		"Gtk::Table");
-	add_typecast(gtk_text_get_type(),		"Gtk::Text");
-	add_typecast(gtk_toggle_button_get_type(),	"Gtk::ToggleButton");
-	add_typecast(gtk_tree_get_type(),		"Gtk::Tree");
-	add_typecast(gtk_tree_item_get_type(),		"Gtk::TreeItem");
-	add_typecast(gtk_vbox_get_type(),		"Gtk::VBox");
-	add_typecast(gtk_viewport_get_type(),		"Gtk::Viewport");
-	add_typecast(gtk_vruler_get_type(),		"Gtk::VRuler");
-	add_typecast(gtk_vscale_get_type(),		"Gtk::VScale");
-	add_typecast(gtk_vscrollbar_get_type(),		"Gtk::VScrollbar");
-	add_typecast(gtk_vseparator_get_type(),		"Gtk::VSeparator");
-	add_typecast(gtk_widget_get_type(),		"Gtk::Widget");
-	add_typecast(gtk_window_get_type(),		"Gtk::Window");
-	add_typecast(gtk_gamma_curve_get_type(),	"Gtk::GammaCurve");
-	add_typecast(gtk_paned_get_type(),		"Gtk::Paned");
-	add_typecast(gtk_hpaned_get_type(),		"Gtk::HPaned");
-	add_typecast(gtk_vpaned_get_type(),		"Gtk::VPaned");
-	add_typecast(gtk_input_dialog_get_type(),	"Gtk::InputDialog");
-}
+extern AV * gtk_typecasts;
 
 SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 {
-	SV * result = RetrieveGtkObject(object);
-	if (result) {
-		result = newRV(result);
+	HV * previous = RetrieveGtkObject(object);
+	SV * result;
+	if (previous) {
+		result = newRV((SV*)previous);
+		/*printf("Returning previous ref %d as %d (%d)\n", object, previous, result);*/
 		//SvREFCNT_dec(SvRV(result));
 	} else {
+		HV * h;
+		SV * s;
 		if (!classname) {
 			SV ** k;
-			if (!typecasts)
-				init_typecasts();
-			k = av_fetch(typecasts, object->klass->type, 0);
+			k = av_fetch(gtk_typecasts, object->klass->type, 0);
 			if (!k)
-				croak("unknown Gdk type");
+				croak("unknown Gtk type");
 			classname = SvPV(*k, na);
 		}
-		result = newRV(newSViv((int)object));
-		RegisterGtkObject(SvRV(result), object);
+		h = newHV();
+		s = newSViv((int)object);
+		hv_store(h, "_gtk", 4, s, 0);
+		result = newRV((SV*)h);
+		RegisterGtkObject(h, object);
 		sv_bless(result, gv_stashpv(classname, FALSE));
-		SvREFCNT_dec(SvRV(result));
+		SvREFCNT_dec(h);
 		/*gtk_object_ref(object);*/
+		/*printf("Returning new ref %d as %d\n", object, result);*/
 	}
 	return result;
 }
 
 GtkObject * SvGtkObjectRef(SV * o, char * name)
 {
-	if (!o || !SvOK(o))
+	HV * q;
+	SV ** r;
+	if (!o || !SvOK(o) || !(q=(HV*)SvRV(o)) || (SvTYPE(q) != SVt_PVHV))
 		return 0;
 	if (name && !sv_derived_from(o, name))
 		croak("variable is not of type %s", name);
-	return (GtkObject*)SvIV((SV*)SvRV(o));
+	r = hv_fetch(q, "_gtk", 4, 0);
+	if (!r || !SvIV(*r))
+		croak("variable is damaged %s", name);
+	return (GtkObject*)SvIV(*r);
 }
 
+void disconnect_GtkObjectRef(SV * o)
+{
+	HV * q;
+	SV ** r;
+	/*printf("Trying to delete GtkObject %d\n", o);*/
+	if (!o || !SvOK(o) || !(q=(HV*)SvRV(o)) || (SvTYPE(q) != SVt_PVHV))
+		return;
+	r = hv_fetch(q, "_gtk", 4, 0);
+	if (!r || !SvIV(*r))
+		return;
+	UnregisterGtkObject(q, (GtkObject*)SvIV(*r));
+	hv_delete(q, "_gtk", 4, G_DISCARD);
+}
+
+#if 0
 static struct opts shadow_types[] = {
 	{ GTK_SHADOW_NONE,	"NONE" },
 	{ GTK_SHADOW_IN,	"IN" },
@@ -347,6 +292,7 @@ static struct opts preview_types[] = {
 
 int SvGtkPreviewType(SV * value) { return SvOpt(value, "GtkPreviewType", preview_types); }
 SV * newSVGtkPreviewType(int value) { return newSVOpt(value, "GtkPreviewType", preview_types); }
+#endif
 
 GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
 {

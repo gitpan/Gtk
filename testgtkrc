@@ -1,4 +1,4 @@
-# pixmap_path "<dir 1>:<dir 2>:<dir 3>:..." (doesn't work yet)
+# pixmap_path "<dir 1>:<dir 2>:<dir 3>:..."
 #
 # style <name> [= <name>]
 # {
@@ -8,9 +8,11 @@
 # widget <widget_set> style <style_name>
 # widget_class <widget_class_set> style <style_name>
 
+pixmap_path "/home/pmattis/.pixmaps:."
+
 style "window"
 {
-  bg_pixmap[NORMAL] = "warning.xpm"
+#  bg_pixmap[NORMAL] = "warning.xpm"
 }
 
 style "scale"
@@ -54,7 +56,6 @@ style "curve"
   fg[NORMAL] = { 58000, 0, 0 }			# red
 }
 
-# pixmap_path "~/.pixmaps"
 widget_class "GtkWindow" style "window"
 widget_class "GtkDialog" style "window"
 widget_class "GtkFileSelection" style "window"

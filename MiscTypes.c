@@ -10,11 +10,13 @@
 void CroakOpts(char * name, char * value, struct opts * o)
 {
 	SV * result = sv_newmortal();
-	char buffer[40];
 	int i;
 	
-	sprintf(buffer, "invalid %s %s, expecting", name, value);
-	sv_catpv(result, buffer);
+	sv_catpv(result, "invalid ");
+	sv_catpv(result, name);
+	sv_catpv(result, " ");
+	sv_catpv(result, value);
+	sv_catpv(result, ", expecting");
 	for(i=0;o[i].name;i++) {
 		if (i==0)
 			sv_catpv(result," '");
@@ -23,6 +25,36 @@ void CroakOpts(char * name, char * value, struct opts * o)
 		else
 			sv_catpv(result,"', or '");
 		sv_catpv(result, o[i].name);
+	}
+	sv_catpv(result,"'");
+	croak(SvPV(result, na));
+}
+
+void CroakOptsHash(char * name, char * value, HV * o)
+{
+	SV * result = sv_newmortal();
+	HE * he;
+	int i=0;
+	
+	sv_catpv(result, "invalid ");
+	sv_catpv(result, name);
+	sv_catpv(result, " ");
+	sv_catpv(result, value);
+	sv_catpv(result, ", expecting");
+	hv_iterinit(o);
+	he = hv_iternext(o);
+	while(he) {
+		I32 len;
+		char * key = hv_iterkey(he, &len);
+		he = hv_iternext(o);
+		if (i==0)
+			sv_catpv(result," '");
+		else if (he)
+			sv_catpv(result,"', '");
+		else
+			sv_catpv(result,"', or '");
+		i=1;
+		sv_catpvn(result, key, len);
 	}
 	sv_catpv(result,"'");
 	croak(SvPV(result, na));
@@ -47,22 +79,126 @@ SV * newSVOpt(long value, char * optname, struct opts * o)
 	croak("invalid %s value %d", optname, value);
 }
 
+
 SV * newSVMiscRef(void * object, char * classname, int * newref)
 {
-	SV * result = RetrieveMisc(object);
-	if (result) {
-		result = newRV(result);
-		//SvREFCNT_dec(SvRV(result));
+	HV * previous = RetrieveMisc(object);
+	SV * result;
+	if (previous) {
+		result = newRV((SV*)previous);
 		if (newref)
 			*newref = 0;
 	} else {
-		result = newRV(newSViv((int)object));
-		RegisterMisc(SvRV(result), object);
+		HV * h = newHV();
+		hv_store(h, "_gtk", 4, newSViv((int)object), 0);
+		result = newRV((SV*)h);
+		RegisterMisc(h, object);
 		sv_bless(result, gv_stashpv(classname, FALSE));
-		SvREFCNT_dec(SvRV(result));
+		SvREFCNT_dec(h);
 		if (newref)
 			*newref = 1;
 	}
+	return result;
+}
+
+long SvOptsHash(SV * name, char * optname, HV * o) 
+{
+	int i;
+	int len;
+	char * n = SvPV(name, len);
+	SV ** s;
+	if (*n == '-') {
+		n++;
+		len--;
+	}
+	s = hv_fetch(o, n, len, 0);
+	if (s)
+		return SvIV(*s);
+	CroakOptsHash(optname, n, o);
+}
+
+SV * newSVOptsHash(long value, char * optname, HV * o) 
+{
+	int i;
+	HE * h;
+	SV * result = 0;
+	hv_iterinit(o);
+	while(h = hv_iternext(o)) {
+		SV * s = hv_iterval(o, h);
+		if (SvIV(s) == value) {
+			I32 len;
+			char * p = hv_iterkey(h, &len);
+			result = newSVpv(p, len);
+		}
+	}
+	if (result)
+		return result;
+	croak("invalid %s value %d", optname, value);
+}
+
+long SvFlagsHash(SV * name, char * optname, HV * o) 
+{
+	int i;
+	int val=0;
+	if (!name || !SvOK(name))
+		return 0;
+	if (SvRV(name) && (SvTYPE(SvRV(name)) == SVt_PVAV)) {
+		AV * r = (AV*)SvRV(name);
+		for(i=0;i<=av_len(r);i++)
+			val |= SvOptsHash(*av_fetch(r, i, 0), optname, o);
+	} else if (SvRV(name) && (SvTYPE(SvRV(name)) == SVt_PVHV)) {
+		HV * r = (HV*)SvRV(name);
+		HE * h;
+		hv_iterinit(r);
+		while(h = hv_iternext(r)) {
+			I32 len;
+			char * key = hv_iterkey(h, &len);
+			SV ** f;
+			if (*key == '-') {
+				key++;
+				len--;
+			}
+			f = hv_fetch(o, key, len, 0);
+			if (f)
+				val |= SvIV(hv_iterval(o, h));
+			else
+				CroakOptsHash(optname, key, o);
+		}
+	} else
+		val |= SvOptsHash(name, optname, o);
+	return val;
+}
+
+SV * newSVFlagsHash(long value, char * optname, HV * o, int hash) 
+{
+	SV * target, *result;
+	HV * h = newHV();
+	int i;
+	HE * he;
+	if (hash) 
+		target = (SV*)newHV();
+	else
+		target = (SV*)newAV();
+		
+	
+	hv_iterinit(o);
+	while(he = hv_iternext(o)) {
+		char *key;
+		I32 len;
+		SV * s = hv_iternextsv(o, &key, &len);
+		int val = SvIV(s);
+			
+		if ((value & val) == val) {
+			if (hash)
+				hv_store((HV*)target, key, len, newSVsv(s), 0);
+			else
+				av_push((AV*)target, newSVpv(key, len));
+			value &= ~val;
+		}
+	}
+
+	result = newRV(target);
+	SvREFCNT_dec(target);
 	return result;
 }
 
@@ -120,38 +256,42 @@ SV * newSVOptFlags(long value, char * optname, struct opts * o, int hash)
 
 void * SvMiscRef(SV * o, char * classname)
 {
-	if (!o || !SvOK(o))
+	HV * q;
+	SV ** s;
+	if (!o || !SvOK(o) || !(q=(HV*)SvRV(o)) || (SvTYPE(q) != SVt_PVHV))
 		return 0;
 	if (classname && !sv_derived_from(o, classname))
 		croak("variable is not of type %s", classname);
-	return (void*)SvIV((SV*)SvRV(o));
+	s = hv_fetch(q, "_gtk", 4, 0);
+	if (!s || !SvIV(*s))
+		croak("variable is damaged %s", classname);
+	return (void*)SvIV(*s);
 }
 
 static HV * MiscCache = 0;
 
-void UnregisterMisc(SV * sv_object, void * gtk_object)
+void UnregisterMisc(HV * hv_object, void * gtk_object)
 {
 	int i;
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 	if (!MiscCache)
 		MiscCache = newHV();
-	sv_setiv(sv_object, 0);
-	SvREFCNT(sv_object)+=2;
+	
+	hv_delete(hv_object, "_gtk", 4, G_DISCARD);
 	hv_delete(MiscCache, buffer, strlen(buffer), G_DISCARD);
-	SvREFCNT(sv_object)--;
 }
 
-void RegisterMisc(SV * sv_object, void * gtk_object)
+void RegisterMisc(HV * hv_object, void * gtk_object)
 {
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 	if (!MiscCache)
 		MiscCache = newHV();
-	hv_store(MiscCache, buffer, strlen(buffer), sv_object, 0);
+	hv_store(MiscCache, buffer, strlen(buffer), newSViv((int)hv_object), 0);
 }
 
-SV * RetrieveMisc(void * gtk_object)
+HV * RetrieveMisc(void * gtk_object)
 {
 	SV ** s;
 	char buffer[40];
@@ -160,7 +300,7 @@ SV * RetrieveMisc(void * gtk_object)
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 	s = hv_fetch(MiscCache, buffer, strlen(buffer), 0);
 	if (s)
-		return *s;
+		return (HV*)SvIV(*s);
 	else
 		return 0;
 }
@@ -171,4 +311,3 @@ void * alloc_temp(int size)
     SvGROW(s, size);
     return SvPV(s, na);
 }
-            

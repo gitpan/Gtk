@@ -28,7 +28,7 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 970828, and there is
+Usage information: this package was designed around gtk 970925, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.
@@ -42,6 +42,10 @@ calling sequences as much as is reasonable.
 
 Please bring information regarding bugs and other issues to
 <gtk-list@redhat.com> or the author, at <kjahds@kjahds.com>.
+
+At this stage, even the test program breaks on several of the tests, so this
+version is definitely incomplete. I hope to get another version out sometime
+soon.
 
 Good Luck,
 Ken

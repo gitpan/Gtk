@@ -73,6 +73,15 @@ gtk_notebook_remove_page(self, page_num)
 	Gtk::Notebook	self
 	int	page_num
 
+Gtk::NotebookPage
+cur_page(self)
+	Gtk::Notebook	self
+	CODE:
+	RETVAL = self->cur_page;
+	printf("cur_page = %x\n", self->cur_page);
+	OUTPUT:
+	RETVAL
+
 int
 gtk_notebook_current_page(self)
 	Gtk::Notebook	self
@@ -131,4 +140,68 @@ gtk_notebook_tab_pos(self)
 	OUTPUT:
 	RETVAL
 
+void
+children(notebook)
+	Gtk::Notebook	notebook
+	PPCODE:
+	{
+		GList * list;
+		if (GIMME != G_ARRAY) {
+			EXTEND(sp, 1);
+			PUSHs(sv_2mortal(newSViv(g_list_length(notebook->children))));
+		} else {
+			for(list = g_list_first(notebook->children); list; list = g_list_next(list)) {
+				EXTEND(sp, 1);
+				PUSHs(sv_2mortal(newSVGtkNotebookPage((GtkNotebookPage*)list->data)));
+			}
+		}
+	}
+
 #endif
+
+MODULE = Gtk::Notebook		PACKAGE = Gtk::NotebookPage		PREFIX = gtk_notebook_
+
+#ifdef GTK_NOTEBOOK
+
+Gtk::Widget_Up
+child(self)
+	Gtk::NotebookPage	self
+	CODE:
+	RETVAL = self->child;
+	OUTPUT:
+	RETVAL
+
+Gtk::Widget_Up
+tab_label(self)
+	Gtk::NotebookPage	self
+	CODE:
+	RETVAL = self->tab_label;
+	OUTPUT:
+	RETVAL
+
+Gtk::Widget_Up
+menu_label(self)
+	Gtk::NotebookPage	self
+	CODE:
+	RETVAL = self->menu_label;
+	OUTPUT:
+	RETVAL
+
+int
+default_menu(self)
+	Gtk::NotebookPage	self
+	CODE:
+	RETVAL = self->default_menu;
+	OUTPUT:
+	RETVAL
+
+int
+default_tab(self)
+	Gtk::NotebookPage	self
+	CODE:
+	RETVAL = self->default_tab;
+	OUTPUT:
+	RETVAL
+
+#endif
+

@@ -44,7 +44,7 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
-$init = 1;
+$Gtk::_init_package = "Gtk::Gdk";
 
 use Gtk;
 

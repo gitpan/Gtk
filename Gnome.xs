@@ -15,6 +15,8 @@
 # define boolSV(b) ((b) ? &sv_yes : &sv_no)
 #endif
 
+void GtkInit_internal(void);
+
 extern int did_we_init_gdk, did_we_init_gtk;
 int did_we_init_gnome = 0;
 
@@ -34,6 +36,8 @@ init(Class, app_id)
 			SV * ARGV0 = perl_get_sv("0", FALSE);
 			int i;
 			
+			printf("In Gtk::Gnome::Init\n");
+			
 			argc = av_len(ARGV)+2;
 			if (argc) {
 				argv = malloc(sizeof(char*)*argc);
@@ -43,7 +47,7 @@ init(Class, app_id)
 			}
 			
 			i = argc;
-			gnome_init(app_id, &parser, argc, argv, 0, &i);
+			gnome_init(app_id, NULL /*&parser*/, argc, argv, 0, &i);
 
 			did_we_init_gdk = 1;
 			did_we_init_gtk = 1;
@@ -54,6 +58,8 @@ init(Class, app_id)
 			
 			if (argv)
 				free(argv);
+				
+			GtkInit_internal();
 		}
 	}
 

@@ -8,7 +8,13 @@
 # widget <widget_set> style <style_name>
 # widget_class <widget_class_set> style <style_name>
 
-pixmap_path "/home/pmattis/.pixmaps:."
+pixmap_path "."
+
+style "default"
+{
+#  fontset = "-adobe-helvetica-medium-r-normal--*-120-*-*-*-*-*-*,*"
+  font = "-adobe-helvetica-medium-r-normal--*-120-*-*-*-*-*-*"
+}
 
 style "window"
 {
@@ -23,14 +29,14 @@ style "scale"
 
 style "button"
 {
-  fg[PRELIGHT] = { 1.0, 1.0, 1.0 }
-  bg[PRELIGHT] = { 0, 0, 0.75 }
+#  fg[PRELIGHT] = { 1.0, 1.0, 1.0 }
+#  bg[PRELIGHT] = { 0, 0, 0.75 }
 }
 
-style "main_button" = "button"
+style 'main_button' = 'button'
 {
   font = "-adobe-helvetica-medium-r-normal--*-100-*-*-*-*-*-*"
-  bg[PRELIGHT] = { 0.75, 0, 0 }
+  bg[PRELIGHT] = { 0, 0.75, 0x00 }
 }
 
 style "toggle_button" = "button"
@@ -43,12 +49,14 @@ style "toggle_button" = "button"
 style "text"
 {
   bg_pixmap[NORMAL] = "marble.xpm"
+  text[NORMAL] = { 1.0, 1.0, 1.0 }
   fg[NORMAL] = { 1.0, 1.0, 1.0 }
+  base[NORMAL] = { 0.0, 0.0, 0.0 }
 }
 
 style "ruler"
 {
-  font = "-adobe-helvetica-medium-r-normal--*-80-*-*-*-*-*-*"
+  font = '-adobe-helvetica-medium-r-normal--*-80-*-*-*-*-*-*'
 }
 
 style "curve"
@@ -65,5 +73,6 @@ widget_class "*GtkRadioButton*" style "toggle_button"
 widget_class "*GtkButton*" style "button"
 widget_class "*Ruler" style "ruler"
 widget_class "*GtkText" style "text"
+widget_class "*" style "default"
 widget "main window.*GtkButton*" style "main_button"
 widget "*GtkCurve" style "curve"

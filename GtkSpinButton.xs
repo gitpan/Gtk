@@ -44,6 +44,14 @@ gtk_spin_button_set_digits(self, digits)
 	Gtk::SpinButton self
 	int digits
 
+int
+gtk_spin_button_digits(self)
+	Gtk::SpinButton self
+	CODE:
+	RETVAL = self->digits;
+	OUTPUT:
+	RETVAL
+
 double
 gtk_spin_button_get_value_as_float(self)
 	Gtk::SpinButton self
@@ -55,21 +63,28 @@ gtk_spin_button_get_value_as_int(self)
 void
 gtk_spin_button_set_value(self, value)
 	Gtk::SpinButton self
-	double value
+	gfloat value
 
 void
 gtk_spin_button_set_update_policy(self, policy)
 	Gtk::SpinButton self
 	Gtk::SpinButtonUpdatePolicy policy
 
-#if 0
-
 void
 gtk_spin_button_set_numeric(self, numeric)
 	Gtk::SpinButton self
 	int numeric
 
-#endif
+void
+gtk_spin_button_spin(self, direction, step)
+	Gtk::SpinButton self
+	int	direction
+	gfloat	step
+
+void
+gtk_spin_button_set_wrap(self, wrap)
+	Gtk::SpinButton self
+	int	wrap
 
 #endif
 

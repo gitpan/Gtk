@@ -84,5 +84,68 @@ gtk_box_set_child_packing (box, child, expand, fill, padding, pack_type)
 	int fill
 	int padding
 	Gtk::PackType pack_type
-	
+
+void
+children(box)
+	Gtk::Box	box
+	PPCODE:
+	{
+		GList * list;
+		if (GIMME != G_ARRAY) {
+			EXTEND(sp, 1);
+			PUSHs(sv_2mortal(newSViv(g_list_length(box->children))));
+		} else {
+			for(list = box->children; list; list = list->next) {
+				EXTEND(sp, 1);
+				PUSHs(sv_2mortal(newSVGtkBoxChild((GtkBoxChild*)list->data)));
+			}
+		}
+	}
+
+#endif
+
+MODULE = Gtk::Box		PACKAGE = Gtk::BoxChild	PREFIX = gtk_box_
+
+#ifdef GTK_BOX
+
+Gtk::Widget_Up
+widget(child)
+	Gtk::BoxChild	child
+	CODE:
+	RETVAL = child->widget;
+	OUTPUT:
+	RETVAL
+
+int
+padding(child)
+	Gtk::BoxChild	child
+	CODE:
+	RETVAL = child->padding;
+	OUTPUT:
+	RETVAL
+
+int
+expand(child)
+	Gtk::BoxChild	child
+	CODE:
+	RETVAL = child->expand;
+	OUTPUT:
+	RETVAL
+
+int
+fill(child)
+	Gtk::BoxChild	child
+	CODE:
+	RETVAL = child->fill;
+	OUTPUT:
+	RETVAL
+
+int
+pack(child)
+	Gtk::BoxChild	child
+	CODE:
+	RETVAL = child->pack;
+	OUTPUT:
+	RETVAL
+
 #endif

@@ -91,8 +91,7 @@ gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, button, activate_time,
 	{
 		AV * args = newAV();
 		int i;
-		for(i=5;i<items;i++)
-			av_push(args,newSVsv(ST(i)));
+		PackCallbackST(args, 5);
 		gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, menu_pos_func,
 			 (void*)args, button, activate_time);
 	}

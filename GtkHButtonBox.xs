@@ -36,7 +36,7 @@ gtk_hbutton_box_get_spacing_default(Class)
 	OUTPUT:
 	RETVAL
 
-int
+Gtk::ButtonBoxStyle
 gtk_hbutton_box_get_layout_default(Class)
 	SV *	Class
 	CODE:
@@ -47,7 +47,7 @@ gtk_hbutton_box_get_layout_default(Class)
 void
 gtk_hbutton_box_set_layout_default(Class, layout)
 	SV *	Class
-	int	layout
+	Gtk::ButtonBoxStyle	layout
 	CODE:
 	gtk_hbutton_box_set_layout_default(layout);
 

@@ -126,9 +126,7 @@ foreach(self, code, ...)
 		args = newAV();
 		
 		av_push(args, newRV(SvRV(ST(0))));
-		av_push(args, newSVsv(ST(1)));
-		for (i=2;i<items;i++)
-			av_push(args, newSVsv(ST(i)));
+		PackCallbackST(args, 1);
 
 		gtk_container_foreach(self, foreach_container_handler, args);
 		

@@ -1,9 +1,13 @@
-
+\
 /* Copyright (C) 1997,1998, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
 
 #include "inc.h"
-   
+
+/*extern HV * signal_fixups;*/
+
+/*typedef GtkNotebookPage * Gtk__NotebookPage;
+typedef GtkBoxChild * Gtk__BoxChild;   */
 typedef GtkMenuFactory * Gtk__MenuFactory;
 typedef GtkSelectionData * Gtk__SelectionData;
 
@@ -22,9 +26,20 @@ extern void disconnect_GtkObjectRef(SV * o);
 
 extern SV * newSVGtkMenuEntry(GtkMenuEntry * o);
 extern GtkMenuEntry * SvGtkMenuEntry(SV * o, GtkMenuEntry * e);
+
+extern SV * newSVGtkRequisition(GtkRequisition * o);
+extern GtkRequisition * SvGtkRequisition(SV * o, GtkRequisition * e);
  
 extern SV * newSVGtkSelectionDataRef(GtkSelectionData * o);
 extern GtkSelectionData * SvGtkSelectionDataRef(SV * data);
+
+/*
+#define newSVGtkNotebookPage(n) newSVMiscRef(n, "Gtk::NotebookPage", 0)
+#define SvGtkNotebookPage(data) ((GtkNotebookPage*)SvMiscRef(data, "Gtk::NotebookPage"))
+
+#define newSVGtkBoxChild(n) newSVMiscRef(n, "Gtk::BoxChild", 0)
+#define SvGtkBoxChild(data) ((GtkBoxChild*)SvMiscRef(data, "Gtk::BoxChild"))
+*/
 
 extern void GCGtkObjects(void);
 

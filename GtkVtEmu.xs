@@ -78,9 +78,7 @@ gtk_vtemu_set_reporter(vtemu, callback, ...)
 	{
 		AV * args = newAV();
 		int j;
-		av_push(args, newSVsv(ST(1)));
-		for(j=2;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 1);
 
 		gtk_vtemu_set_reporter(vtemu, reporter_callback, (gpointer)args);
 	}

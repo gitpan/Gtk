@@ -2,7 +2,515 @@
 use Gtk;
 use Gtk::Atoms;
 
-init Gtk;
+sub bbox_widget_destroy {
+	my($widget, $todestroy) = @_;
+	
+}
+
+sub destroy_tooltips {
+	print "Destroy_tooltips: ", Dumper(\@_);
+	my($widget, $window) = @_;
+	#$$window->{tooltips}->unref;
+	$$window = undef;
+}
+
+
+sub cursor_expose_event {
+	my($widget, $event, $data) = @_;
+	my($darea, $drawable, $black_gc, $gray_gc, $white_gc, $max_width, $max_height);
+	
+	$darea = $widget;
+	$drawable = $widget->window;
+	$white_gc = $widget->style->white_gc;
+	$gray_gc = $widget->style->bc_gc('normal');
+	$black_gc = $widget->style->black_gc;
+	$max_width = $widget->allocation->{width};
+	$max_height = $widget->allocation->{width};
+	
+	$drawable->draw_rectangle($white_gc, 1, 0, 0, $max_width, $max_height/2);
+	$drawable->draw_rectangle($black_gc, 1, 0, $max_height/2, $max_width, $max_height/2);
+	$drawable->draw_rectangle($gray_gc, 1, $max_width/3, $max_height/3, $max_width/3, $max_height/3);
+	
+	1;
+}
+
+sub set_cursor {
+	my($spinner, $widget) = @_;
+	my($c, $cursor);
+	
+	$c = $spinner->get_value_as_int;
+	$c = 0 if $c < 0;
+	$c = 152 if $c > 152;
+	
+	$cursor = new Gtk::Gdk::Cusor $c;
+	$widget->window->set_cursor($cursor);
+	
+}
+
+sub cursor_event {
+	my($widget,$event,$spinner) = @_;
+	if ($event->{type} eq 'button-press' and ($event->{button} == 1 or $event->{button} == 3)) {
+		$spinner->spin($event->{button} == 1 ? 'up' : 'down', $spinner->adjustment->step_increment);
+		return 1;
+	}
+	return 0;
+}
+
+#static void
+#create_cursors ()
+#{
+#  static GtkWidget *window = NULL;
+#  GtkWidget *frame;
+#  GtkWidget *hbox;
+#  GtkWidget *main_vbox;
+#  GtkWidget *vbox;
+#  GtkWidget *darea;
+#  GtkWidget *spinner;
+#  GtkWidget *button;
+#  GtkWidget *label;
+#  GtkWidget *any;
+#  GtkAdjustment *adj;
+#
+#  if (!window)
+#    {
+#      window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+#      
+#      gtk_signal_connect (GTK_OBJECT (window), "destroy",
+#                          GTK_SIGNAL_FUNC (gtk_widget_destroyed),
+#                          &window);
+#      
+#      gtk_window_set_title (GTK_WINDOW (window), "Cursors");
+#      
+#      main_vbox = gtk_vbox_new (FALSE, 5);
+#      gtk_container_border_width (GTK_CONTAINER (main_vbox), 0);
+#      gtk_container_add (GTK_CONTAINER (window), main_vbox);
+#
+#      vbox =
+#        gtk_widget_new (gtk_vbox_get_type (),
+#                        "GtkBox::homogeneous", FALSE,
+#                        "GtkBox::spacing", 5,
+#                        "GtkContainer::border_width", 10,
+#                        "GtkWidget::parent", main_vbox,
+#                        "GtkWidget::visible", TRUE,
+#                        NULL);
+#
+#      hbox = gtk_hbox_new (FALSE, 0);
+#      gtk_container_border_width (GTK_CONTAINER (hbox), 5);
+#      gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+#      
+#      label = gtk_label_new ("Cursor Value:");
+#      gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+#      gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+#      
+#      adj = (GtkAdjustment *) gtk_adjustment_new (0,
+#                                                  0, 152,
+#                                                  2,
+#                                                  10, 0);
+#      spinner = gtk_spin_button_new (adj, 0, 0);
+#      gtk_box_pack_start (GTK_BOX (hbox), spinner, TRUE, TRUE, 0);
+#
+#      frame =
+#        gtk_widget_new (gtk_frame_get_type (),
+#                        "GtkFrame::shadow", GTK_SHADOW_ETCHED_IN,
+#                        "GtkFrame::label_xalign", 0.5,
+#                        "GtkFrame::label", "Cursor Area",
+#                        "GtkContainer::border_width", 10,
+#                        "GtkWidget::parent", vbox,
+#                        "GtkWidget::visible", TRUE,
+#                        NULL);
+#
+#      darea = gtk_drawing_area_new ();
+#      gtk_widget_set_usize (darea, 80, 80);
+#      gtk_container_add (GTK_CONTAINER (frame), darea);
+#      gtk_signal_connect (GTK_OBJECT (darea),
+#                          "expose_event",
+#                          GTK_SIGNAL_FUNC (cursor_expose_event),
+#                          NULL);
+#      gtk_widget_set_events (darea, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK);
+#      gtk_signal_connect (GTK_OBJECT (darea),
+#                          "button_press_event",
+#                          GTK_SIGNAL_FUNC (cursor_event),
+#                          spinner);
+#      gtk_widget_show (darea);
+#
+#      gtk_signal_connect (GTK_OBJECT (spinner), "changed",
+#                          GTK_SIGNAL_FUNC (set_cursor),
+#                          darea);
+#
+#      any =
+#        gtk_widget_new (gtk_hseparator_get_type (),
+#                        "GtkWidget::visible", TRUE,
+#                        NULL);
+#      gtk_box_pack_start (GTK_BOX (main_vbox), any, FALSE, TRUE, 0);
+#  
+#      hbox = gtk_hbox_new (FALSE, 0);
+#      gtk_container_border_width (GTK_CONTAINER (hbox), 10);
+#      gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, TRUE, 0);
+#
+#      button = gtk_button_new_with_label ("Close");
+#      gtk_signal_connect_object (GTK_OBJECT (button), "clicked",
+#                                 GTK_SIGNAL_FUNC (gtk_widget_destroy),
+#                                 GTK_OBJECT (window));
+#      gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 5);
+#
+#      gtk_widget_show_all (window);
+#
+#      set_cursor (spinner, darea);
+#    }
+#  else
+#    gtk_widget_destroy (window);
+#}
+
+
+
+sub create_bbox_window {
+	my($horizontal, $title, $pos, $spacing, $child_w, $child_h, $layout) = @_;
+	my($window, $box1, $bbox, $button);
+	
+	$window = new Gtk::Window -toplevel;
+	set_title $window $title;
+	
+	$window->signal_connect("destroy", \&bbox_widget_destroy, \$window);
+	
+	if ($horizontal) {
+		set_usize $window 550, 60;
+		set_uposition $window 150, $pos;
+		$box1 = new Gtk::VBox 0, 0;
+	} else {
+		set_usize $window 150, 400;
+		set_uposition $window $pos, 200;
+		$box1 = new Gtk::VBox 0, 0;
+	}
+	
+	add $window $box1;
+	show $box1;
+	
+	if ($horizontal) {
+		$bbox = new Gtk::HButtonBox;
+	} else {
+		$bbox = new Gtk::VButtonBox;
+	}
+	
+	set_layout $bbox $layout;
+	set_spacing $bbox $spacing;
+	set_child_size $bbox $child_w, $child_h;
+	show $bbox;
+	
+	border_width $box1 25;
+	pack_start $box1 $bbox, 1, 1, 0;
+	
+	$button = new Gtk::Button "OK";
+	add $bbox $button;
+	signal_connect $button "clicked" => \&bbox_widget_destroy, \$window;
+	show $button;
+	
+	$button = new Gtk::Button "Cancel";
+	add $bbox $button;
+	show $button;
+	
+	$button = new Gtk::Button "Help";
+	add $bbox $button;
+	show $button;
+	
+	show $window;
+}
+
+sub test_hbbox {
+	create_bbox_window (1, "Spread", 50, 40, 85, 28, -spread);
+	create_bbox_window (1, "Edge", 200, 40, 85, 25, -edge);
+	create_bbox_window (1, "Start", 350, 40, 85, 25, -start);
+	create_bbox_window (1, "End", 500, 15, 30, 25, -end);
+}
+
+sub test_vbbox {
+	create_bbox_window (0, "Spread", 50, 40, 85, 28, -spread);
+	create_bbox_window (0, "Edge", 250, 40, 85, 28, -edge);
+	create_bbox_window (0, "Start", 450, 40, 85, 25, -start);
+	create_bbox_window (0, "End", 650, 15, 30, 25, -end);
+}
+
+sub create_button_box {
+	my($bbox,$button);
+	
+	if (not defined $button_box_window) {
+		$button_box_window = new Gtk::Window -toplevel;
+		$button_box_window->set_title("Button Box Test");
+		$button_box_window->signal_connect("destroy", \&Gtk::Widget::destroyed, \$button_box_window);
+		
+		$button_box_window->border_width(20);
+		
+		$bbox = new Gtk::HButtonBox;
+		$button_box_window->add($bbox);
+		show $bbox;
+		
+		$button = new Gtk::Button "Horizontal";
+		signal_connect $button "clicked" => \&test_hbbox;
+		$bbox->add($button);
+		show $button;
+		
+		$button = new Gtk::Button "Vertical";
+		signal_connect $button "clicked" => \&test_vbbox;
+		$bbox->add($button);
+		show $button;
+		
+		
+	}
+	
+	if (!$button_box_window->visible) {
+		show $button_box_window;
+	} else {
+		destroy $button_box_window;
+	}
+}
+
+$spinner1 = undef;
+
+sub toggle_snap {
+	my($widget, $spin) = @_;
+	
+	if ($widget->active) {
+		$spin->set_update_policy(['always', 'snap-to-ticks']);
+	} else {
+		$spin->set_update_policy('always');
+	}
+}
+
+sub toggle_numeric {
+	my($widget, $spin) = @_;
+	$spin->set_numeric($widget->active);
+}
+
+sub change_digits {
+	my($widget, $spin) = @_;
+	$spinner1->set_digits($spin->get_value_as_int);
+}
+
+sub get_value {
+	my($widget,$data) = @_;
+	my($labels, $spin, $buf);
+	$spin = $spinner1;
+	$label = $widget->{label};
+	if ($data == 1) {
+		$buf = sprintf "%d", $spin->get_value_as_int;
+	} else {
+		$buf = sprintf "%0.*f", $spin->digits, $spin->get_value_as_float;
+	}
+	$label->set($buf);
+}
+
+sub create_spins {
+	my($frame, $hbox, $main_vbox, $vbox, $vbox2, $spinner2, $spinner, $button, $label, $val_label, $adj);
+	
+	if (not defined $spinner_window) {
+		$spinner_window = new Gtk::Window -toplevel;
+		
+		$spinner_window->signal_connect(destroy => \&Gtk::Widget::destroyed, \$spinner_window);
+		$spinner_window->set_title("GtkSpinButton");
+		
+		$main_vbox = new Gtk::VBox 0, 5;
+		border_width $main_vbox 10;
+		$spinner_window->add($main_vbox);
+		
+		$frame = new Gtk::Frame "Not accelerated";
+		$main_vbox->pack_start($frame, 1, 1, 0);
+		
+		$vbox = new Gtk::VBox 0, 0;
+		$vbox->border_width(5);
+		$frame->add($vbox);
+		
+		$hbox = new Gtk::HBox(0,0);
+		$vbox->pack_start($hbox, 1, 1, 5);
+		
+		$vbox2 = new Gtk::VBox(0,0);
+		$hbox->pack_start($vbox2, 1, 1, 5);
+		
+		$label = new Gtk::Label "Day :";
+		$label->set_alignment(0, 0.5);
+		$vbox2->pack_start($label, 0, 1, 0);
+		
+		$adj = new Gtk::Adjustment 1.0, 1.0, 31.0, 1.0, 5.0, 0.0;
+		
+		$spinner = new Gtk::SpinButton $adj, 0, 0;
+		$spinner->set_wrap(1);
+		$vbox2->pack_start($spinner, 0, 1, 0);
+		
+		$vbox2 = new Gtk::VBox 0, 0;
+		$hbox->pack_start($vbox2, 1, 1, 5);
+		
+		$label = new Gtk::Label "Month :";
+		$label->set_alignment(0, 0.5);
+		$vbox2->pack_start($label, 0, 1, 0);
+		
+		$adj = new Gtk::Adjustment 1.0, 1.0, 12.0, 1.0, 5.0, 0.0;
+		
+		$spinner = new Gtk::SpinButton $adj, 0, 0;
+		$spinner->set_wrap(1);
+		$vbox2->pack_start($spinner, 0, 1, 0);
+		
+		$vbox2 = new Gtk::VBox 0, 0;
+		$hbox->pack_start($vbox2, 1, 1, 5);
+		
+		$label = new Gtk::Label "Year :";
+		$label->set_alignment(0, 0.5);
+		$vbox2->pack_start($label, 0, 1, 0);
+		
+		$adj = new Gtk::Adjustment 1998.0, 0.0, 2100.0, 1.0, 100.0, 0.0;
+		
+		$spinner = new Gtk::SpinButton $adj, 0, 0;
+		$spinner->set_wrap(1);
+		$spinner->set_usize(55, 0);
+		$vbox2->pack_start($spinner, 0, 1, 0);
+		
+		$frame = new Gtk::Frame "Accelerated";
+		$main_vbox->pack_start($frame, 1, 1, 0);
+		
+		$vbox = new Gtk::VBox 0, 0;
+		$vbox->border_width(5);
+		$frame->add($vbox);
+		
+		$hbox = new Gtk::HBox 0, 0;
+		$vbox->pack_start($hbox, 0, 1, 5);
+		
+		$vbox2 = new Gtk::VBox 0, 0;
+		$hbox->pack_start($vbox2, 1, 1, 5);
+		
+		$label = new Gtk::Label "Value :";
+		$label->set_alignment(0, 0.5);
+		$vbox2->pack_start($label, 0, 1, 0);
+		
+		$adj = new Gtk::Adjustment 0.0, -10000.0, 10000.0, 0.5, 100.0, 0.0;
+		$spinner1 = new Gtk::SpinButton $adj, 1.0, 2;
+		$spinner1->set_wrap(1);
+		$spinner1->set_usize(100, 0);
+		$spinner1->set_update_policy('always');
+		$vbox2->pack_start($spinner1, 0, 1, 0);
+		
+		$vbox2 = new Gtk::VBox 0, 0;
+		$hbox->pack_start($vbox2, 1, 1, 5);
+		
+		$label = new Gtk::Label "Digits :";
+		$label->set_alignment(0, 0.5);
+		$vbox2->pack_start($label, 0, 1, 0);
+		
+		$adj = new Gtk::Adjustment(2, 1, 5, 1, 1, 0);
+		$spinner2 = new Gtk::SpinButton($adj, 0.0, 0);
+		$spinner2->set_wrap(1);
+		$adj->signal_connect(value_changed => \&change_digits, $spinner2);
+		$vbox2->pack_start($spinner2, 0, 1, 0);
+		
+		$hbox = new Gtk::HBox(0, 0);
+		$vbox->pack_start($hbox, 0, 1, 5);
+		
+		$button = new Gtk::CheckButton "Snap to 0.5-ticks";
+		$button->signal_connect(clicked => \&toggle_snap, $spinner1);
+		$vbox->pack_start($button, 1, 1, 0);
+		$button->set_state(1);
+		
+		$button = new Gtk::CheckButton "Numeric only input mode";
+		$button->signal_connect(clicked => \&toggle_numeric, $spinner1);
+		$vbox->pack_start($button, 1, 1, 0);
+		$button->set_state(1);
+		
+		$val_label = new Gtk::Label "";
+		
+		$hbox = new Gtk::HBox 0, 0;
+		$vbox->pack_start($hbox, 0, 1, 5);
+		
+		$button = new Gtk::Button "Value as Int";
+		$button->{label} = $val_label;
+		$button->signal_connect(clicked => \&get_value, 1);
+		$hbox->pack_start($button, 1, 1, 5);
+		
+		$button = new Gtk::Button "Value as Float";
+		$button->{label} = $val_label;
+		$button->signal_connect(clicked => \&get_value, 2);
+		$hbox->pack_start($button, 1, 1, 5);
+		
+		$vbox->pack_start($val_label, 1, 1, 0);
+		$val_label->set("0");
+		
+		$hbox = new Gtk::HBox 0, 0;
+		$main_vbox->pack_start($hbox, 0, 1, 0);
+		
+		$button = new Gtk::Button "Close";
+		$button->signal_connect(clicked => sub {destroy $spinner_window});
+		$hbox->pack_start($button, 1, 1, 5);
+		
+	}
+	
+	if (!$spinner_window->visible) {
+		show_all $spinner_window;
+	} else {
+		destroy $spinner_window;
+	}
+}
+
+
+sub shape_pressed {
+	my($widget, $event) = @_;
+	
+	return if $event->{type} ne 'button-press';
+	
+	$widget->{save_x} = $event->{x};
+	$widget->{save_y} = $event->{y};
+	
+	$widget->grab_add;
+	$w = $widget->window;
+	Gtk::Gdk->pointer_grab($w, 1, 
+		['button-release-mask', 'button-motion-mask', 'pointer-motion-hint-mask'], 
+		undef, undef ,0);
+}
+
+sub shape_released {
+	my($widget) = @_;
+	$widget->grab_remove;
+	Gtk::Gdk->pointer_ungrab(0);
+}
+
+sub shape_motion {
+	my($widget, $event) = @_;
+	
+	($x,$y) = $root_win->get_pointer;
+	$widget->set_uposition($x - $widget->{save_x}, $y - $widget->{save_y});
+}
+
+
+sub shape_create_icon {
+	my($xpm_file, $x, $y, $px, $py, $window_type) = @_;
+	my($window, $pixmap, $fixed, $gc, $gdk_pixmap_mask, $gdk_pixmap, $style);
+	
+	$style = Gtk::Widget->get_default_style;
+	$gc = $style->black;#_gc;
+	
+	$window = new Gtk::Window $window_type;
+	
+	$fixed = new Gtk::Fixed;
+	$fixed->set_usize(100,100);
+	$window->add($fixed);
+	show $fixed;
+	
+	$window->set_events( [@{$window->get_events}, 'button-motion-mask', 'pointer-motion-hint-mask', 'button-press-mask']);
+	
+	realize $window;
+	
+	($gdk_pixmap, $gdk_pixmap_mask) = Gtk::Gdk::Pixmap->create_from_xpm($window->window, $style->bg('normal'), $xpm_file);
+	
+	$pixmap = new Gtk::Pixmap $gdk_pixmap, $gdk_pixmap_mask;
+	$fixed->put($pixmap, $px, $py);
+	show $pixmap;
+	
+	$window->shape_combine_mask($gdk_pixmap_mask, $px, $py);
+	
+	$window->signal_connect('button_press_event', \&shape_pressed);
+	$window->signal_connect('button_release_event', \&shape_released);
+	$window->signal_connect('motion_notify_event', \&shape_motion);
+	
+	$window->set_uposition($x,$y);
+	$window->show;
+	
+	$window;
+}
+
 
 sub destroy_window {
 	my($widget, $windowref, $w2) = @_;
@@ -19,6 +527,33 @@ sub button_window {
 		hide $button;
 	}
 }
+
+sub create_shapes {
+	
+	$root_win = Gtk::Gdk::Window->new_foreign(Gtk::Gdk->ROOT_WINDOW());
+	
+	if (not defined $modeller) {
+		$modeller = shape_create_icon("Modeller.xpm", 440, 140, 0,0, -popup);
+		$modeller->signal_connect("destroy", \&Gtk::Widget::destroyed, \$modeller);
+	} else {
+		destroy $modeller;
+	}
+
+	if (not defined $sheets) {
+		$sheets = shape_create_icon("FilesQueue.xpm", 580,170, 0,0, -popup);
+		$sheets->signal_connect("destroy", \&Gtk::Widget::destroyed, \$sheets);
+	} else {
+		destroy $sheets;
+	}
+
+	if (not defined $rings) {
+		$rings = shape_create_icon("3DRings.xpm", 460, 270, 25,25, -toplevel);
+		$rings->signal_connect("destroy", \&Gtk::Widget::destroyed, \$rings);
+	} else {
+		destroy $rings;
+	}
+}
+
 
 sub create_buttons {
 	my($box1, $box2, $table, @button, $separator);
@@ -279,7 +814,7 @@ sub make_toolbar {
 	$entry->set_text("Abracadabra");
 	$entry->set_max_length(3);
 	$entry->show;
-	$toolbar->append_widget($entry, "This is an unusable GtkEntry ;)", "Hey d on't click me!!!");
+	$toolbar->append_widget($entry, "This is an unusable GtkEntry ;)", "Hey don't click me!!!");
 
 	$button = $toolbar->append_item( "Small","Use small spaces",
 		"Toolbar/Small",, new_pixmap("test.xpm",$window, $color));
@@ -326,6 +861,131 @@ sub create_handlebox {
 	}
 
 }
+
+$statusbar_counter = 1;
+
+sub statusbar_push {
+	my($widget, $statusbar) = @_;
+	$statusbar->push(1, "Something ".($statusbar_counter++));
+}
+
+sub statusbar_pop {
+	my($widget, $statusbar) = @_;
+	$statusbar->pop(1);
+}
+
+sub statusbar_steal {
+	my($widget, $statusbar) = @_;
+	$statusbar->remove(1,4);
+}
+
+sub statusbar_popped {
+	my($statusbar, $context_id, $text) = @_;
+	if (!$statusbar->messages) {
+		$statusbar_counter = 1;
+	}
+}
+
+sub statusbar_contexts {
+	my($button, $statusbar) = @_;
+	
+	foreach $string ("any context", "idle messages", "some text", "hit the mouse", "hit the mouse2") {
+		print "Gtk::StatusBar: context = \"$string\", context_id=", $statusbar->get_context_id($string),"\n";
+	}
+}
+
+sub statusbar_dump_stack {
+	my($button, $statusbar) = @_;
+	
+	foreach $msg ($statusbar->messages) {
+		print "context_id: $msg{context_id}, message_id: $msg{message_id}, status_text: \"$msg{text}\"\n";
+	}
+	
+}
+
+sub create_statusbar {
+	my($box1, $box2, $button, $separator, $statusbar);
+	
+	
+	if (not defined $statusbar_window) {
+		$statusbar_window = new Gtk::Window -toplevel;
+		
+		$statusbar_window->signal_connect("destroy", \&Gtk::Widget::destroyed, \$statusbar_window);
+		
+		$statusbar_window->set_title("statusbar");
+		border_width $statusbar_window 0;
+		
+		$box1 = new Gtk::VBox 0, 0;
+		$statusbar_window->add($box1);
+		show $box1;
+		
+		$box2 = new Gtk::VBox 0, 10;
+		$box2->border_width(10);
+		$box1->pack_start($box2, 1, 1, 0);
+		show $box2;
+		
+		$statusbar = new Gtk::Statusbar;
+		$box1->pack_end($statusbar, 1, 1, 0);
+		show $statusbar;
+		$statusbar->signal_connect("text_popped", \&statusbar_popped);
+		
+		$button = new Gtk::Widget "Gtk::Button",
+			-label => "push something",
+			-visible => 1,
+			-parent => $box2,
+			GtkObject::signal::clicked => [\&statusbar_push, $statusbar];
+
+		$button = new Gtk::Widget "Gtk::Button",
+			-label => "pop",
+			-visible => 1,
+			-parent => $box2,
+			-signal::clicked => [\&statusbar_pop, $statusbar];
+
+		$button = new Gtk::Widget "Gtk::Button",
+			-label => "steal #4",
+			-visible => 1,
+			-parent => $box2,
+			-signal::clicked => [\&statusbar_steal, $statusbar];
+
+		$button = new Gtk::Widget "Gtk::Button",
+			-label => "dump stack",
+			-visible => 1,
+			-parent => $box2,
+			-signal::clicked => [\&statusbar_dump_stack, $statusbar];
+
+		$button = new Gtk::Widget "Gtk::Button",
+			-label => "test contexts",
+			-visible => 1,
+			-parent => $box2,
+			-signal::clicked => [\&statusbar_contexts, $statusbar];
+			
+		$separator = new Gtk::HSeparator;
+		$box1->pack_start($separator, 0, 1, 0);
+		show $separator;
+		
+		$box2 = new Gtk::VBox 0, 10;
+		$box2->border_width(10);
+		$box1->pack_start($box2, 0, 1, 0);
+		show $box2;
+		
+		$button = new Gtk::Button "close";
+		$button->signal_connect("clicked", sub {$statusbar_window->destroy} );
+		$box2->pack_start($button, 1, 1, 0);
+		$button->can_default(1);
+		$button->grab_default;
+		$button->show;
+		
+	}
+	
+	if (not $statusbar_window->visible) {
+		show $statusbar_window;
+	} else {
+		destroy $statusbar_window;
+	}
+	
+}
+
+
 
 sub reparent_label {
 	my($widget, $new_parent) = @_;
@@ -473,17 +1133,48 @@ sub create_pixmap {
 	}
 }
 
+use Data::Dumper;
+
+sub tips_query_widget_entered {
+	print "entered: ";
+	print Dumper(\@_);
+	my($tips_query, $widget, $tip_text, $tip_private, $toggle) = @_;
+	
+	if ($toggle->active) {
+		$tips_query->set(defined($tip_text) ? "There is a Tip!" : "There is no Tip!");
+		# Don't let GtkTipsQuery reset it's label
+		$tips_query->signal_emit_stop_by_name("widget_entered");
+	}
+}
+
+sub tips_query_widget_selected {
+	print "selected: ";
+	print Dumper(\@_);
+	my($tips_query, $widget, $tip_text, $tip_private, $event, $func_data) = @_;
+	if ($widget) {
+		printf "Help \"%s\" requested for <%s>\n", defined($tip_private) ? $tip_private : "None", $widget->type_name;
+	}
+}
+
 sub create_tooltips {
-	my($box1,$box2,$button,$separator,$tooltips);
+	my($box1,$box2,$box3, $button,$toggle,$frame,$tips_query,$separator,$tooltips);
 	
 	if (not defined $tt_window) {
-		$tt_window = new Gtk::Window "toplevel";
-		signal_connect $tt_window "destroy", \&destroy_window, \$tt_window;
-		signal_connect $tt_window "delete_event", \&destroy_window, \$tt_window;
-		set_title $tt_window "tooltips";
-		border_width $tt_window 0;
+		print "1\n";
+		$tt_window = new Gtk::Widget "Gtk::Window",
+							type => -toplevel,
+							border_width => 0,
+							title => "Tooltips",
+							allow_shrink => 1,
+							allow_grow => 0,
+							auto_shrink => 1,
+							width => 200,
+							signal::destroy => [\&destroy_tooltips, \$tt_window];
+
+		print "2\n";
 		
 		$tooltips = new Gtk::Tooltips;
+		$tt_window->{tooltips} = $tooltips;
 		
 		$box1 = new Gtk::VBox(0, 0);
 		$tt_window->add($box1);
@@ -504,13 +1195,45 @@ sub create_tooltips {
 		$box2->pack_start($button, 1, 1, 0);
 		show $button;
 		
-		set_tip $tooltips $button => "This is button 2. This is button 2. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "ContextHelp/buttons/2_long";
+		set_tip $tooltips $button => "This is button 2. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "ContextHelp/buttons/2_long";
 		
-		$button = new Gtk::ToggleButton("button3");
-		$box2->pack_start($button, 1, 1, 0);
-		show $button;
+		$toggle = new Gtk::ToggleButton "Override TipsQuery Label";
+		$box2->pack_start($toggle, 1, 1, 0);
+		$toggle->show;
 		
-		$tooltips->set_tip($button, "This is button 3. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "");
+		set_tip $tooltips $toggle => "Toggle TipsQuery view.", "Hi msw! ;)";
+		
+		$box3 = new Gtk::Widget "Gtk::VBox",
+						homogeneous => 0,
+						spacing => 5,
+						border_width => 5,
+						visible => 1;
+
+		$tips_query = new Gtk::TipsQuery;
+		
+		$button = new Gtk::Widget "Gtk::Button",
+						label => "[?]",
+						visible => 1,
+						parent => $box3,
+						signal::clicked => sub {$tips_query->start_query};
+		$box3->set_child_packing($button, 0, 0, 0, 'start');
+		
+		$tooltips->set_tip($button, "Start the Tooltips Inspector", "ContextHelp/buttons/?");
+		
+		Gtk::Object::set($tips_query,visible => 1,
+						parent => $box3,
+						caller => $button,
+						widget_entered => sub {tips_query_widget_entered @_, $toggle}, # [\&tips_query_widget_entered, $toggle],
+						widget_selected => \&tips_query_widget_selected);
+		
+		$frame = new Gtk::Widget "Gtk::Frame",
+						label => "ToolTips Inspector",
+						label_xalign => 0.5,
+						border_width => 0,
+						visible => 1,
+						parent => $box2,
+						child => $box3;
+		$box2->set_child_packing($frame, 1, 1, 10, 'start');
 		
 		$separator = new Gtk::HSeparator;
 		$box1->pack_start($separator, 0, 1, 0);
@@ -528,7 +1251,7 @@ sub create_tooltips {
 		$button->grab_default;
 		$button->show;
 		
-		$tooltips->set_tip($button,"Push this button to close window", "ContextHelp/buttons/Close");
+		$tooltips->set_tip($button, "Push this button to close window", "ContextHelp/buttons/Close");
     }
 	if (!visible $tt_window) {
 		show $tt_window;
@@ -971,31 +1694,19 @@ sub color_selection_changed {
 
 sub create_color_selection {
 	if (not defined $cs_window) {
-		print "1\n";
 		set_install_cmap Gtk::Preview 1;
-		print "2\n";
 		Gtk::Widget->push_visual(Gtk::Preview->get_visual);
-		print "3\n";
 		Gtk::Widget->push_colormap(Gtk::Preview->get_cmap);
 		
-		print "4\n";
 		$cs_window = new Gtk::ColorSelectionDialog "color selection dialog";
 		
-		print "5\n";
 		$cs_window->colorsel->set_opacity(1);
-		print "6\n";
 		$cs_window->colorsel->set_update_policy(-continuous);
-		print "7\n";
 		$cs_window->position(-mouse);
-		print "8\n";
 		signal_connect $cs_window destroy => \&destroy_window, \$cs_window;
-		print "9\n";
 		$cs_window->colorsel->signal_connect("color_changed", \&color_selection_changed, $cs_window);
-		print "10\n";
 		$cs_window->ok_button->signal_connect("clicked", \&color_selection_ok, $cs_window);
-		print "11\n";
 		$cs_window->cancel_button->signal_connect("clicked", sub { destroy $cs_window });
-		print "12\n";
 		
 		pop_colormap Gtk::Widget;
 		pop_visual Gtk::Widget;
@@ -1235,89 +1946,323 @@ sub create_text {
 	}
 }
 
+@book_open_xpm = (
+"16 16 4 1",
+"       c None s None",
+".      c black",
+"X      c #808080",
+"o      c white",
+"                ",
+"  ..            ",
+" .Xo.    ...    ",
+" .Xoo. ..oo.    ",
+" .Xooo.Xooo...  ",
+" .Xooo.oooo.X.  ",
+" .Xooo.Xooo.X.  ",
+" .Xooo.oooo.X.  ",
+" .Xooo.Xooo.X.  ",
+" .Xooo.oooo.X.  ",
+"  .Xoo.Xoo..X.  ",
+"   .Xo.o..ooX.  ",
+"    .X..XXXXX.  ",
+"    ..X.......  ",
+"     ..         ",
+"                ");
+
+@book_closed_xpm = (
+"16 16 6 1",
+"       c None s None",
+".      c black",
+"X      c red",
+"o      c yellow",
+"O      c #808080",
+"#      c white",
+"                ",
+"       ..       ",
+"     ..XX.      ",
+"   ..XXXXX.     ",
+" ..XXXXXXXX.    ",
+".ooXXXXXXXXX.   ",
+"..ooXXXXXXXXX.  ",
+".X.ooXXXXXXXXX. ",
+".XX.ooXXXXXX..  ",
+" .XX.ooXXX..#O  ",
+"  .XX.oo..##OO. ",
+"   .XX..##OO..  ",
+"    .X.#OO..    ",
+"     ..O..      ",
+"      ..        ",
+"                ");
+
+sub page_switch {
+	my($widget, $page, $page_num) = @_;
+	my($oldpage, $pixwid);
+
+	$oldpage = $widget->cur_page;
+	
+	print "page_switch: new_page=$page, old_page=$oldpage, page_num=$page_num\n";
+	
+	return if ($page == $oldpage);
+	
+	print "p0=$page\n";
+	$p1 = $page->tab_label;
+	print "p1=$p1\n";
+	@c = $p1->children;
+	print "Children = ",join(",", @c),"\n";
+	$p2 = $c[0];
+	print "p2=$p2\n";
+	$p3 = $p2->widget;
+	print "p3=$p3\n";
+	$pixwid = $p3;
+
+	#$pixwid = ($page->tab_label->children)[0]->widget;
+	$pixwid->set($book_open, $book_open_mask);
+	#$pixwid = ($page->menu_label->children)[0]->widget;
+	#$pixwid->set($book_open, $book_open_mask);
+	
+	if ($oldpage) {
+		$pixwid = ($page->tab_label->children)[0]->widget;
+		$pixwid->set($book_closed, $book_closed_mask);
+		#$pixwid = ($page->menu_label->children)[0]->widget;
+		#$pixwid->set($book_closed, $book_closed_mask);
+	}
+	
+}
+
+#static void
+#page_switch (GtkWidget *widget, GtkNotebookPage *page, gint page_num)
+#{
+#  GtkNotebookPage *oldpage;
+#  GtkWidget *pixwid;
+#
+#  oldpage = GTK_NOTEBOOK (widget)->cur_page;
+#
+#  if (page == oldpage)
+#    return;
+#
+#  pixwid = ((GtkBoxChild*)(GTK_BOX (page->tab_label)->children->data))->widget;
+#  gtk_pixmap_set (GTK_PIXMAP (pixwid), book_open, book_open_mask);
+#  pixwid = ((GtkBoxChild*) (GTK_BOX (page->menu_label)->children->data))->widget;
+#  gtk_pixmap_set (GTK_PIXMAP (pixwid), book_open, book_open_mask);
+#
+#  if (oldpage)
+#    {
+#      pixwid = ((GtkBoxChild*) (GTK_BOX 
+#                                (oldpage->tab_label)->children->data))->widget;
+#      gtk_pixmap_set (GTK_PIXMAP (pixwid), book_closed, book_closed_mask);
+#      pixwid = ((GtkBoxChild*) (GTK_BOX (oldpage->menu_label)->children->data))->widget;
+#      gtk_pixmap_set (GTK_PIXMAP (pixwid), book_closed, book_closed_mask);
+#    }
+#}
+
+
+
+sub create_pages {
+	my($notebook, $start, $end) = @_;
+	
+	my($child, $label, $entry, $box, $hbox, $label_box, $menu_box, $button, $pixwid);
+	my($i, $buffer);
+	
+	for ($i=$start; $i <= $end; $i++) {
+		$buffer = "Page $i";
+		
+		if ((i % 4) == 3) {
+			$child = new Gtk::Button $buffer;
+			$child->border_width(10);
+		} elsif((i % 4) == 2) {
+			$child = new Gtk::Label $buffer;
+		} elsif((i % 4) == 1) {
+			$child = new Gtk::Frame $buffer;
+			$child->border_width(10);
+			
+			$box = new Gtk::VBox 1, 0;
+			$box->border_width(10);
+			$child->add($box);
+			
+			$label = new Gtk::Label $buffer;
+			$box->pack_start($label, 1, 1, 5);
+			
+			$entry = new Gtk::Entry;
+			$box->pack_start($entry, 1, 1, 5);
+			
+			$hbox = new Gtk::HBox 1, 0;
+			$box->pack_start($hbox, 1, 1, 5);
+			
+			$button = new Gtk::Button "Ok";
+			$hbox->pack_start($button, 1, 1, 5);
+			
+			$button = new Gtk::Button "Cancel";
+			$hbox->pack_start($button, 1, 1, 5);
+		} else {
+			$child = new Gtk::Frame $buffer;
+			$child->border_width(10);
+			
+			$label = new Gtk::Label $buffer;
+			$child->add($label);
+		}
+		
+		show_all $child;
+		
+		$label_box = new Gtk::HBox 0, 0;
+		$pixwid = new Gtk::Pixmap $book_closed, $book_closed_mask;
+		$label_box->pack_start($pixwid, 0, 1, 0);
+		$pixwid->set_padding(3, 1);
+		$label = new Gtk::Label $buffer;
+		$label_box->pack_start($label, 0, 1, 0);
+		show_all $label_box;
+		
+		$menu_box = new Gtk::HBox 0, 0;
+		$pixwid = new Gtk::Pixmap $book_closed, $book_closed_mask;
+		$menu_box ->pack_start($pixwid, 0, 1, 0);
+		$pixwid->set_padding(3,1);
+		$label = new Gtk::Label $buffer;
+		$menu_box->pack_start($label, 0, 1, 0);
+		show_all $menu_box;
+		
+		$notebook->append_page_menu($child, $label_box, $menu_box);
+		
+	}
+	
+}
+
 sub rotate_notebook {
-	my($button,$notebook) = @_;
+	my($button, $notebook) = @_;
 	my(%rotate) = (top => "right", right => "bottom", bottom => "left", left => "top");
 	$notebook->set_tab_pos($rotate{$notebook->tab_pos});
 }
 
+sub standard_notebook {
+	my($button, $notebook) = @_;
+	
+	$notebook->set_show_tabs(1);
+	$notebook->set_scrollable(0);
+	if ($notebook->children == 15) {
+		my($i);
+		for($i=0;$i<10;$i++) {
+			$notebook->remove_page(5);
+		}
+	}
+}
+
+sub notabs_notebook {
+	my($button, $notebook) = @_;
+	$notebook->set_show_tabs(0);
+	if ($notebook->children == 15) {
+		my($i);
+		for($i=0;$i<10;$i++) {
+			$notebook->remove_page(5);
+		}
+	}
+}
+
+sub scrollable_notebook {
+	my($button, $notebook) = @_;
+	$notebook->set_show_tabs(1);
+	$notebook->set_scrollable(1);
+	if ($notebook->children == 5) {
+		create_pages($notebook, 6, 15);
+	}
+}
+
+sub notebook_popup {
+	my($button, $notebook) = @_;
+	if ($button->active) {
+		$notebook->popup_enable;
+	} else {
+		$notebook->popup_disable;
+	}
+}
+
 sub create_notebook {
-	my($box1,$box2,$button,$separator,$notebook,$frame,$label,$i);
+	my($box1, $box2, $button, $separator, $notebook, $omenu, $menu, $submenu, $menuitem, $group, $transparent);
+	
 	if (not defined $notebook_window) {
-		$notebook_window = new Gtk::Window "toplevel";
-		$notebook_window->signal_connect("destroy", \&destroy_window, \$notebook_window);
-		$notebook_window->signal_connect("delete_event", \&destroy_window, \$notebook_window);
+		$notebook_window = new Gtk::Window -toplevel;
+		
+		$notebook_window->signal_connect("destroy", \&Gtk::Widget::destroyed, \$notebook_window);
 		$notebook_window->set_title("notebook");
 		$notebook_window->border_width(0);
 		
-		$box1 = new Gtk::VBox(0,0);
+		$box1 = new Gtk::VBox 0, 0;
 		$notebook_window->add($box1);
-		$box1->show;
-		
-		$box2 = new Gtk::VBox(0,10);
-		$box2->border_width(10);
-		$box1->pack_start($box2,1,1,0);
-		$box2->show;
 		
 		$notebook = new Gtk::Notebook;
-		$notebook->set_tab_pos("top");
-		$box2->pack_start($notebook, 1, 1, 0);
-		$notebook->show;
+		$notebook->signal_connect("switch_page", \&page_switch);
+		$notebook->set_tab_pos(-top);
+		$box1->pack_start($notebook, 1, 1, 0);
+		$notebook->border_width(10);
 		
-		for($i=0;$i<5;$i++)
-		{
-			my($buffer) = ("Page ".($i+1));
-			$frame = new Gtk::Frame($buffer);
-			$frame->border_width(10);
-			$frame->set_usize(200,150);
-			$frame->show;
-			
-			$label=new Gtk::Label $buffer;
-			$frame->add($label);
-			$label->show;
-			
-			$label = new Gtk::Label($buffer);
-			$notebook->append_page($frame, $label);
-		}
+		$notebook->realize;
+		($book_open, $book_open_mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($notebook->window, $transparent, @book_open_xpm);
+		($book_closed, $book_closed_mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($notebook->window, $transparent, @book_closed_xpm);
+		
+		create_pages($notebook, 1, 5);
 		
 		$separator = new Gtk::HSeparator;
-		$box1->pack_start($separator, 0, 1, 0);
-		$separator->show;
+		$box1->pack_start($separator, 0, 1, 10);
 		
-		$box2 = new Gtk::HBox(0, 10);
+		$box2 = new Gtk::HBox 1, 5;
+		$box1->pack_start($box2, 0, 1, 0);
+		
+		$omenu = new Gtk::OptionMenu;
+		$menu = new Gtk::Menu;
+		$submenu = undef;
+		$menuitem = undef;
+		
+		$menuitem = new Gtk::RadioMenuItem "Standard", $menuitem;
+		$menuitem->signal_connect("activate", \&standard_notebook, $notebook);
+		$menu->append($menuitem);
+		$menuitem->show;
+
+		$menuitem = new Gtk::RadioMenuItem "w/o Tabs", $menuitem;
+		$menuitem->signal_connect("activate", \&notabs_notebook, $notebook);
+		$menu->append($menuitem);
+		$menuitem->show;
+
+		$menuitem = new Gtk::RadioMenuItem "Scrollable", $menuitem;
+		$menuitem->signal_connect("activate", \&scrollable_notebook, $notebook);
+		$menu->append($menuitem);
+		$menuitem->show;
+		
+		$omenu->set_menu($menu);
+		$box2->pack_start($omenu, 0, 0, 0);
+		$button = new Gtk::CheckButton "enable popup menu";
+		$box2->pack_start($button, 0, 0, 0);
+		$button->signal_connect("clicked", \&notebook_popup, $notebook);
+		
+		$box2 = new Gtk::HBox 0, 10;
 		$box2->border_width(10);
 		$box1->pack_start($box2, 0, 1, 0);
-		$box2->show;
 		
 		$button = new Gtk::Button "close";
-		signal_connect $button clicked => sub {destroy $notebook_window};
+		$button->signal_connect("clicked", sub {$notebook_window->destroy});
 		$box2->pack_start($button, 1, 1, 0);
 		$button->can_default(1);
 		$button->grab_default;
-		$button->show;
 		
 		$button = new Gtk::Button "next";
 		$button->signal_connect("clicked", sub {$notebook->next_page});
-		$box2->pack_start($button,1,1,0);
-		$button->show;
-
+		$box2->pack_start($button, 1, 1, 0);
+		
 		$button = new Gtk::Button "prev";
 		$button->signal_connect("clicked", sub {$notebook->prev_page});
-		$box2->pack_start($button,1,1,0);
-		$button->show;
+		$box2->pack_start($button, 1, 1, 0);
 
 		$button = new Gtk::Button "rotate";
 		$button->signal_connect("clicked", \&rotate_notebook, $notebook);
-		$box2->pack_start($button,1,1,0);
-		$button->show;
+		$box2->pack_start($button, 1, 1, 0);
+		
 		
 	}
-	if (not visible $notebook_window) {
-		show $notebook_window;
+	
+	if (! $notebook_window->visible) {
+		$notebook_window->show_all;
 	} else {
-		destroy $notebook_window;
+		$notebook_window->destroy;
 	}
 }
+
+
 
 sub create_panes {
 	my($frame,$hpaned,$vpaned);
@@ -1909,8 +2854,9 @@ sub do_exit {
 }
 
 sub create_main_window {
-	my(@buttons,$window,$box1,$scw, $box2,$button,$separator);
+	my(@buttons,$window,$box1,$scw, $box2,$button,$separator, $buffer, $label);
 	@buttons = (
+		"button box", \&create_button_box,
 		"buttons",	\&create_buttons,
 		"toggle buttons", \&create_toggle_buttons,
 		"radio buttons", \&create_radio_buttons,
@@ -1929,6 +2875,7 @@ sub create_main_window {
       	"file selection", \&create_file_selection,
       	"range controls", \&create_range_controls,
       	"rulers", \&create_rulers,
+      	"shapes", \&create_shapes,
 		"text", \&create_text,
       	"notebook", \&create_notebook,
       	"panes", \&create_panes,
@@ -1939,7 +2886,9 @@ sub create_main_window {
       	"gamma curve", \&create_gamma_curve,
 		"test selection", \&create_selection_test,
 		"test timeout", \&create_timeout_test,
-		"create idle test", \&create_idle_test,
+		"spinbutton", \&create_spins,
+		"statusbar", \&create_statusbar,
+		"test idle", \&create_idle_test,
 		"create test",	\&create_test,
 	);
 	
@@ -1948,21 +2897,31 @@ sub create_main_window {
 	$window->set_uposition(20, 20);
 	$window->set_usize(200, 400);
 	
-	$window->signal_connect("destroy" => \&destroy_window, \$window);
-	$window->signal_connect("delete_event" => \&destroy_window, \$window);
+	$window->signal_connect("destroy" => \&Gtk::main_quit);
+	$window->signal_connect("delete_event" => \&Gtk::false);
 
 	$box1 = new Gtk::VBox(0, 0);
 	$window->add($box1);
 	$box1->show;
+	
+	$buffer = sprintf "Gtk+ v%d.%d", Gtk->major_version, Gtk->minor_version;
+	
+	if (Gtk->micro_version > 0) {
+		$buffer .= sprintf ".%d", Gtk->micro_version;
+	}
+	
+	$label = new Gtk::Label $buffer;
+	show $label;
+	$box1->pack_start($label, 0, 0, 0);
 
 	$scw = new Gtk::ScrolledWindow(undef, undef);
 	$scw->set_policy('automatic', 'automatic');
 	$scw->show;
 	$scw->border_width(10);
 	
-	$box2 = new Gtk::VBox(0, 0);
-	#border_width $box2 10;
 	$box1->pack_start($scw, 1, 1, 0);
+
+	$box2 = new Gtk::VBox(0, 0);
 	$box2->show;
 	$box2->border_width(10);
 	$scw->add($box2);

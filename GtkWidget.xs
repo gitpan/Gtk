@@ -73,6 +73,25 @@ gtk_widget_destroy(widget)
 	Gtk::Widget	widget
 
 void
+gtk_widget_ref(widget)
+	Gtk::Widget	widget
+
+void
+gtk_widget_unref(widget)
+	Gtk::Widget	widget
+
+void
+gtk_widget_destroyed(widget, ref)
+	Gtk::Widget	widget
+	SV *	ref
+	CODE:
+	{
+		SV * t;
+		if (ref && SvOK(ref) && (t=SvRV(ref)))
+			sv_setsv(t, &sv_undef);
+	}
+
+void
 gtk_widget_unparent(widget)
 	Gtk::Widget	widget
 
@@ -81,7 +100,15 @@ gtk_widget_show(widget)
 	Gtk::Widget	widget
 
 void
+gtk_widget_show_all(widget)
+	Gtk::Widget	widget
+
+void
 gtk_widget_hide(widget)
+	Gtk::Widget	widget
+
+void
+gtk_widget_hide_all(widget)
 	Gtk::Widget	widget
 
 void
@@ -626,6 +653,9 @@ Gtk::Widget_Sink_Up
 new(Class, widget_class, ...)
 	SV *	Class
 	char *	widget_class
+	ALIAS:
+		Gtk::Widget::new = 0
+		Gtk::Widget::new_child = 1
 	CODE:
 	{
 		GtkType t;
@@ -637,6 +667,8 @@ new(Class, widget_class, ...)
 		SV *	value;
 		
 		widget_type = gtk_type_from_name(widget_class);
+		if (!widget_type)
+			widget_type = type_name(widget_class);
 		o = GTK_OBJECT(gtk_widget_new(widget_type, NULL));
 		RETVAL = GTK_WIDGET(o);
 		
@@ -656,9 +688,22 @@ new(Class, widget_class, ...)
 			gtk_object_setv(o, argc, argv);
 			p += 1 + argc;
 		}
+		
+		if (SvOK(Class) && SvRV(Class)) {
+			GtkObject * parent = SvGtkObjectRef(Class, 0);
+			if (parent)
+				gtk_container_add(GTK_CONTAINER(parent), GTK_WIDGET(o));
+		}
 	}
 	OUTPUT:
 	RETVAL
+
+void
+gtk_widget_shape_combine_mask(widget, shape_mask, offset_x, offset_y)
+	Gtk::Widget	widget
+	Gtk::Gdk::Bitmap	shape_mask
+	gint	offset_x
+	gint	offset_y
 
 void
 gtk_widget_dnd_drag_set(widget, drag_enable, type_name, ...)

@@ -48,6 +48,27 @@ gtk_statusbar_remove(self, context_id, message_id)
 	int context_id
 	int message_id
 
+void
+gtk_statusbar_messages(self)
+	Gtk::Statusbar	self
+	PPCODE:
+	{
+		GSList * list;
+		for (list = self->messages; list; list = list->next) {
+			HV * hv = newHV();
+			GtkStatusbarMsg * msg = (GtkStatusbarMsg*)list->data;
+			
+			EXTEND(sp, 1);
+			
+			hv_store(hv, "text", 4, newSVpv(msg->text, 0), 0);
+			hv_store(hv, "context_id", 10, newSViv(msg->context_id), 0);
+			hv_store(hv, "message_id", 10, newSViv(msg->message_id), 0);
+			
+			PUSHs(sv_2mortal(newRV((SV*)hv)));
+			SvREFCNT_dec(hv);
+		}
+	}
+
 Gtk::Widget_Up
 frame(self)
 	Gtk::Statusbar self

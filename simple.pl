@@ -21,10 +21,15 @@ $window = new Gtk::Widget	"GtkWindow",
 		GtkWindow::allow_shrink		=>	0,
 		GtkContainer::border_width	=>	10;
 
-$button = new Gtk::Widget	"GtkButton",
+#$button = new Gtk::Widget	"GtkButton",
+#		GtkButton::label		=>	"hello world",
+#		GtkObject::signal::clicked	=>	"hello",
+#		GtkWidget::parent		=>	$window,
+#		GtkWidget::visible		=>	1;
+
+$button = new_child $window "GtkButton",
 		GtkButton::label		=>	"hello world",
 		GtkObject::signal::clicked	=>	"hello",
-		GtkWidget::parent		=>	$window,
 		GtkWidget::visible		=>	1;
 
 show $window;

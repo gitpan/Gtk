@@ -15,6 +15,11 @@
 # define boolSV(b) ((b) ? &sv_yes : &sv_no)
 #endif
 
+void destroy_handler(gpointer data);
+void generic_handler(GtkObject * object, gpointer data, guint n_args, GtkArg * args);
+void generic_handler_wo(GtkObject * object, gpointer data, guint n_args, GtkArg * args);
+
+
 static void generic_perl_gtk_class_init(GtkObjectClass * klass)
 {
 	dSP;
@@ -105,7 +110,7 @@ static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guin
 }
 
 
-MODULE = Gtk::Object		PACKAGE = Gtk::Object
+MODULE = Gtk::Object		PACKAGE = Gtk::Object		PREFIX = gtk_object_
 
 #ifdef GTK_OBJECT
 
@@ -114,57 +119,43 @@ signal_connect(self, event, handler, ...)
 	Gtk::Object	self
 	char *	event
 	SV *	handler
+	ALIAS:
+		signal_connect = 0
+		signal_connect_after = 1
 	CODE:
 	{
 		AV * args;
 		SV * arg;
+		SV ** fixup;
 		int i,j;
 		int type;
+		/*char num[20];
+		void * fixupfunc = 0;*/
 		args = newAV();
 		
 		type = gtk_signal_lookup(event, self->klass->type);
 		
-		i = gtk_signal_connect (GTK_OBJECT (self), event,
-				NULL, (void*)args);
-		/*i = gtk_signal_connect_interp(self, event, generic_handler, args, destroy_handler, 0);*/
-				
-		av_push(args, newRV(SvRV(ST(0))));
-		av_push(args, newSVsv(ST(1)));
-		av_push(args, newSVsv(ST(2)));
-		av_push(args, newSViv(type));
-		for (j=3;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
-		
-		RETVAL = i;
-	}
-	OUTPUT:
-	RETVAL
+		/*sprintf(num, "%d", type);
 
-int
-signal_connect_after(self, event, handler, ...)
-	Gtk::Object	self
-	char *	event
-	SV *	handler
-	CODE:
-	{
-		AV * args;
-		SV * arg;
-		int i,j;
-		int type;
-		args = newAV();
+		if (fixup = hv_fetch(signal_fixups, num, strlen(num), 0)) {
+			fixupfunc = (void*)SvIV(*fixup);
+		}*/
 		
-		type = gtk_signal_lookup(event, self->klass->type);
-		
-		i = gtk_signal_connect_after (GTK_OBJECT (self), event,
+		if (!ix)
+			i = gtk_signal_connect (GTK_OBJECT (self), event,
 				NULL, (void*)args);
-		/*i = gtk_signal_connect_interp(self, event, generic_handler, args, destroy_handler, 1);*/
+		else
+			i = gtk_signal_connect_after (GTK_OBJECT (self), event,
+				NULL, (void*)args);
+		
+		/*i = gtk_signal_connect_interp(self, event, func, (gpointer)args, destroy_handler, ix);*/
 				
 		av_push(args, newRV(SvRV(ST(0))));
+		/*av_push(args, newSViv(fixupfunc));*/
 		av_push(args, newSVsv(ST(1)));
-		av_push(args, newSVsv(ST(2)));
 		av_push(args, newSViv(type));
-		for (j=3;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		
+		PackCallbackST(args, 2);
 		
 		RETVAL = i;
 	}
@@ -183,6 +174,14 @@ signal_handlers_destroy(self)
 	Gtk::Object	self
 	CODE:
 	gtk_signal_handlers_destroy(self);
+
+char *
+type_name(self)
+	Gtk::Object	self
+	CODE:
+	RETVAL = gtk_type_name(GTK_OBJECT_TYPE(self));
+	OUTPUT:
+	RETVAL
 
 SV *
 get_user_data(object)
@@ -418,9 +417,22 @@ void
 signal_emit(self, name)
 	Gtk::Object	self
 	SV *	name
+	ALIAS:
+		signal_emit_by_name = 0
 	CODE:
 	{
 		gtk_signal_emit_by_name(self, SvPV(name,na), NULL);
+	}
+
+void
+signal_emit_stop(self, name)
+	Gtk::Object	self
+	SV *	name
+	ALIAS:
+		signal_emit_stop_by_name = 0
+	CODE:
+	{
+		gtk_signal_emit_stop_by_name(self, SvPV(name,na));
 	}
 	
 
@@ -545,11 +557,18 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 	RETVAL
 
 
-
 void
 destroy(self)
 	Gtk::Object	self
 	CODE:
 	gtk_object_destroy(self);
+
+void
+gtk_object_ref(self)
+	Gtk::Object	self
+
+void
+gtk_object_unref(self)
+	Gtk::Object	self
 
 #endif

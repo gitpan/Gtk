@@ -253,6 +253,10 @@
   (stippled GDK_STIPPLED)
   (opaque-stippled GDK_OPAQUE_STIPPLED))
 
+(define-enum GdkFillRule
+  (even-odd-rule GDK_EVEN_ODD_RULE)
+  (winding-rule GDK_WINDING_RULE))
+
 (define-enum GdkLineStyle
   (solid GDK_LINE_SOLID)
   (on-off-dash GDK_LINE_ON_OFF_DASH)

@@ -53,10 +53,10 @@ require Gtk::Types;
 @Gtk::Gdk::Bitmap::ISA = qw(Gtk::Gdk::Pixmap);
 @Gtk::Gdk::Window::ISA = qw(Gtk::Gdk::Pixmap);
 
-if (not defined $Gtk::Gdk::init) {
-	init Gtk;
-} else {
-	init Gdk;
+$Gtk::_init_package = "Gtk" if not defined $Gtk::_init_package;
+
+if ((defined $Gtk::_init_package) && ($Gtk::_init_package ne "none")) {
+	$Gtk::_init_package->init;
 }
 
 # Autoload methods go after __END__, and are processed by the autosplit program.

@@ -1,0 +1,9 @@
+
+
+  Pixmap changing of notebook tabs in test.pl is broken.
+  
+  Memory management of Gtk objects (things related to GtkObject) is fairly
+  solid, but management of other types (structures, abstract pointers, etc.)
+  is still clumsy.
+  
+

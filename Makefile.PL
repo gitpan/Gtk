@@ -132,7 +132,7 @@ if (defined $inc) {
 
 WriteMakefile(
     'NAME'	=> 'Gtk',
-    'VERSION'	=> '0.1.17',
+    'VERSION'	=> '0.2.0',
     'PM' => $pm,
     'TYPEMAPS' => $typemap,
     'XS' => $xfiles,

@@ -10,6 +10,8 @@ Gtk::Gdk::Image		T_SimpleVal
 Gtk::Gdk::GCValues	T_MISCPTROBJ
 Gtk::Gdk::Atom		T_SimpleVal
 
+Gtk::Requisition	T_SimpleVal
+
 Gtk::MenuFactory	T_MISCPTROBJ
 Gtk::SelectionData      T_MISCPTROBJ
 
@@ -36,10 +38,13 @@ T_BOOL
 	$var = (int)SvIV($arg)
 
 T_GtkPTROBJ
-	if (SvTRUE($arg)) {
-		$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"));
-	} else
-		croak(\"$var is not of type ${ntype}\")
+	do {
+		void * _o = SvGtkObjectRef($arg, \"${ntype}\");
+		if (!_o) 
+			croak(\"$var is not of type ${ntype}\");
+		else
+			$var = Cast$type(_o);
+	} while(0)
 
 T_GtkPTROBJOrNULL
 	$var = SvTRUE($arg) ? Cast$type(SvGtkObjectRef($arg, \"" . ($foo=$ntype,$foo=~s/_OrNULL//,$foo). "\")) : 0

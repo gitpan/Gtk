@@ -238,8 +238,11 @@ void FreeHVObject(HV * hv_object)
 
 SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 {
-	HV * previous = RetrieveGtkObject(object);
+	HV * previous;
 	SV * result;
+	if (!object)
+		return newSVsv(&sv_undef);
+	previous = RetrieveGtkObject(object);
 	if (previous) {
 		result = newRV((SV*)previous);
 		/*printf("Returning previous PO %p, referencing GO %p\n", previous, object);*/
@@ -283,6 +286,27 @@ GtkObject * SvGtkObjectRef(SV * o, char * name)
 	return (GtkObject*)SvIV(*r);
 }
 
+static void menu_callback (GtkWidget *widget, gpointer user_data)
+{
+	SV * handler = (SV*)user_data;
+	int i;
+	dSP;
+
+	PUSHMARK(sp);
+	
+	if (SvRV(handler) && (SvTYPE(SvRV(handler)) == SVt_PVAV)) {
+		AV * args = (AV*)SvRV(handler);
+		handler = *av_fetch(args, 0, 0);
+		for(i=1;i<=av_len(args);i++)
+			XPUSHs(sv_2mortal(newSVsv(*av_fetch(args,i,0))));
+	}
+
+	XPUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(widget), 0)));
+	PUTBACK;
+
+	i = perl_call_sv(handler, G_DISCARD);
+}
+
 GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
 {
 	HV * h;
@@ -296,22 +320,30 @@ GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
 
 	h = (HV*)SvRV(data);
 	
-	if (s=hv_fetch(h, "path", 4, 0))
+	if ((s=hv_fetch(h, "path", 4, 0)) && SvOK(*s))
 		e->path = SvPV(*s,na);
 	else
-		croak("menu entry must contain path");
-	if (s=hv_fetch(h, "accelerator", 11, 0))
+		e->path = 0;
+		/*croak("menu entry must contain path");*/
+	if ((s=hv_fetch(h, "accelerator", 11, 0)) && SvOK(*s))
 		e->accelerator = SvPV(*s, na);
 	else
-		croak("menu entry must contain accelerator");
-	if (s=hv_fetch(h, "widget", 6, 0))
+		e->accelerator = 0;
+		/*croak("menu entry must contain accelerator");*/
+	if ((s=hv_fetch(h, "widget", 6, 0)) && SvOK(*s))
 		e->widget =  (s && SvOK(*s)) ? GTK_WIDGET(SvGtkObjectRef(*s, "Gtk::Widget")) : NULL;
 	else
-		croak("menu entry must contain widget");
-	if (s=hv_fetch(h, "callback", 8, 0))
+		e->widget = 0;
+		/*croak("menu entry must contain widget");*/
+	if ((s=hv_fetch(h, "callback", 8, 0)) && SvOK(*s)) {
+		e->callback = menu_callback;
 		e->callback_data = newSVsv(*s);
-	else
-		croak("menu entry must contain callback");
+	}
+	else {
+		e->callback = 0;
+		e->callback_data = 0;
+		/*croak("menu entry must contain callback");*/
+	}
 
 	return e;
 }
@@ -328,10 +360,58 @@ SV * newSVGtkMenuEntry(GtkMenuEntry * e)
 	r = newRV((SV*)h);
 	SvREFCNT_dec(h);
 	
-	hv_store(h, "path", 4, newSVpv(e->path,0), 0);
-	hv_store(h, "accelerator", 11, newSVpv(e->accelerator,0), 0);
-	hv_store(h, "widget", 6, newSVGtkObjectRef(GTK_OBJECT(e->widget), 0), 0);
-	hv_store(h, "callback", 11, newSVsv(e->callback_data ? e->callback_data : &sv_undef), 0);
+	hv_store(h, "path", 4, e->path ? newSVpv(e->path,0) : newSVsv(&sv_undef), 0);
+	hv_store(h, "accelerator", 11, e->accelerator ? newSVpv(e->accelerator,0) : newSVsv(&sv_undef), 0);
+	hv_store(h, "widget", 6, e->widget ? newSVGtkObjectRef(GTK_OBJECT(e->widget), 0) : newSVsv(&sv_undef), 0);
+	hv_store(h, "callback", 11, 
+		((e->callback == menu_callback) && e->callback_data) ?
+		newSVsv(e->callback_data) :
+		newSVsv(&sv_undef)
+		, 0);
+	
+	return r;
+}
+
+GtkRequisition * SvGtkRequisition(SV * data, GtkRequisition * e)
+{
+	HV * h;
+	SV ** s;
+
+	if ((!data) || (!SvOK(data)) || (!SvRV(data)) || (SvTYPE(SvRV(data)) != SVt_PVHV))
+		return 0;
+	
+	if (!e)
+		e = alloc_temp(sizeof(GtkRequisition));
+
+	h = (HV*)SvRV(data);
+	
+	if ((s=hv_fetch(h, "width", 5, 0)) && SvOK(*s))
+		e->width = SvIV(*s);
+	else
+		croak("requisition must contain x");
+	if ((s=hv_fetch(h, "height", 6, 0)) && SvOK(*s))
+		e->height = SvIV(*s);
+	else
+		croak("requisition must contain x");
+
+	return e;
+}
+
+SV * newSVGtkRequisition(GtkRequisition * e)
+{
+	HV * h;
+	SV * r;
+	
+	if (!e)
+		return &sv_undef;
+		
+	h = newHV();
+	r = newRV((SV*)h);
+	SvREFCNT_dec(h);
+	
+	hv_store(h, "width", 5, e->width, 0);
+	hv_store(h, "height", 6, e->height, 0);
+	
 	return r;
 }
 

@@ -1,5 +1,8 @@
+3DRings.xpm
 Atoms.pm
+BUGS
 ChangeLog
+FilesQueue.xpm
 Gdk.pm
 GdkImlib.xs
 GdkTypes.c
@@ -60,7 +63,6 @@ GtkList.xs
 GtkListItem.xs
 GtkMenu.xs
 GtkMenuBar.xs
-GtkMenuFactory.xs
 GtkMenuItem.xs
 GtkMenuShell.xs
 GtkMisc.xs
@@ -111,6 +113,7 @@ MANIFEST
 Makefile.PL
 MiscTypes.c
 MiscTypes.h
+Modeller.xpm
 Naming
 README
 ToDo
@@ -137,6 +140,8 @@ testgtkrc
 testhtml.pl
 testmf.pl
 testselection.pl
+tree_minus.xpm
+tree_plus.xpm
 typemap
 typemap.gdkimlib
 typemap.gnome

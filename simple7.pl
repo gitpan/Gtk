@@ -1,4 +1,5 @@
-use Gtk;
+
+use Gtk::Gnome;
 
 init Gtk::Gnome "App_id";
 

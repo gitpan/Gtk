@@ -4,6 +4,7 @@
 #include "XSUB.h"
 
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 
 #include "GtkTypes.h"
 #include "GdkTypes.h"
@@ -39,13 +40,33 @@ not_there:
     return 0;
 }
 
+/*int fixup_simple_event_signals(GtkArg * args, int nparams)
+{
+	int i;
+	for(i=0;i<nparams;i++)
+		if (args[i].type == GTK_TYPE_POINTER) {
+			printf("Changing argument %d to GdkEvent\n", i);
+			args[i].type = GTK_TYPE_GDK_EVENT;
+		}
+	return 1;
+}
+
+int fixup_size_request_signal(GtkArg * args, int nparams)
+{
+	args[0].type = GTK_TYPE_REQUISITION;
+	return 1;
+}*/
+
+/*HV * signal_fixups = 0;*/
+
 void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * args, GtkType * arg_types, GtkType return_type)
 {
 	AV * perlargs = (AV*)data;
-	SV * perlhandler = *av_fetch(perlargs, 2, 0);
+	SV * perlhandler = *av_fetch(perlargs, 3, 0);
 	SV * sv_object = newSVGtkObjectRef(object, 0);
 	char * signame;
 	SV * result;
+	/*SV ** fix;*/
 	int i;
 	int encoding=0;
 	dSP;
@@ -53,11 +74,21 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 	SAVETMPS;
 	
 	PUSHMARK(sp);
-	i = SvIV(*av_fetch(perlargs,3, 0));
+	i = SvIV(*av_fetch(perlargs,2, 0));
 	signame = gtk_signal_name(i);
+	
 	XPUSHs(sv_2mortal(sv_object));
 	for(i=4;i<=av_len(perlargs);i++)
 		XPUSHs(sv_2mortal(newSVsv(*av_fetch(perlargs, i, 0))));
+
+	/*if ((fix = av_fetch(perlargs, 1, 0)) && SvTRUE(*fix)) {
+		typedef int (*f_type)(GtkArg*, int);
+		f_type f = (f_type)SvIV(*fix);
+		if (f(args, nparams))
+			goto packed;
+	}*/
+
+
 	/*printf("Handling signal %s\n", signame);*/
 	/*XPUSHs(sv_2mortal(newSVpv(signame, 0)));*/
 	/*if (sv_derived_from(sv_object, "Gtk::List")) {
@@ -68,6 +99,21 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 			goto unpacked;
 		}
 	}*/
+	if (sv_derived_from(sv_object, "Gtk::TipsQuery")) {
+		if (strEQ(signame, "widget_selected")) {
+			encoding=15;
+			args[3].type = GTK_TYPE_GDK_EVENT;
+			goto packed;
+		}
+	}
+	if (sv_derived_from(sv_object, "Gtk::Notebook")) {
+		if (strEQ(signame, "switch_page")) {
+			encoding=14;
+			XPUSHs(sv_2mortal(newSVGtkNotebookPage((GtkNotebookPage*)GTK_VALUE_POINTER(args[0]))));
+			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
+			goto unpacked;
+		}
+	}
 	if (sv_derived_from(sv_object, "Gtk::Window")) {
 		if (strEQ(signame, "move_resize")) {
 			encoding=13;
@@ -136,7 +182,7 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 			XPUSHs(sv_2mortal(newSVGdkRectangle(&r)));
 			goto unpacked;
 		} else
-		if (strEQ(signame, "install_accelerator")) {
+		/*if (strEQ(signame, "install_accelerator")) {
 			encoding=4;
 			XPUSHs(sv_2mortal(newSVpv(GTK_VALUE_STRING(args[0]),0)));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
@@ -147,7 +193,7 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 			encoding=5;
 			XPUSHs(sv_2mortal(newSVpv(GTK_VALUE_STRING(args[0]),0)));
 			goto unpacked;
-		} else
+		} else*/
 		if (strEQ(signame, "event")	||
 			strEQ(signame, "button_press_event")	||
 			strEQ(signame, "button_release_event")	||
@@ -179,8 +225,10 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
  			goto unpacked;
 		}
 	}
-	for (i=0;i<nparams;i++)
+packed:
+	for (i=0;i<nparams;i++) {
 		XPUSHs(sv_2mortal(GtkGetArg(args+i)));
+	}
 unpacked:
 	PUTBACK ;
 	i = perl_call_sv(perlhandler, G_SCALAR);
@@ -193,7 +241,7 @@ unpacked:
 		/*printf("return type is %s, value is #%d\n", gtk_type_name(args[nparams].type), SvIV(result));*/
 		GtkSetRetArg(&args[nparams], result, 0, 0);
 	}
-	
+
 	PUTBACK;
 	FREETMPS;
 	LEAVE;
@@ -310,14 +358,79 @@ int did_we_init_gtk = 0;
 int did_we_init_gdk = 0;
 
 void g_error_handler(char * msg) {
-	croak("Gtk error: %s", msg);
+	int i;
+	if (msg && (i=strlen(msg)) && (i>0) && (msg[i-1] == '\n'))
+		croak("Gtk error: %s ", msg);
+	else
+		croak("Gtk error: %s", msg);
 }
 
 void g_warning_handler(char * msg) {
-	warn("Gtk warning: %s", msg);
+	int i;
+	if (msg && (i=strlen(msg)) && (i>0) && (msg[i-1] == '\n'))
+		warn("Gtk warning: %s ", msg);
+	else
+		warn("Gtk warning: %s", msg);
 }
 
-void GtkInit() {
+void initPerlGtkDefs();
+void initPerlGdkDefs();
+
+void GdkInit_internal() {
+				
+		gtk_signal_set_funcs(marshal_signal, destroy_signal);
+		
+		initPerlGdkDefs();
+}
+
+
+void GtkInit_internal() {
+		
+		char buf[20];
+		
+		gtk_signal_set_funcs(marshal_signal, destroy_signal);
+		
+		initPerlGdkDefs();
+		initPerlGtkDefs();
+		
+/*		signal_fixups = newHV();
+
+		sprintf(buf, "%d", gtk_signal_lookup("event", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+		sprintf(buf, "%d", gtk_signal_lookup("button_press_event", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+		sprintf(buf, "%d", gtk_signal_lookup("button_release_event", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+		sprintf(buf, "%d", gtk_signal_lookup("button_notify_event", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+		sprintf(buf, "%d", gtk_signal_lookup("motion_notify_event", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+		sprintf(buf, "%d", gtk_signal_lookup("widget_selected", gtk_tips_query_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_simple_event_signals), 0);
+
+		sprintf(buf, "%d", gtk_signal_lookup("size_request", gtk_widget_get_type()));
+		hv_store(signal_fixups, buf, strlen(buf), newSViv((I32)fixup_size_request_signal), 0);
+*/
+}
+
+MODULE = Gtk		PACKAGE = Gtk		PREFIX = gtk_
+
+double
+constant(name,arg)
+	char *		name
+	int		arg
+
+void
+gc(Class)
+	SV *	Class
+	CODE:
+	GCGtkObjects();
+
+void
+init(Class)
+	SV *	Class
+	CODE:
+	{
 	int argc;
 	char ** argv;
 	AV * ARGV;
@@ -326,6 +439,8 @@ void GtkInit() {
 
 	if (did_we_init_gtk)
 		return;
+		
+		printf("In Gtk::init\n");
 			
 			g_set_error_handler(g_error_handler);
 			g_set_warning_handler(g_warning_handler);
@@ -356,32 +471,9 @@ void GtkInit() {
 			
 			if (argv)
 				free(argv);
-				
-		gtk_signal_set_funcs(marshal_signal, destroy_signal);
 		
-		initPerlGtkDefs();
-}
-
-
-
-MODULE = Gtk		PACKAGE = Gtk		PREFIX = gtk_
-
-double
-constant(name,arg)
-	char *		name
-	int		arg
-
-void
-gc(Class)
-	SV *	Class
-	CODE:
-	GCGtkObjects();
-
-void
-init(Class)
-	SV *	Class
-	CODE:
-	GtkInit();
+		GtkInit_internal();
+	}
 
 
 void
@@ -389,6 +481,27 @@ main(Class)
 	SV *	Class
 	CODE:
 	gtk_main();
+
+int
+micro_version(Class)
+	CODE:
+	RETVAL = gtk_micro_version;
+	OUTPUT:
+	RETVAL
+
+int
+minor_version(Class)
+	CODE:
+	RETVAL = gtk_minor_version;
+	OUTPUT:
+	RETVAL
+
+int
+major_version(Class)
+	CODE:
+	RETVAL = gtk_major_version;
+	OUTPUT:
+	RETVAL
 
 void
 exit(Class, status)
@@ -424,6 +537,20 @@ main_quit(Class)
 	SV *	Class
 	CODE:
 	gtk_main_quit();
+
+int
+false(...)
+	CODE:
+	RETVAL = 0;
+	OUTPUT:
+	RETVAL
+
+int
+true(...)
+	CODE:
+	RETVAL = 1;
+	OUTPUT:
+	RETVAL
 
 char *
 set_locale(Class)
@@ -461,9 +588,7 @@ timeout_add(Class, interval, handler, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newSVsv(ST(2)));
-		for (j=3;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 2);
 		
 		RETVAL = gtk_timeout_add_interp(interval, 
 			generic_handler, (gpointer)args, destroy_handler);
@@ -491,9 +616,7 @@ idle_add(Class, handler, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newSVsv(ST(1)));
-		for (j=2;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 1);
 		
 		RETVAL = gtk_idle_add_full(GTK_PRIORITY_DEFAULT, NULL, 
 				generic_handler, (gpointer)args, destroy_handler);
@@ -515,9 +638,7 @@ idle_add_priority (Class, priority, handler, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newSVsv(ST(1)));
-		for (j=2;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 1);
 		
 		RETVAL = gtk_idle_add_full(priority, NULL, 
 				generic_handler, (gpointer)args, destroy_handler);
@@ -545,9 +666,7 @@ init_add(Class, handler, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newSVsv(ST(1)));
-		for (j=2;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 1);
 		
 		gtk_init_add(init_handler, (gpointer)args);
 	}
@@ -617,6 +736,118 @@ gtk_accelerator_table_set_mod_mask(table, modifier_mask)
 	int	modifier_mask
 
 
+MODULE = Gtk	PACKAGE = Gtk::MenuFactory	PREFIX = gtk_menu_factory_
+
+Gtk::MenuFactory
+new(Class, type)
+	SV *	Class
+	Gtk::MenuFactoryType	type
+	CODE:
+	RETVAL = gtk_menu_factory_new(type);
+	OUTPUT:
+	RETVAL
+
+void
+gtk_menu_factory_add_entries(factory, entry, ...)
+	Gtk::MenuFactory	factory
+	SV *	entry
+	CODE:
+	{
+		GtkMenuEntry * entries = malloc(sizeof(GtkMenuEntry)*(items-1));
+		int i;
+		for(i=1;i<items;i++) {
+			SvGtkMenuEntry(ST(i), &entries[i-1]);
+		}
+		gtk_menu_factory_add_entries(factory, entries, items-1);
+		free(entries);
+	}
+
+void
+gtk_menu_factory_add_subfactory(factory, subfactory, path)
+	Gtk::MenuFactory	factory
+	Gtk::MenuFactory	subfactory
+	char *	path
+
+void
+gtk_menu_factory_remove_paths(factory, path, ...)
+	Gtk::MenuFactory	factory
+	SV *	path
+	CODE:
+	{
+		char ** paths = malloc(sizeof(char*)*(items-1));
+		int i;
+		for(i=1;i<items;i++)
+			paths[i-1] = SvPV(ST(i),na);
+		gtk_menu_factory_remove_paths(factory, paths, items-1);
+		free(paths);
+	}
+
+void
+gtk_menu_factory_remove_entries(factory, entry, ...)
+	Gtk::MenuFactory	factory
+	SV *	entry
+	CODE:
+	{
+		GtkMenuEntry * entries = malloc(sizeof(GtkMenuEntry)*(items-1));
+		int i;
+		for(i=1;i<items;i++) {
+			SvGtkMenuEntry(ST(i), &entries[i-1]);
+		}
+		gtk_menu_factory_remove_entries(factory, entries, items-1);
+		free(entries);
+	}
+
+void
+gtk_menu_factory_remove_subfactory(factory, subfactory, path)
+	Gtk::MenuFactory	factory
+	Gtk::MenuFactory	subfactory
+	char *	path
+
+void
+gtk_menu_factory_find(factory, path)
+	Gtk::MenuFactory	factory
+	char *	path
+	PPCODE:
+	{
+		GtkMenuPath * p = gtk_menu_factory_find(factory, path);
+		if (p) {
+			EXTEND(sp,1);
+			PUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(p->widget), 0)));
+			if (GIMME == G_ARRAY) {
+				EXTEND(sp,1);
+				PUSHs(sv_2mortal(newSVpv(p->path, 0)));
+			}
+		}
+	}
+
+void
+gtk_menu_factory_destroy(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	gtk_menu_factory_destroy(factory);
+	UnregisterMisc((HV*)SvRV(ST(0)), factory);
+
+void
+DESTROY(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	UnregisterMisc((HV*)SvRV(ST(0)), factory);
+
+Gtk::Widget_Up
+widget(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->widget;
+	OUTPUT:
+	RETVAL
+
+Gtk::AcceleratorTable
+table(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->table;
+	OUTPUT:
+	RETVAL
 
 
 MODULE = Gtk		PACKAGE = Gtk::Rc	PREFIX = gtk_rc_
@@ -627,6 +858,13 @@ gtk_rc_parse(Class, filename)
 	char *	filename
 	CODE:
 	gtk_rc_parse(filename);
+
+void
+gtk_rc_parse_string(Class, data)
+	SV *	Class
+	char *	data
+	CODE:
+	gtk_rc_parse_string(data);
 
 Gtk::Style
 gtk_rc_get_style(Class, widget)
@@ -721,121 +959,6 @@ DESTROY(self)
 	UnregisterMisc((HV *)SvRV(ST(0)), self);
 
 
-MODULE = Gtk	PACKAGE = Gtk::MenuFactory	PREFIX = gtk_menu_factory_
-
-Gtk::MenuFactory
-new(Class, type)
-	SV *	Class
-	Gtk::MenuFactoryType	type
-	CODE:
-	RETVAL = gtk_menu_factory_new(type);
-	OUTPUT:
-	RETVAL
-
-void
-gtk_menu_factory_add_entries(factory, entry, ...)
-	Gtk::MenuFactory	factory
-	SV *	entry
-	CODE:
-	{
-		GtkMenuEntry * entries = malloc(sizeof(GtkMenuEntry)*(items-1));
-		int i;
-		for(i=1;i<items;i++) {
-			SvGtkMenuEntry(ST(i), &entries[i-1]);
-			entries[i-1].callback = menu_callback;
-		}
-		gtk_menu_factory_add_entries(factory, entries, items-1);
-		free(entries);
-	}
-
-void
-gtk_menu_factory_add_subfactory(factory, subfactory, path)
-	Gtk::MenuFactory	factory
-	Gtk::MenuFactory	subfactory
-	char *	path
-
-void
-gtk_menu_factory_remove_paths(factory, path, ...)
-	Gtk::MenuFactory	factory
-	SV *	path
-	CODE:
-	{
-		char ** paths = malloc(sizeof(char*)*(items-1));
-		int i;
-		for(i=1;i<items;i++)
-			paths[i-1] = SvPV(ST(i),na);
-		gtk_menu_factory_remove_paths(factory, paths, items-1);
-		free(paths);
-	}
-
-void
-gtk_menu_factory_remove_entries(factory, entry, ...)
-	Gtk::MenuFactory	factory
-	SV *	entry
-	CODE:
-	{
-		GtkMenuEntry * entries = malloc(sizeof(GtkMenuEntry)*(items-1));
-		int i;
-		for(i=1;i<items;i++) {
-			SvGtkMenuEntry(ST(i), &entries[i-1]);
-			entries[i-1].callback = menu_callback;
-		}
-		gtk_menu_factory_remove_entries(factory, entries, items-1);
-		free(entries);
-	}
-
-void
-gtk_menu_factory_remove_subfactory(factory, subfactory, path)
-	Gtk::MenuFactory	factory
-	Gtk::MenuFactory	subfactory
-	char *	path
-
-void
-gtk_menu_factory_find(factory, path)
-	Gtk::MenuFactory	factory
-	char *	path
-	PPCODE:
-	{
-		GtkMenuPath * p = gtk_menu_factory_find(factory, path);
-		if (p) {
-			EXTEND(sp,1);
-			PUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(p->widget), 0)));
-			if (GIMME == G_ARRAY) {
-				EXTEND(sp,1);
-				PUSHs(sv_2mortal(newSVpv(p->path, 0)));
-			}
-		}
-	}
-
-void
-gtk_menu_factory_destroy(factory)
-	Gtk::MenuFactory	factory
-	CODE:
-	gtk_menu_factory_destroy(factory);
-	UnregisterMisc((HV*)SvRV(ST(0)), factory);
-
-void
-DESTROY(factory)
-	Gtk::MenuFactory	factory
-	CODE:
-	UnregisterMisc((HV*)SvRV(ST(0)), factory);
-
-Gtk::Widget_Up
-widget(factory)
-	Gtk::MenuFactory	factory
-	CODE:
-	RETVAL = factory->widget;
-	OUTPUT:
-	RETVAL
-
-Gtk::AcceleratorTable
-table(factory)
-	Gtk::MenuFactory	factory
-	CODE:
-	RETVAL = factory->table;
-	OUTPUT:
-	RETVAL
-
 MODULE = Gtk		PACKAGE = Gtk::Style	PREFIX = gtk_style_
 
 Gtk::Style
@@ -853,6 +976,10 @@ gtk_style_attach(self, window)
 
 void
 gtk_style_detach(self)
+	Gtk::Style	self
+
+Gtk::Style
+gtk_style_copy(self)
 	Gtk::Style	self
 
 void
@@ -1217,12 +1344,14 @@ init(Class)
 	SV *	Class
 	CODE:
 	{
-		if (!did_we_init_gdk) {
+		if (!did_we_init_gdk && !did_we_init_gtk) {
 			int argc;
 			char ** argv = 0;
 			AV * ARGV = perl_get_av("ARGV", FALSE);
 			SV * ARGV0 = perl_get_sv("0", FALSE);
 			int i;
+
+		printf("In Gtk::Gdk::init\n");
 			
 			argc = av_len(ARGV)+2;
 			if (argc) {
@@ -1242,6 +1371,9 @@ init(Class)
 			
 			if (argv)
 				free(argv);
+				
+			GdkInit_internal();
+			
 		}
 	}
 
@@ -1378,9 +1510,7 @@ input_add(Class, source, condition, handler, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newSVsv(ST(3)));
-		for (j=4;j<items;j++)
-			av_push(args, newSVsv(ST(j)));
+		PackCallbackST(args, 3);
 		
 		/*if (!input_handlers)
 			input_handlers = newAV();*/
@@ -1421,7 +1551,10 @@ gdk_pointer_grab(Class, window, owner_events, event_mask, confine_to, cursor, ti
 	Gtk::Gdk::Cursor	cursor
 	int	time
 	CODE:
+	printf("gdk_pointer_grab(window: %d, owner_events: %d, event_mask: %d, confine_to: %d, cursor: %d, time: %d)\n",
+		window, owner_events, event_mask, confine_to, cursor, time);
 	RETVAL = gdk_pointer_grab(window, owner_events, event_mask, confine_to, cursor, time);
+	printf("Returned: %d\n", RETVAL);
 	OUTPUT:
 	RETVAL
 
@@ -1482,6 +1615,20 @@ gdk_key_repeat_restore(Class)
 	CODE:
 	gdk_key_repeat_restore();
 
+long
+ROOT_WINDOW(Class)
+	CODE:
+	RETVAL = GDK_ROOT_WINDOW();
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Window
+ROOT_PARENT(Class)
+	CODE:
+	RETVAL = GDK_ROOT_PARENT();
+	OUTPUT:
+	RETVAL
+
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Window	PREFIX = gdk_window_
 
@@ -1505,6 +1652,20 @@ new(Self, attr)
 	}
 	OUTPUT:
 	RETVAL
+
+Gtk::Gdk::Window
+new_foreign(Self, anid)
+	SV *	Self
+	long	anid
+	CODE:
+	{
+		RETVAL = gdk_window_foreign_new(anid);
+		if (!RETVAL)
+			croak("gdk_window_foreign_new failed");
+	}
+	OUTPUT:
+	RETVAL
+
 
 void
 gdk_window_destroy(window)
@@ -1690,7 +1851,8 @@ gdk_window_get_pointer(window)
 	{
 		int x,y;
 		GdkModifierType mask;
-		GdkWindow * w = gdk_window_get_pointer(window,&x,&y,&mask);
+		GdkWindow * w;
+		w = gdk_window_get_pointer(window,&x,&y,&mask);
 		if (GIMME != G_ARRAY)
 			croak("must accept array");
 		EXTEND(sp,4);
@@ -2648,6 +2810,26 @@ Gtk::Gdk::OverlapType
 gdk_region_rect_in (self, rectangle)
 	Gtk::Gdk::Region self
 	Gtk::Gdk::Rectangle rectangle
+
+Gtk::Gdk::Region
+gdk_region_polygon(Class, fill_rule, x, y, ...)
+	Gtk::Gdk::FillRule	fill_rule
+	CODE:
+	{
+		int npoints = (items-2)/2;
+		GdkPoint * points = malloc(sizeof(GdkPoint)*npoints);
+		int i,j;
+		if ((items-2) % 2)
+			croak("must have point pairs");
+		for(i=0,j=2;i<npoints;i++,j+=2) {
+			points[i].x = SvIV(ST(j));
+			points[i].y = SvIV(ST(j+1));
+		}
+		RETVAL = gdk_region_polygon(points, npoints, fill_rule);
+		free(points);
+	}
+	OUTPUT:
+	RETVAL
 
 void
 gdk_region_offset (self, dx, dy)

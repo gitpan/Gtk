@@ -179,17 +179,17 @@ SV * newSVFlagsHash(long value, char * optname, HV * o, int hash)
 	HV * h = newHV();
 	int i;
 	HE * he;
+	SV * s;
+	I32 len;
+	char * key;
+	
 	if (hash) 
 		target = (SV*)newHV();
 	else
 		target = (SV*)newAV();
 		
-	
 	hv_iterinit(o);
-	while(he = hv_iternext(o)) {
-		char *key;
-		I32 len;
-		SV * s = hv_iternextsv(o, &key, &len);
+	while(s = hv_iternextsv(o, &key, &len)) {
 		int val = SvIV(s);
 			
 		if ((value & val) == val) {
@@ -200,7 +200,7 @@ SV * newSVFlagsHash(long value, char * optname, HV * o, int hash)
 			value &= ~val;
 		}
 	}
-
+	
 	result = newRV(target);
 	SvREFCNT_dec(target);
 	return result;

@@ -125,6 +125,19 @@ foreach $node (parse_lisp($_)) {
 		$flags{$node[1]}->{perlname} = $perl;
 		$flags{$node[1]}->{xsname} = xsize($perl);
 		$flags{$node[1]}->{typename} = typeize($node[1]);
+
+	} elsif ($node[0] eq "define-struct") {
+		my($struct) = {};
+		
+		my($perl) = perlize($node[1]);
+		$struct->{perlname} = $perl;
+		$struct->{xsname} = xsize($perl);
+		$struct->{typename} = typeize($node[1]);
+		
+		if ( exists $struct{$node[1]} ) {
+			warn "Overriding struct `$node[1]'\n";
+		}
+		$struct{$node[1]} = $struct;
 		
 	} elsif ($node[0] eq "define-object") {
 		my($object) = {parent => $node[2]->[0]};
@@ -194,8 +207,14 @@ foreach $node (parse_lisp($_)) {
 		}
 		$func{$node[1]} = $func;
 
+
 	}
 }
+
+delete $pointer{""};
+#foreach (qw(CHAR BOOL INT UINT LONG ULONG FLOAT DOUBLE STRING ENUM FLAGS BOXED OBJECT POINTER)) {
+#	$pointer{$_} = $_;
+#}
 
 #use Data::Dumper;
 #
@@ -204,6 +223,7 @@ foreach $node (parse_lisp($_)) {
 #print Dumper(\%boxed);
 #print Dumper(\%object);
 #print Dumper(\%func);
+#print Dumper(\%struct);
 
 do 'overrides.pl';
 
@@ -211,6 +231,7 @@ delete $object{""};
 delete $func{""};
 delete $boxed{""};
 delete $flags{""};
+delete $struct{""};
 
 delete $objectlc{""}; # Shut up warning
 delete $overrideboxed{""}; # Shut up warning
@@ -325,6 +346,10 @@ foreach (sort keys %boxed) {
 	print $boxed{$_}->{perlname},"\tT_SimpleVal\n";
 	#print perlize($_),"\tT_SimpleVal\n"; #MISCPTROBJ\n";
 }
+foreach (sort keys %struct) {
+	print $struct{$_}->{perlname},"\tT_SimpleVal\n";
+	#print perlize($_),"\tT_SimpleVal\n"; #MISCPTROBJ\n";
+}
 
 
 open(STDOUT,">GtkDefs.h") or die "Unable to write to GtkDefs.h: $!";;
@@ -381,6 +406,15 @@ foreach (sort keys %boxed) {
 		print "#define SvGtk$_ Sv$_\n";
 	}
 }
+foreach (sort keys %struct) {
+	print "extern SV * newSV$_($_ * value);\n";
+	print "extern $_ * Sv$_(SV * value);\n";
+	print "typedef $_ * $struct{$_}->{xsname};\n";
+	if ($_ !~ /^Gtk/) {
+		print "#define newSVGtk$_ newSV$_\n";
+		print "#define SvGtk$_ Sv$_\n";
+	}
+}
 foreach (sort keys %object) {
 	print "#ifdef $object{$_}->{cast}\n";
 	print "typedef $_ * $object{$_}->{xsname};\n";
@@ -392,6 +426,30 @@ foreach (sort keys %object) {
 	print "#endif\n";
 }
 
+$j = 0;
+print "/*extern GtkType ttype[];\n";
+foreach (sort keys %pointer) {
+	print "#ifndef GTK_TYPE_POINTER_$_\n";
+	print "#define GTK_TYPE_POINTER_$_ ttype[$j]\n";
+	print "#define need_GTK_TYPE_POINTER_$_\n";
+	print "#endif\n";
+	$j++;
+}
+foreach (sort keys %struct) {
+	print "#ifndef $struct{$_}->{typename}\n";
+	print "#define $struct{$_}->{typename} ttype[$j]\n";
+	print "#define need_$struct{$_}->{typename}\n";
+	print "#endif\n";
+	$j++;
+}
+foreach (sort keys %boxed) {
+	print "#ifndef $boxed{$_}->{typename}\n";
+	print "#define $boxed{$_}->{typename} ttype[$j]\n";
+	print "#define need_$boxed{$_}->{typename}\n";
+	print "#endif\n";
+	$j++;
+}
+print "*/\n";
 
 open(STDOUT,">GtkTypes.pm") or die "Unable to write to GtkTypes.pm: $!";
 print "package Gtk::Types;\n";
@@ -466,18 +524,15 @@ SV * GtkGetArg(GtkArg * a)
 {
 	SV * result;
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); break;
 		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); break;
+		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); break;
 		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); break;
-		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); break;
 		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); break;
+		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); break;
 		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); break;
 		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); break;	
-		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); break;
-		case GTK_TYPE_POINTER:	result = GTK_VALUE_POINTER(*a) ?
-									 newSVpv(GTK_VALUE_POINTER(*a),0) :
-									 newSVsv(&sv_undef); 
-									 break;
+		case GTK_TYPE_DOUBLE:	result = newSVnv(GTK_VALUE_DOUBLE(*a)); break;	
+		case GTK_TYPE_STRING:	result = GTK_VALUE_STRING(*a) ? newSVpv(GTK_VALUE_STRING(*a),0) : newSVsv(&sv_undef); break;
 		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
 		case GTK_TYPE_SIGNAL:
 		{
@@ -522,6 +577,57 @@ foreach (sort keys %flags) {
 print <<"EOT";
 				goto d_fault;
 			break;
+		case GTK_TYPE_POINTER:
+#if 0
+			if (a->type == GTK_TYPE_POINTER_CHAR)
+				result = newSViv(*GTK_RETLOC_CHAR(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_BOOL)
+				result = newSViv(*GTK_RETLOC_BOOL(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_INT)
+				result = newSViv(*GTK_RETLOC_INT(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_UINT)
+				result = newSViv(*GTK_RETLOC_UINT(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_LONG)
+				result = newSViv(*GTK_RETLOC_LONG(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_ULONG)
+				result = newSViv(*GTK_RETLOC_ULONG(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_FLOAT)
+				result = newSVnv(*GTK_RETLOC_FLOAT(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_DOUBLE)
+				result = newSVnv(*GTK_RETLOC_DOUBLE(*a));
+			else
+			if (a->type == GTK_TYPE_POINTER_STRING)
+				result = *GTK_RETLOC_STRING(*a) ? newSVpv(*GTK_RETLOC_STRING(*a), 0) : newSVsv(&sv_undef);
+			else
+			if (a->type == GTK_TYPE_POINTER_OBJECT)
+				result = newSVGtkObjectRef(*GTK_RETLOC_OBJECT(*a));
+			else
+#endif
+EOT
+		
+foreach (sort keys %struct) {
+	print "#ifdef $struct{$_}->{typename}\n";
+	print "			if (a->type == $struct{$_}->{typename})\n";
+	print "				result = newSV$_(GTK_VALUE_POINTER(*a));\n";
+	print "			else\n";
+	print "#endif\n";
+}
+
+print <<"EOT";
+				goto d_fault;
+				/* result = GTK_VALUE_POINTER(*a) ?
+									 newSVpv(GTK_VALUE_POINTER(*a),0) :
+									 newSVsv(&sv_undef); 
+									 break;*/
+									 
+			break;
 		case GTK_TYPE_BOXED:
 			if (a->type == GTK_TYPE_GDK_EVENT)
 				result = newSVGdkEvent(GTK_VALUE_BOXED(*a));
@@ -556,8 +662,8 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
 		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
 		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_DOUBLE:	GTK_VALUE_DOUBLE(*a) = SvNV(v); break;	
 		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = g_strdup(SvPV(v,na)); break;
-		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = (v && SvOK(v)) ? SvPV(v,na) : 0; break;
 		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_SIGNAL:
 		{
@@ -574,13 +680,61 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 
 			av_push(args, newSVsv(Class));
 			av_push(args, newSVpv(c, 0));
-			av_push(args, newSVsv(v));
 			av_push(args, newSViv(type));
+			
+			PackCallback(args, v);
+			/*av_push(args, newSVsv(v));*/
 
 			GTK_VALUE_SIGNAL(*a).f = 0;
 			GTK_VALUE_SIGNAL(*a).d = args;
 			return;
 		}
+		case GTK_TYPE_POINTER:
+#if 0
+			if (a->type == GTK_TYPE_POINTER_CHAR)
+				*GTK_RETLOC_CHAR(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_BOOL)
+				*GTK_RETLOC_BOOL(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_INT)
+				*GTK_RETLOC_INT(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_UINT)
+				*GTK_RETLOC_UINT(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_LONG)
+				*GTK_RETLOC_LONG(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_ULONG)
+				*GTK_RETLOC_ULONG(*a) = SvIV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_FLOAT)
+				*GTK_RETLOC_FLOAT(*a) = SvNV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_DOUBLE)
+				*GTK_RETLOC_DOUBLE(*a) = SvNV(v);
+			else
+			if (a->type == GTK_TYPE_POINTER_STRING)
+				*GTK_RETLOC_STRING(*a) = SvPV(v, na);
+			else
+			if (a->type == GTK_TYPE_POINTER_OBJECT)
+				*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object");
+			else
+#endif
+EOT
+
+foreach (sort keys %struct) {
+	print "#ifdef $struct{$_}->{typename}\n";
+	print "			if (a->type == $struct{$_}->{typename})\n";
+	print "				GTK_VALUE_POINTER(*a) = Sv$_(v, 0);\n";
+	print "			else\n";
+	print "#endif\n";
+}
+print <<"EOT";
+				goto d_fault;
+				/*GTK_VALUE_POINTER(*a) = (v && SvOK(v)) ? SvPV(v,na) : 0; break;*/
+			break;
 		case GTK_TYPE_ENUM:
 EOT
 
@@ -639,8 +793,8 @@ void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); break;
 		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); break;
 		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_DOUBLE:	*GTK_RETLOC_DOUBLE(*a) = SvNV(v); break;	
 		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); break;
-		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;
 		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_ENUM:
 EOT
@@ -668,6 +822,21 @@ foreach (sort keys %flags) {
 print <<"EOT";
 				goto d_fault;
 			break;
+		case GTK_TYPE_POINTER:
+EOT
+
+foreach (sort keys %struct) {
+	print "#ifdef $struct{$_}->{typename}\n";
+	print "			if (a->type == $struct{$_}->{typename})\n";
+	print "				GTK_VALUE_POINTER(*a) = Sv$_(v, 0);\n";
+	print "			else\n";
+	print "#endif\n";
+}
+
+print <<"EOT";
+				goto d_fault;
+				/* *GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;*/
+			break;
 		case GTK_TYPE_BOXED:
 			if (a->type == GTK_TYPE_GDK_EVENT)
 				*GTK_RETLOC_BOXED(*a) = SvGdkEvent(v);
@@ -690,7 +859,7 @@ print <<"EOT";
 	}
 }
 
-void initPerlGtkDefs(void) {
+void initPerlGdkDefs(void) {
 	int i;
 	HV * h;
 	pG_EnumHash = newHV();
@@ -728,6 +897,12 @@ print <<"EOT";
 		sv_setsv((SV*)p, (SV*)pGtkType[i]);
 	}*/
 
+}
+
+/*GtkType ttype[$j] = {};*/
+
+void initPerlGtkDefs(void) {
+	
 	gtk_typecasts = newAV();
 	types = newHV();
 
@@ -739,7 +914,29 @@ foreach (sort keys %object) {
 		;#unless /preview/i;
 	print "#endif\n";
 }
-
+$j = 0;
+print "/*\n";
+foreach (sort keys %pointer) {
+	print "#ifdef need_GTK_TYPE_POINTER_$_\n";
+	print "\tttype[$j] = gtk_type_new(GTK_TYPE_POINTER);\n";
+	print "#endif\n";
+	$j++;
+}
+foreach (sort keys %struct) {
+	next if not length $struct{$_}->{typename};
+	print "#ifdef need_GTK_TYPE_$struct{$_}->{typename}\n";
+	print "\tttype[$j] = gtk_type_new(GTK_TYPE_POINTER);\n";
+	print "#endif\n";
+	$j++;
+}
+foreach (sort keys %boxed) {
+	next if not length $boxed{$_}->{typename};
+	print "#ifdef need_GTK_TYPE_$boxed{$_}->{typename}\n";
+	print "\tttype[$j] = gtk_type_new(GTK_TYPE_BOXED);\n";
+	print "#endif\n";
+	$j++;
+}
+print "*/\n";
 
 print "}\n";
 
@@ -757,6 +954,20 @@ DESTROY(self)
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
 	$boxed{$_}->{unref}(self);
+
+EOT
+}
+
+foreach (sort keys %struct) {
+	print <<"EOT";
+	
+MODULE = Gtk	PACKAGE = $struct{$_}->{perlname}
+
+void
+DESTROY(self)
+	$struct{$_}->{perlname}	self
+	CODE:
+	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
 
 EOT
 }
@@ -822,598 +1033,6 @@ foreach (sort keys %object) {
 }
 print "\"\n;\n";
 
-exit;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%enum = ();
-
-while (/\(define-enum\s+(\S+)((\s+\(\S+\s+\S+\))+)\)/gs) {
-	my($a,$b) = ($1,$2);
-	$enum{$a} = [];
-	while ($b =~ /\((\S+)\s+(\S+)\)/gs) {
-		push @{$enum{$a}}, [$1, $2];
-	}
-}
-
-%boxed = ();
-
-while (/\(define-boxed\s+(\S+)((\s+\S+?)+)\)/gs) {
-	my($a,$b) = ($1,$2);
-	$boxed{$a} = [];
-	while ($b =~ /(\S+)/gs) {
-		push @{$boxed{$a}}, $1;
-	}
-}
-
-%flags = ();
-
-while (/\(define-flags\s+(\S+)((\s+\(\S+\s+\S+\))+)\)/gs) {
-	my($a,$b) = ($1,$2);
-	$flags{$a} = [];
-	while ($b =~ /\((\S+)\s+(\S+)\)/gs) {
-		push @{$flags{$a}}, [$1, $2];
-	}
-}
-
-%func = ();
-
-while (/\(define-func\s+(\S+)\s+(\S+)((\s+\(\S+\s+\S+\))+)\)/gs) {
-	my($a,$ret,$b) = ($1,$2,$3);
-	$func{$a} = [$ret,[]];
-	while ($b =~ /\((\S+)\s+(\S+)\)/gs) {
-		push @{$func{$a}[1]}, [$1, $2];
-	}
-}
-
-%object = ();
-
-while (/\(define-object\s+(\S+)\s+\((\S*?)\)\)/gs) {
-	my($a,$b,$c) = ($1,$1,$2);
-	$b =~ s/([a-z])([A-Z])/${1}_$2/g;
-	$b = uc $b;
-	$object{$a} = [$b,$c];
-}
-
-
-
-# Exceptions
-
-$boxed{GdkPixmap} = $boxed{GdkWindow};
-delete $boxed{GdkWindow};
-delete $boxed{GdkEvent};
-
-open(STDOUT,">typemap.gtk");
-print "TYPEMAP\n";
-$i = 0;
-foreach (sort keys %enum) {
-	print perlize($_),"\tT_SimpleVal\n";
-	$i++;
-}
-foreach (sort keys %flags) {
-	print perlize($_),"\tT_SimpleVal\n";
-	$i++;
-}
-foreach (sort keys %object) {
-	print perlize($_),"\tT_GtkPTROBJ\n";
-}
-foreach (sort keys %boxed) {
-	print perlize($_),"\tT_SimpleVal\n"; #MISCPTROBJ\n";
-}
-
-open(STDOUT,">GtkDefs.h");
-print <<"EOT";
-extern HV * pGtkType[];
-extern char * pGtkTypeName[];
-extern HV * pG_EnumHash;
-extern HV * pG_FlagsHash;
-extern AV * gtk_typecasts;
-extern int type_name(char * name);
-
-extern void add_typecast(int type, char * perlName);
-extern SV * GtkGetArg(GtkArg * a);
-extern void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
-extern void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
-
-/*extern SV * newSVOptsHash(long value, char * name, HV * hash);
-extern long SvOptsHash(SV * value, char * name, HV * hash);
-extern SV * newSVFlagsHash(long value, char * name, HV * hash, int);
-extern long SvFlagsHash(SV * value, char * name, HV * hash);*/
-
-EOT
-$i = 0;
-foreach (sort keys %enum) {
-	print "#define pGE_$_ pGtkType[$i]\n";
-	print "#define pGEName_$_ pGtkTypeName[$i]\n";
-	print "#define newSV$_(v) newSVOptsHash(v, pGEName_$_, pGE_$_)\n";
-	print "#define Sv$_(v) SvOptsHash(v, pGEName_$_, pGE_$_)\n";
-	$p = perlize($_);
-	$p =~ s/:/_/g;
-	print "#define $p $_\n";
-	$i++;
-}
-foreach (sort keys %flags) {
-	print "#define pGF_$_ pGtkType[$i]\n";
-	print "#define pGFName_$_ pGtkTypeName[$i]\n";
-	print "#define newSV$_(v) newSVFlagsHash(v, pGFName_$_, pGF_$_, 1)\n";
-	print "#define Sv$_(v) SvFlagsHash(v, pGFName_$_, pGF_$_)\n";
-	$p = perlize($_);
-	$p =~ s/:/_/g;
-	print "#define $p $_\n";
-	$i++;
-}
-foreach (sort keys %boxed) {
-	$p = perlize($_);
-	$q = $p;
-	$q =~ s/::/__/g;
-	print "extern SV * newSV$_($_ * value);\n";
-	print "extern $_ * Sv$_(SV * value);\n";
-	print "typedef $_ * $q;\n";
-}
-foreach (sort keys %object) {
-	$p = xsize($_);
-#	$p =~ s/:/_/g;
-#	$q = $p;
-#	$q =~ s/__/_/g;
-#	$q =~ s/([a-z])([A-Z])/$1_$2/g;
-#	$q = uc $q;
-	print "typedef $_ * $p;\n";
-	print "#define Cast$p $object{$_}[0]\n";
-}
-
-open(STDOUT,">GtkTypes.pm");
-print "package Gtk::Types;\n";
-foreach (sort keys %object) {
-	$p = perlize($_);
-	$q = perlize($object{$_}[1]);
-	print "\@${p}::ISA = qw($q);\n";
-}
-print "1;\n";
-
-open(STDOUT,">GtkDefs.c");
-print <<"EOT";
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-
-#include <gtk/gtk.h>
-
-#include "GtkTypes.h"
-#include "GdkTypes.h"
-#include "MiscTypes.h"
-#include "GtkDefs.h"
-
-HV * pGtkType[$i];
-char * pGtkTypeName[$i];
-HV * pG_EnumHash;
-HV * pG_FlagsHash;
-
-AV * gtk_typecasts = 0;
-static HV * types = 0;
-
-void add_typecast(int type, char * perlName)
-{
-	/*GtkObjectClass * klass = gtk_type_class(type);*/
-	av_extend(gtk_typecasts, type/* klass->type*/);
-	av_store(gtk_typecasts, type/*klass->type*/, newSVpv(perlName, 0));
-	hv_store(types, perlName, strlen(perlName), newSViv(type), 0);
-}
-
-int type_name(char * name) {
-	SV ** s = hv_fetch(types, name, strlen(name), 0);
-	if (s)
-		return SvIV(*s);
-	else
-		return 0;
-}
-
-EOT
-
-foreach (sort keys %boxed) {
-	$p = perlize($_);
-	print <<"EOT";
-
-SV * newSV$_($_ * value) {
-	int n = 0;
-	SV * result = newSVMiscRef(value, "$p", &n);
-	if (n)
-		$boxed{$_}[0](value);
-	return result;
-}
-
-$_ * Sv$_(SV * value) { return ($_*)SvMiscRef(value, "$p"); }
-EOT
-}
-
-print <<"EOT";
-
-SV * GtkGetArg(GtkArg * a)
-{
-	SV * result;
-	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); break;
-		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); break;
-		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); break;
-		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); break;
-		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); break;
-		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); break;
-		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); break;	
-		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); break;
-		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); break;
-		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
-		case GTK_TYPE_SIGNAL:
-		{
-			AV * args = (AV*)GTK_VALUE_SIGNAL(*a).d;
-			SV ** s;
-			if ((GTK_VALUE_SIGNAL(*a).f != 0) ||
-				(!args) ||
-				(SvTYPE(args) != SVt_PVAV) ||
-				(av_len(args) < 3) ||
-				!(s = av_fetch(args, 2, 0))
-				)
-				croak("Unable to return a foreign signal type to Perl");
-
-			result = newSVsv(*s);
-			return;
-		}
-		case GTK_TYPE_ENUM:
-EOT
-
-foreach (sort keys %enum) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				result = newSV$_(GTK_VALUE_ENUM(*a));\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_FLAGS:
-EOT
-
-foreach (sort keys %flags) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				result = newSV$_(GTK_VALUE_FLAGS(*a));\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_BOXED:
-			if (a->type == GTK_TYPE_GDK_EVENT)
-				result = newSVGdkEvent(GTK_VALUE_BOXED(*a));
-			else
-EOT
-
-foreach (sort keys %boxed) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				result = newSV$_(GTK_VALUE_BOXED(*a));\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		d_fault:
-		default:
-			croak("Cannot get argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
-	}
-	return result;
-}
-
-void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
-{
-	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); break;
-		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); break;
-		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); break;
-		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); break;
-		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
-		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
-		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
-		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
-		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
-		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
-		case GTK_TYPE_SIGNAL:
-		{
-			AV * args;
-			int i,j;
-			int type;
-			char * c = strchr(a->name, ':');
-			c+=2;
-			c = strchr(c, ':');
-			c += 2;
-			args = newAV();
-
-			type = gtk_signal_lookup(c, Object->klass->type);
-
-			av_push(args, newSVsv(Class));
-			av_push(args, newSVpv(c, 0));
-			av_push(args, newSVsv(v));
-			av_push(args, newSViv(type));
-
-			GTK_VALUE_SIGNAL(*a).f = 0;
-			GTK_VALUE_SIGNAL(*a).d = args;
-			return;
-		}
-		case GTK_TYPE_ENUM:
-EOT
-
-foreach (sort keys %enum) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				GTK_VALUE_ENUM(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_FLAGS:
-EOT
-foreach (sort keys %flags) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				GTK_VALUE_FLAGS(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_BOXED:
-			if (a->type == GTK_TYPE_GDK_EVENT)
-				GTK_VALUE_BOXED(*a) = SvGdkEvent(v);
-			else
-EOT
-foreach (sort keys %boxed) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				GTK_VALUE_BOXED(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		d_fault:
-		default:
-			croak("Cannot set argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
-	}
-}
-
-void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
-{
-	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); break;
-		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); break;
-		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); break;
-		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); break;
-		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); break;
-		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); break;
-		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); break;	
-		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); break;
-		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;
-		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
-		case GTK_TYPE_ENUM:
-EOT
-
-foreach (sort keys %enum) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				*GTK_RETLOC_ENUM(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_FLAGS:
-EOT
-foreach (sort keys %flags) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				*GTK_RETLOC_FLAGS(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		case GTK_TYPE_BOXED:
-			if (a->type == GTK_TYPE_GDK_EVENT)
-				*GTK_RETLOC_BOXED(*a) = SvGdkEvent(v);
-			else
-EOT
-foreach (sort keys %boxed) {
-	$p = $_;
-	$p =~ s/^Gtk//;
-	$p =~ s/([a-z])([A-Z])/$1_$2/g;
-	$p = "GTK_TYPE_" . uc $p;
-	print "#ifdef $p\n";
-	print "			if (a->type == $p)\n";
-	print "				GTK_VALUE_BOXED(*a) = Sv$_(v);\n";
-	print "			else\n";
-	print "#endif\n";
-}
-
-print <<"EOT";
-				goto d_fault;
-			break;
-		d_fault:
-		default:
-			croak("Cannot set argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
-	}
-}
-
-void initPerlGtkDefs(void) {
-	int i;
-	HV * h;
-	pG_EnumHash = newHV();
-	pG_FlagsHash = newHV();
-	
-EOT
-$i = 0;
-foreach (sort keys %enum) {
-	$p = perlize($_);
-	print "\n	h = newHV();\n";
-	print "	pGtkType[$i] = h;\n";
-	print "	pGtkTypeName[$i] = \"$p\";\n";
-	for ($j=0;$j<@{$enum{$_}};$j++) {
-		$p = $enum{$_}[$j][0];
-		print "	hv_store(h, \"$p\", ", length($p), ", newSViv(", $enum{$_}[$j][1],"), 0);\n";
-	}
-	$p = perlize($_);
-	print "	hv_store(pG_EnumHash, \"$p\", ", length($p), ", newRV((SV*)h), 0);\n";
-	print " SvREFCNT_dec(h);\n";
-	$i++;
-}
-
-foreach (sort keys %flags) {
-	$p = perlize($_);
-	print "\n	h = newHV();\n";
-	print "	pGtkType[$i] = h;\n";
-	print "	pGtkTypeName[$i] = \"$p\";\n";
-	for ($j=0;$j<@{$flags{$_}};$j++) {
-		$p = $flags{$_}[$j][0];
-		print "	hv_store(h, \"$p\", ", length($p), ", newSViv(", $flags{$_}[$j][1],"), 0);\n";
-	}
-	$p = perlize($_);
-	print "	hv_store(pG_FlagsHash, \"$p\", ", length($p), ", newRV((SV*)h), 0);\n";
-	print " SvREFCNT_dec(h);\n";
-	$i++;
-}
-print <<"EOT";
-
-	/*for(i=0;i<$i;i++) {
-		HV * p = perl_get_hv(pGtkTypeName[i], TRUE);
-		sv_setsv((SV*)p, (SV*)pGtkType[i]);
-	}*/
-
-	gtk_typecasts = newAV();
-	types = newHV();
-
-EOT
-foreach (sort keys %object) {
-	$p = perlize($_);
-	print "\tadd_typecast(", lc $object{$_}[0], "_get_type(),	\"$p\");\n"
-		;#unless /preview/i;
-}
-
-
-print "}\n";
-
-
-open(STDOUT,">boxed.xsh");
-
-foreach (sort keys %boxed) {
-	$p = perlize($_);
-	print <<"EOT";
-	
-MODULE = Gtk	PACKAGE = $p
-
-void
-DESTROY(self)
-	$p	self
-	CODE:
-	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
-	$boxed{$_}[1](self);
-
-EOT
-}
-
-open(STDOUT,">objects.xsh");
-
-foreach (sort keys %object) {
-	$p = perlize($_);
-	$c = lc $object{$_}->[0];
-	print <<"EOT";
-	
-MODULE = Gtk	PACKAGE = $p		PREFIX = ${c}_
-
-int
-${c}_get_object_type(self)
-	$p	self
-	CODE:
-	RETVAL = ${c}_get_type();
-	OUTPUT:
-	RETVAL
-
-int
-${c}_get_object_size(self)
-	$p	self
-	CODE:
-	RETVAL = sizeof($_);
-	OUTPUT:
-	RETVAL
-
-
-int
-${c}_get_class_size(self)
-	$p	self
-	CODE:
-	RETVAL = sizeof(${_}Class);
-	OUTPUT:
-	RETVAL
-
-EOT
-}
-
-pos = 0;
 
 __END__;
 
@@ -1594,3 +1213,10 @@ __END__;
 
 ;(define-object GtkToolbar (GtkContainer))
 
+(define-boxed GtkNotebookPage
+	"(void)"
+	"(void)")
+
+(define-boxed GtkBoxChild
+	"(void)"
+	"(void)")

@@ -35,7 +35,7 @@ gtk_button_box_set_spacing(buttonbox, spacing)
 void
 gtk_button_box_set_layout(buttonbox, layout_style)
 	Gtk::ButtonBox	buttonbox
-	int	layout_style
+	Gtk::ButtonBoxStyle	layout_style
 
 void
 gtk_button_box_set_child_size(buttonbox, min_width, min_height)

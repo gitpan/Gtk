@@ -18,7 +18,7 @@ $window = new Gtk::Widget	"GtkWindow",
 		allow_shrink		=>	0,
 		border_width	=>	10;
 
-$button = new Gtk::Widget	"GtkButton",
+$button = new Gtk::Widget	"Gtk::Button",
 		label		=>	"hello world",
 		-clicked	=>	sub { destroy $button; destroy $window; },
 		parent		=>	$window,

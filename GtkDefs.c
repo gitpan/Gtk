@@ -457,7 +457,7 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
 		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
 		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
-		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = g_strdup(SvPV(v,na)); break;
 		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
 		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_SIGNAL:
@@ -1736,6 +1736,9 @@ void initPerlGtkDefs(void) {
 #endif
 #ifdef GTK_COLOR_SELECTION_DIALOG
 	add_typecast(gtk_color_selection_dialog_get_type(),	"Gtk::ColorSelectionDialog");
+#endif
+#ifdef GTK_COMBO
+	add_typecast(gtk_combo_get_type(),	"Gtk::Combo");
 #endif
 #ifdef GTK_CONTAINER
 	add_typecast(gtk_container_get_type(),	"Gtk::Container");

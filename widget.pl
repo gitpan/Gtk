@@ -30,9 +30,15 @@ sub init {
 	print Dumper([@_]);
 }
 
-sub arg {
-	print "arg: ";
+sub set_arg {
+	print "set_arg: ";
 	print Dumper([@_]);
+}
+
+sub get_arg {
+	print "get_arg: ";
+	print Dumper([@_]);
+	return "$_[1]-result";
 }
 
 sub class_init {
@@ -56,6 +62,7 @@ $b->signal_connect("clicked", sub { destroy $w });
 
 $b->set("Foo::blorp", 'fibble');
 $b->set("Foo::bletch", 'fabble');
+print "|",$b->get("Foo::blorp"),"|\n";
 
 $w->add($b);
 

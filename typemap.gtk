@@ -63,6 +63,7 @@ Gtk::CheckButton	T_GtkPTROBJ
 Gtk::CheckMenuItem	T_GtkPTROBJ
 Gtk::ColorSelection	T_GtkPTROBJ
 Gtk::ColorSelectionDialog	T_GtkPTROBJ
+Gtk::Combo	T_GtkPTROBJ
 Gtk::Container	T_GtkPTROBJ
 Gtk::Curve	T_GtkPTROBJ
 Gtk::Data	T_GtkPTROBJ

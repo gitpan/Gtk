@@ -1,4 +1,5 @@
 Atoms.pm
+ChangeLog
 Gdk.pm
 GdkTypes.c
 GdkTypes.h
@@ -17,6 +18,7 @@ GtkCheckButton.xs
 GtkCheckMenuItem.xs
 GtkColorSelection.xs
 GtkColorSelectionDialog.xs
+GtkCombo.xs
 GtkContainer.xs
 GtkCurve.xs
 GtkData.xs
@@ -46,6 +48,7 @@ GtkList.xs
 GtkListItem.xs
 GtkMenu.xs
 GtkMenuBar.xs
+GtkMenuFactory.xs
 GtkMenuItem.xs
 GtkMenuShell.xs
 GtkMisc.xs
@@ -88,19 +91,21 @@ MANIFEST
 Makefile.PL
 MiscTypes.c
 MiscTypes.h
-Objects.PL
+Objects.xpl
 README
 ToDo
 boxed.xsh
 demo_inherit.pl
 gendefs.pl
 gtk.defs
+gtkcombo.defs
 marble.xpm
 objects.xsh
 simple.pl
 test.pl
 test.xpm
 testgtkrc
+testselection.pl
 typemap
 typemap.gtk
 warning.xpm

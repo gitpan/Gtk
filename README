@@ -29,7 +29,7 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 0.99.2, and there is
+Usage information: this package was designed around gtk 0.99.3, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.

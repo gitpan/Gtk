@@ -488,7 +488,7 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
 		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
 		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
-		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = g_strdup(SvPV(v,na)); break;
 		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
 		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_SIGNAL:
@@ -675,7 +675,7 @@ foreach (sort keys %object) {
 print "}\n";
 
 
-open(STDOUT,">boxed.xsh") or die "Unable to write to GtkDefs.c: $!";
+open(STDOUT,">boxed.xsh") or die "Unable to write to boxed.xsh: $!";
 
 foreach (sort keys %boxed) {
 	print <<"EOT";
@@ -692,9 +692,10 @@ DESTROY(self)
 EOT
 }
 
-open(STDOUT,">objects.xsh") or die "Unable to write to GtkDefs.c: $!";
+open(STDOUT,">objects.xsh") or die "Unable to write to objects.xsh: $!";
 
 foreach (sort keys %object) {
+	next if not length $object{$_}->{prefix};
 	print <<"EOT";
 	
 MODULE = Gtk	PACKAGE = $object{$_}->{perlname}		PREFIX = $object{$_}->{prefix}_
@@ -732,6 +733,7 @@ EOT
 }
 
 foreach (sort keys %object) {
+	next if not length $object{$_}->{xsname};
 	print <<"EOT";
 BOOT:
 {
@@ -743,7 +745,7 @@ BOOT:
 EOT
 }
 
-open(STDOUT,">Objects.PL") or die "Unable to write to Objects.PL: $!";
+open(STDOUT,">Objects.xpl") or die "Unable to write to Objects.xpl: $!";
 print "\"\n";
 foreach (sort keys %object) {
 	print "$_.o\n";

@@ -51,7 +51,39 @@ static void generic_perl_gtk_object_init(GtkObject * object)
 	
 }
 
-static void generic_perl_gtk_arg_func(GtkObject * object, GtkArg * arg)
+static void generic_perl_gtk_arg_get_func(GtkObject * object, GtkArg * arg, guint arg_id)
+{
+	SV * s = newSVGtkObjectRef(object, 0);
+	int count;
+	dSP;
+
+	if (!s) {
+		fprintf(stderr, "Object is not of registered type\n");
+		return;
+	}
+
+	ENTER;
+	SAVETMPS;
+	
+	PUSHMARK(sp);
+	XPUSHs(sv_2mortal(s));
+	XPUSHs(sv_2mortal(newSVpv(arg->name,0)));
+	XPUSHs(sv_2mortal(newSViv(arg_id)));
+	PUTBACK;
+	count = perl_call_method("get_arg", G_SCALAR); 
+	SPAGAIN;
+	if (count != 1)
+		croak("Big trouble\n");
+	
+	GtkSetArg(arg, POPs, s, object);
+	
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+	
+}
+
+static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guint arg_id)
 {
 	SV * s = newSVGtkObjectRef(object, 0);
 	dSP;
@@ -63,9 +95,11 @@ static void generic_perl_gtk_arg_func(GtkObject * object, GtkArg * arg)
 
 	PUSHMARK(sp);
 	XPUSHs(sv_2mortal(s));
+	XPUSHs(sv_2mortal(newSVpv(arg->name,0)));	
+	XPUSHs(sv_2mortal(newSViv(arg_id)));
 	XPUSHs(sv_2mortal(GtkGetArg(arg)));
 	PUTBACK;
-	perl_call_method("arg", G_DISCARD); 
+	perl_call_method("set_arg", G_DISCARD); 
 	/* Errors are OK ! */
 	
 }
@@ -239,6 +273,37 @@ set(self, name, value, ...)
 	OUTPUT:
 	RETVAL
 
+void
+get(self, name, ...)
+	Gtk::Object	self
+	SV *	name
+	PPCODE:
+	{
+		GtkType t;
+		GtkArg	argv[3];
+		int p;
+		int argc;
+		
+		for(p=1;p<items;) {
+		
+			argv[0].name = SvPV(ST(p),na);
+			t = gtk_object_get_arg_type(argv[0].name);
+			argv[0].type = t;
+		
+			argc = 1;
+			
+			gtk_object_getv(self, argc, argv);
+			
+			EXTEND(sp,1);
+			PUSHs(sv_2mortal(GtkGetArg(&argv[0])));
+			
+			if (t == GTK_TYPE_STRING)
+				g_free(GTK_VALUE_STRING(argv[0]));
+			
+			p++;
+		}
+	}
+
 SV *
 new(klass, ...)
 	SV *	klass
@@ -276,10 +341,11 @@ new(klass, ...)
 	RETVAL
 
 void
-add_arg_type(Class, name, type)
+add_arg_type(Class, name, type, num=1)
 	SV *	Class
 	SV *	name
 	char *	type
+	int	num
 	CODE:
 	{
 		SV * name2 = name;
@@ -294,7 +360,7 @@ add_arg_type(Class, name, type)
 		if (!(typeval = type_name(type))) {
 			typeval = gtk_type_from_name(type);
 		}
-		gtk_object_add_arg_type(SvPV(name2,na), typeval);
+		gtk_object_add_arg_type(SvPV(name2,na), typeval, num);
 	}
 
 void
@@ -466,7 +532,8 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		
 		info.class_init_func = (GtkClassInitFunc)generic_perl_gtk_class_init;
 		info.object_init_func = (GtkObjectInitFunc)generic_perl_gtk_object_init;
-		info.arg_func = (GtkArgFunc)generic_perl_gtk_arg_func;
+		info.arg_set_func = (GtkArgSetFunc)generic_perl_gtk_arg_set_func;
+		info.arg_get_func = (GtkArgSetFunc)generic_perl_gtk_arg_get_func;
 		
 		RETVAL = gtk_type_unique(parent_type, &info);
 		

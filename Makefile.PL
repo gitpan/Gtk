@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'	=> 'Gtk',
-    'VERSION'	=> '0.1.13',
+    'VERSION'	=> '0.1.14',
     'LIBS'	=> ['-L/usr/X11R6/lib -lgtk -lgdk -lglib -lX11 -lXext'],   # e.g., '-lm' 
     'PM' => {'Gdk.pm' => '$(INST_LIBDIR)/Gtk/Gdk.pm',
     		'Gtk.pm' => '$(INST_LIBDIR)/Gtk.pm',
@@ -14,7 +14,7 @@ WriteMakefile(
     'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
     'INC'	=> '',     # e.g., '-I/usr/include/other' 
     'OBJECT' => 'Gtk.o GtkDefs.o GtkTypes.o GdkTypes.o MiscTypes.o ' .
-				(do 'Objects.PL'),
+				(do 'Objects.xpl'),
 	'XSPROTOARG' => '-noprototypes'
 				
 );

@@ -1,0 +1,5 @@
+
+;; 0.99.3 Combo box
+
+(define-object GtkCombo (GtkHBox))
+

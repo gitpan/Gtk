@@ -11,6 +11,7 @@ package Gtk::Types;
 @Gtk::CheckMenuItem::ISA = 'Gtk::MenuItem';
 @Gtk::ColorSelection::ISA = 'Gtk::VBox';
 @Gtk::ColorSelectionDialog::ISA = 'Gtk::Window';
+@Gtk::Combo::ISA = 'Gtk::HBox';
 @Gtk::Container::ISA = 'Gtk::Widget';
 @Gtk::Curve::ISA = 'Gtk::DrawingArea';
 @Gtk::Data::ISA = 'Gtk::Object';

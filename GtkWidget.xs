@@ -179,10 +179,6 @@ gtk_widget_grab_default(widget)
 	Gtk::Widget	widget
 
 void
-gtk_widget_restore_state(widget)
-	Gtk::Widget	widget
-
-void
 gtk_widget_set_name(widget, name)
 	Gtk::Widget	widget
 	char *	name

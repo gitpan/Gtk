@@ -383,6 +383,38 @@ gtk_color_selection_dialog_get_class_size(self)
 #endif
 
 	
+MODULE = Gtk	PACKAGE = Gtk::Combo		PREFIX = gtk_combo_
+
+#ifdef GTK_COMBO
+
+int
+gtk_combo_get_type(self)
+	Gtk::Combo	self
+	CODE:
+	RETVAL = gtk_combo_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_combo_get_size(self)
+	Gtk::Combo	self
+	CODE:
+	RETVAL = sizeof(GtkCombo);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_combo_get_class_size(self)
+	Gtk::Combo	self
+	CODE:
+	RETVAL = sizeof(GtkComboClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
 MODULE = Gtk	PACKAGE = Gtk::Container		PREFIX = gtk_container_
 
 #ifdef GTK_CONTAINER
@@ -2415,6 +2447,13 @@ BOOT:
 {
 	#ifdef GTK_COLOR_SELECTION_DIALOG
 		boot_Gtk__ColorSelectionDialog(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_COMBO
+		boot_Gtk__Combo(cv);
 	#endif
 }
 

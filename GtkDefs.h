@@ -344,6 +344,10 @@ typedef GtkColorSelection * Gtk__ColorSelection;
 typedef GtkColorSelectionDialog * Gtk__ColorSelectionDialog;
 #define CastGtk__ColorSelectionDialog GTK_COLOR_SELECTION_DIALOG
 #endif
+#ifdef GTK_COMBO
+typedef GtkCombo * Gtk__Combo;
+#define CastGtk__Combo GTK_COMBO
+#endif
 #ifdef GTK_CONTAINER
 typedef GtkContainer * Gtk__Container;
 #define CastGtk__Container GTK_CONTAINER

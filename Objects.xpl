@@ -11,6 +11,7 @@ GtkCheckButton.o
 GtkCheckMenuItem.o
 GtkColorSelection.o
 GtkColorSelectionDialog.o
+GtkCombo.o
 GtkContainer.o
 GtkCurve.o
 GtkData.o

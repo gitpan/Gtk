@@ -12,12 +12,14 @@ new(Class,...)
 	SV * Class
 	CODE:
 	{
+		GtkWidget * g;
 		int * attr = malloc(sizeof(int)*(items));
 		int i;
 		for (i=0; i < items -1; ++i)
 			attr[i] = SvIV(ST(i+1));
 		attr[i] = 0;
-		RETVAL = GTK_GL_AREA(gtk_gl_area_new(attr));
+		g = gtk_gl_area_new(attr);
+		RETVAL = g ? GTK_GL_AREA(g) : 0;
 		free(attr);
 	}
 	OUTPUT:

@@ -510,6 +510,13 @@ print <<"EOT";
 #ifndef _${FilePrefix}_Defs_h_
 #define _${FilePrefix}_Defs_h_
 
+#include "ppport.h"
+
+/* Clean up some Perl Pollution that confuses Gnome */
+#ifdef _
+#undef _
+#endif
+
 #ifndef Perl${FilePrefix}DeclareFunc
 #include "Perl${FilePrefix}Int.h"
 #endif

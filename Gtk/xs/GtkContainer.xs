@@ -76,7 +76,7 @@ foreach(self, code, ...)
 		int type;
 		args = newAV();
 		
-		av_push(args, newRV(SvRV(ST(0))));
+		av_push(args, newRV_inc(SvRV(ST(0))));
 		PackCallbackST(args, 1);
 
 		gtk_container_foreach(self, foreach_container_handler, args);
@@ -139,8 +139,6 @@ void
 gtk_container_enable_resize(self)
 	Gtk::Container	self
 
-#endif
-
 void
 gtk_container_block_resize(self)
 	Gtk::Container	self
@@ -149,10 +147,11 @@ void
 gtk_container_unblock_resize(self)
 	Gtk::Container	self
 
-
 bool
 gtk_container_need_resize(self)
 	Gtk::Container	self
+
+#endif
 
 #if GTK_HVER >= 0x010100
 

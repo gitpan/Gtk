@@ -30,8 +30,9 @@ zvt_term_feed(term, text, len)
 #endif
 
 int
-zvt_term_forkpty(term)
+zvt_term_forkpty(term, do_uwtmp_log)
 	Gnome::ZvtTerm	term
+	int do_uwtmp_log;
 
 void
 zvt_term_closepty(term)

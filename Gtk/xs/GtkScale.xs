@@ -25,8 +25,18 @@ gtk_scale_set_value_pos(self, pos)
 	Gtk::PositionType	pos
 
 int
-gtk_scale_value_width(self)
+gtk_scale_get_value_width(self)
 	Gtk::Scale	self
+	ALIAS:
+		Gtk::Scale::value_width = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	RETVAL = gtk_scale_value_width(self);
+#else
+	RETVAL = gtk_scale_get_value_width(self);
+#endif
+	OUTPUT:
+	RETVAL
 
 void
 gtk_scale_draw_value(self)

@@ -44,10 +44,20 @@ new_with_titles(Class, title, ...)
 	OUTPUT:
 	RETVAL
 
+
 void
-gtk_clist_set_border(self, border)
+gtk_clist_set_shadow_type(self, type)
 	Gtk::CList	self
-	Gtk::ShadowType	border
+	Gtk::ShadowType	type
+	ALIAS:
+		Gtk::CList::set_border = 1
+	CODE:
+#if GTK_HVER < 0x010103
+	/* DEPRECATED */
+	gtk_clist_set_border(self, type);
+#else
+	gtk_clist_set_shadow_type(self, type);
+#endif
 
 void
 gtk_clist_set_selection_mode(self, mode)
@@ -146,6 +156,15 @@ gtk_clist_get_cell_type (self, row, column)
 	Gtk::CList  self
 	int		row
 	int		column
+
+#if GTK_HVER >= 0x010108
+
+void
+gtk_clist_set_reorderable(self, reorderable)
+	Gtk::CList	self
+	gboolean	reorderable
+
+#endif
 
 void
 gtk_clist_set_text(self, row, column, text)
@@ -332,7 +351,7 @@ gtk_clist_get_row_data(self, row)
 	CODE:
 	{
 		SV * sv = (SV*)gtk_clist_get_row_data(self, row);
-		RETVAL = sv ? newRV(sv) : newSVsv(&PL_sv_undef);
+		RETVAL = sv ? newRV_inc(sv) : newSVsv(&PL_sv_undef);
 	}
 	OUTPUT:
 	RETVAL

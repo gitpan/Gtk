@@ -164,7 +164,7 @@ sub build_option_menu {
 		$menu_item->signal_connect( 'activate', $function, $data );
 		$menu->append( $menu_item );
 		if ( $i == $history ) {
-			$menu_item->set_state( 1 );
+			$menu_item->set_active( 1 );
 		}
 		$menu_item->show;
 		$previous = $menu_item;
@@ -557,12 +557,12 @@ sub create_spins {
 		$button = new Gtk::CheckButton "Snap to 0.5-ticks";
 		$button->signal_connect(clicked => \&toggle_snap, $spinner1);
 		$vbox->pack_start($button, 1, 1, 0);
-		$button->set_state(1);
+		$button->set_active(1);
 		
 		$button = new Gtk::CheckButton "Numeric only input mode";
 		$button->signal_connect(clicked => \&toggle_numeric, $spinner1);
 		$vbox->pack_start($button, 1, 1, 0);
-		$button->set_state(1);
+		$button->set_active(1);
 		
 		$val_label = new Gtk::Label "";
 		
@@ -978,7 +978,7 @@ sub create_radio_buttons {
 		$button->show;
 		
 		$button = new Gtk::RadioButton "button2", $button;
-		$button->set_state(1);
+		$button->set_active(1);
 		$box2->pack_start($button, 1, 1, 0);
 		$button->show;
 
@@ -1404,13 +1404,13 @@ sub create_tree_mode_window
 
 		$button = new Gtk::CheckButton 'Draw line';
 		$tree_draw_line_button = $button;
-		$button->set_state(1);
+		$button->set_active(1);
 		$box4->pack_start($button, 1, 1, 0);
 		$button->show;
 
 		$button = new Gtk::CheckButton 'View line mode';
 		$tree_view_line_button = $button;
-		$button->set_state(1);
+		$button->set_active(1);
 		$box4->pack_start($button, 1, 1, 0);
 		$button->show;
 
@@ -2002,7 +2002,7 @@ sub create_entry {
 
 		$editable = new Gtk::CheckButton('Editable');
 		$editable->signal_connect('toggled', sub {$entry->set_editable($_[0]->active)});
-		$editable->set_state(1);
+		$editable->set_active(1);
 		$editable->show;
 		$box2->pack_start($editable, 1, 1, 0);
 
@@ -2590,7 +2590,7 @@ sub ctree_change_indent {
 sub ctree_toggle_reorderable {
 	my ( $widget, $ctree ) = @_;
 
-	$ctree->set_reorderable( $widget->active );
+	# $ctree->set_reorderable( $widget->active );
 }
 
 sub ctree_toggle_line_style {
@@ -2858,7 +2858,7 @@ sub create_ctree {
 
 		$ctree = new_with_titles Gtk::CTree ( 0, @titles );
 		$ctree->set_line_style( 'dotted' );
-		$ctree->set_reorderable( 1 );
+		# $ctree->set_reorderable( 1 );
 
 		$ctree->signal_connect( 'click_column', \&ctree_click_column );
 		$ctree->signal_connect( 'button_press_event', \&ctree_button_press );
@@ -2948,7 +2948,7 @@ sub create_ctree {
 # FIXME: gtk_tooltips_set_tip
 		$check->signal_connect( 'clicked', \&ctree_toggle_reorderable, $ctree );
 		$hbox->pack_start( $check, 0, 1, 0 );
-		$check->set_state( 1 );
+		$check->set_active( 1 );
 
 		$omenu1 = build_option_menu( $items1, \&ctree_toggle_line_style, 4, 1, $ctree );
 # FIXME: gtk_tooltips_set_tip

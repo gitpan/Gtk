@@ -58,13 +58,18 @@ if(qx{gnome-config}) {
 	$gnome_version = qx{gnome-config --version};
 	$gnome_version =~ s/\S+\s//;
 	print "gnome version = $gnome_version\n";
-	unless ($gnome_version =~ !/0.99/) {
+	if($gnome_version =~ /0\.99/ || $gnome_version =~ /^1\./) {
 		push @defines, "-DNEW_GNOME";
 		print "new gnome found\n";
 	}
-	$ENV{GNOME_INCLUDEDIR}=estr(qx{gnome-config --includedir});
+	if($gnome_version =~ /1\./) {
+		push @defines, "-DNEW_GNOME";
+		print "new gnome found\n";
+	}
+	$ENV{GNOME_INCLUDEDIR}=estr(qx{gnome-config --cflags gnome});
 	$ENV{GNOME_LIBDIR}=estr(qx{gnome-config --libdir});
 	$ENV{GNOMEUI_LIBS}=estr(qx{gnome-config --libs gnomeui});
+	$ENV{GTKXMHTML_LIBS}=estr(qx{gnome-config --libs gtkxmhtml});
 } else {
 	print "gnome-config not found!\n";
 	print "If you did not enable any gnome options, ";
@@ -320,6 +325,28 @@ use File::Basename;
 #$pm->{"IFiles.pm"} = '$(INST_ARCHLIBDIR)/Gtk/Install/Files.pm';
 
 $libs =~ s/(^|\s)-[rR]\S+//g;
+
+@libs = split(/\s+/, $libs);
+%seenlibs = ();
+@revlibs=();
+@lflags=();
+foreach (@libs) {
+	if (/^-l/) {
+		unshift(@revlibs, $_);
+	} else {
+		unshift(@lflags, $_) unless $seenlibs{$_}++;
+	}
+}
+#print "LIBS=@libs\n";
+@libs=();
+foreach (@revlibs) {
+	unshift(@libs, $_) unless $seenlibs{$_}++;
+}
+
+#print "REVLIBS=@revlibs\n";
+print "LIBS=@lflags @libs\n";
+#exit 0;
+$libs = "@lflags @libs";
 
 @L = (LIBS => [$libs]);
 

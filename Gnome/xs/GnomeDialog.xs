@@ -37,17 +37,24 @@ gnome_dialog_set_parent(dialog, parent)
 	Gnome::Dialog	dialog
 	Gtk::Window	parent
 
+#if 0
+
 void
 gnome_dialog_set_modal(dialog)
 	Gnome::Dialog	dialog
+
+#endif
 
 int
 gnome_dialog_run(dialog)
 	Gnome::Dialog	dialog
 
+#if 0
+
 int
 gnome_dialog_run_modal(dialog)
 	Gnome::Dialog	dialog
+
 
 int
 gnome_dialog_run_and_hide(dialog)
@@ -56,6 +63,8 @@ gnome_dialog_run_and_hide(dialog)
 int
 gnome_dialog_run_and_destroy(dialog)
 	Gnome::Dialog	dialog
+
+#endif
 
 void
 gnome_dialog_set_default(dialog, button)

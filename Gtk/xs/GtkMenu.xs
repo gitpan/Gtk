@@ -72,7 +72,7 @@ gtk_menu_insert(self, child, position)
 	int	position
 
 void
-gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, button, activate_time, func, ...)
+gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, button, activate_time, func=0, ...)
 	Gtk::Menu	menu
 	Gtk::Widget_OrNULL	parent_menu_shell
 	Gtk::Widget_OrNULL	parent_menu_item

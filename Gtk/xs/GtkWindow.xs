@@ -42,6 +42,16 @@ gtk_window_set_default(window, defaultw)
 	Gtk::Window	window
 	Gtk::Widget	defaultw
 
+#if GTK_HVER >= 0x010106
+
+void
+gtk_window_set_default_size(window, width, height)
+	Gtk::Window	window
+	gint	width
+	gint	height
+
+#endif
+
 #if GTK_HVER >= 0x010102
 
 void
@@ -59,9 +69,19 @@ gtk_window_set_policy(window, allow_shrink, allow_grow, auto_shrink)
 	int	auto_shrink
 
 void
-gtk_window_position(window, position)
+set_position(window, position)
 	Gtk::Window	window
 	Gtk::WindowPosition	position
+	ALIAS:
+		Gtk::Window::set_position = 0
+		Gtk::Window::position = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	/* DEPRECATED */
+	gtk_window_position(window, position);
+#else
+	gtk_window_set_position(window, position);
+#endif
 
 void
 gtk_window_activate_focus(window)

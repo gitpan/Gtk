@@ -1,4 +1,6 @@
 
+;; Re-parent from GtkContainer to GtkBin
+(define-object GtkButton (GtkBin))
 
 (define-flags GtkSpinButtonUpdatePolicy
   (always GTK_UPDATE_ALWAYS)

@@ -6,7 +6,13 @@ Gtk::ColorSelectButton - Choose a color
 
 =head1 SYNOPSIS
 
+	use Gtk;
     use Gtk::ColorSelectButton;
+    
+    ...
+    init Gtk;
+    init Gtk::ColorSelectButton;
+    ...
 
     $color_button = Gtk::ColorSelectButton->new();
     $hbox->pack_start($color_button, 1,1,0);
@@ -42,13 +48,18 @@ use strict;
 use vars qw($VERSION @ISA);
 use Gtk;
 
-$VERSION = "0.21";
+$VERSION = "0.22";
 @ISA = qw(Gtk::Button);
 
 # Class defaults data
 my @class_def_color = (255,175,0);
 
-Gtk::Button->register_subtype('Gtk::ColorSelectButton');
+sub init {
+	my($class) = shift;
+
+	Gtk::Button->register_subtype($class);
+
+}
 
 sub GTK_CLASS_INIT {
 	my($class) = shift;

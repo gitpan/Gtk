@@ -36,6 +36,8 @@ gtk_preview_put(preview, window, gc, srcx, srcy, destx, desty, width, height)
 	int	width
 	int	height
 
+#if GTK_HVER < 0x010102
+
 void
 gtk_preview_put_row(preview, src, dest, x, y, w)
 	Gtk::Preview	preview
@@ -45,6 +47,7 @@ gtk_preview_put_row(preview, src, dest, x, y, w)
 	int	y
 	int	w
 
+#endif
 
 void
 gtk_preview_draw_row(preview, data, x, y, w)

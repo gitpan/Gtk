@@ -85,6 +85,13 @@ void
 gtk_ctree_set_reorderable(self, reorderable)
 	Gtk::CTree	self
 	bool		reorderable
+	CODE:
+#if GTK_HVER < 0x010108
+	/* DEPRECATED */
+	gtk_ctree_set_reorderable(self, reorderable);
+#else
+	gtk_clist_set_reorderable(GTK_CLIST(self), reorderable);
+#endif
 
 void
 gtk_ctree_set_line_style(self, line_style)
@@ -216,7 +223,7 @@ gtk_ctree_post_recursive(self, node, func, ...)
 		SV * arg;
 
 		args = newAV();
-		av_push(args, newRV(SvRV(ST(0))));
+		av_push(args, newRV_inc(SvRV(ST(0))));
 		PackCallbackST(args, 2);
 
 		gtk_ctree_post_recursive(self, node, ctree_func_handler, args);

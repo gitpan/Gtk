@@ -1,3 +1,128 @@
+Wed Mar 10 19:12:10 EST 1999
+	* Quick-and-dirty 0.5120 release.
+	* Coverted Pollution.h over to ppport.h (from Devel::PPPort).
+	  Gtk/Pollution.h is now obsolete. (Report bugs in ppport.h
+	  to kjahds@kjahds.com.)
+	* ColorSelectButton fixed to use an init method.
+	
+Tue, 9 Mar 1999 12:55:49 +0100 Paolo Molaro <lupus@debian.org>
+	* Saner library dependency handling: modules should use the
+	proper module-config --libs stuff. Makefile.PL does the
+	required reordering to keep order right and link lines
+	shorter.
+	* Added $gdkwindow->XWINDOW() to get X window ID.
+	* Added Gtk/samples/gslide.pl: a slide-show maker
+	(with an example embedded in).
+
+Sun Mar  7 22:53:55 EST 1999 Mandrake <mandrake@mandrake.net>
+	* 1.3 gtk accepted from cvs now.
+	* zvt should work again.
+	* Makefile.PL will detect gnome 1.0 now, also
+
+Sun Feb 28 09:00:00 CST 1999 Seth Burgess <sjburges@gimp.org>
+	* edited Gtk/pkg.pl to accept gtk+ 1.2.x 
+
+Sun Feb 21 13:28:09 EST 1999 Mandrake <mandrake@mandrake.net>
+	* fixed Gnome/pkg-panel.pl to no longer require applet-lib.h
+	* fixed GdkImlib/pkg.pl to use dynamic gdk_imlib libraries.
+	  (SHOULD use imlib-config --libs-gdk, but I didn't do that yet)
+
+Tue, 9 Feb 1999 15:45:58 +0100 Paolo Molaro <lupus@debian.org>
+
+	* GtkEditable.xs: added missing functions (get_position,
+	set_position, set_editable).
+
+Fri Feb  5 17:07:06 EST 1999 Kenneth Albanowski <kjahds@kjahds.com>
+
+	* Added new names of all common deprecated functions described in
+	  gtkcompat.h (as of Gtk+-1.1.14). I might have some of the version
+	  timing off by one (which would break that code for onr particular
+	  version.)
+	* Repaired test to use set_active, with a boolean.
+	  (Yes, boolean takes 1/0.)
+	* Not implemented: It might be nice to let Gtk::CList::set_reorderable
+	  work even on older vesions, by invoking gtk_ctree_set_reorderable, if
+	  any old if the argument really is a ctree.
+
+Fri Feb  5 16:56:50 EST 1999 Kenneth Albanowski <kjahds@kjahds.com>
+
+	* Fixed Button parent, and added missing child accessor.
+
+Fri Feb  5 16:53:54 EST 1999 Kenneth Albanowski <kjahds@kjahds.com>
+
+	* GtkGLArea/Glut.pm, GtkGLArea/pkg.pl, GtkGLArea/samples/glut.pl,
+	  GtkGLArea/xs/GtkGLArea.xs: Half-finished attempt at Glut
+	  implementation in Perl. Half-functional, half-tested, etc.
+
+Wed Feb  3 10:34:42 EST 1999 Tuomas J. Lukka <lukka@iki.fi>
+
+	* Fix the previous patch (oops)
+
+Wed Feb  3 01:33:38 EST 1999 Tuomas J. Lukka <lukka@iki.fi>
+
+	* add patch to GtkWindow.xs from Marin Purgar - PMC <pmc@iskon.hr>
+
+Tue Feb  2 11:49:07 EST 1999 Tuomas J. Lukka <lukka@iki.fi>
+
+	* fixing Gtk/samples/test.pl CTree to work
+
+Tue Feb  2 09:31:33 EST 1999 Tuomas J. Lukka <lukka@iki.fi>
+
+	* Oops - fixed the previous change - I had wrong Gtk version installed
+
+Mon Feb  1 23:05:14 EST 1999 Tuomas J. Lukka <lukka@iki.fi>
+
+	* CheckMenuItem change for newest gtk+
+
+Mon Jan 25 11:42:21 EST 1999 Mandrake <mandrake@mandrake.net>
+
+	Made --with-gnome-panel work again (even under make test)
+
+Sun Jan 24 18:30:25 EST 1999 Mandrake <mandrake@mandrake.net>
+
+	Made gtkxmhtml module work again (even under make test)
+
+Sun Jan 24 17:00:35 EST 1999 Mandrake <mandrake@mandrake.net>
+
+	* Makefile.PL: gnome-config doesn't output the -I for --include-dir
+	so we'll put it there.
+
+Sun Jan 24 16:16:07 EST 1999 Mandrake <mandrake@mandrake.net>
+
+	* Gnome/samples/perl-zterm.pl : updated to new format.
+
+Sun Jan 24 16:08:32 EST 1999 Mandrake <mandrake@mandrake.net>
+
+	* s/gtk_check_menu_item_set_state/gtk_check_menu_item_set_active/
+	in GtkCheckMenuItem.xs
+	* Gnome/xs/ZvtTerm.xs - made this actually work :)
+
+	also various fixes to make make test work again.
+
+Thu Jan 21 20:58:09 PST 1999 Manish Singh <yosh@gimp.org>
+
+	* GtkCList-1.2.xs: added gtk_clist_set_shadow_type
+
+	* GtkCList.xs: deprecated gtk_clist_set_border
+
+	* GtkContainer.xs: deprecated gtk_continer_{need,block,unblock}_resize
+
+	* GtkPreview.xs: deprecated gtk_preview_put_row
+
+Wed Jan 20 12:33:27 EST 1999 Mandrake <mandrake@mandrake.net>
+	* gnome_dialog_run_and_destroy, gnome_dialog_set_modal,
+	gnome_dialog_run_modal, gnome_dialog_run_and_hide,
+	gnome_canvas_set_size seem depricated (causes make test
+	to fail) - removed from Gnome/xs/GnomeDialog.xs and 
+	Gnome/xs/GnomeCanvas.xs (#if 0'd out, not deleted)
+	make test should work now (in all forms)
+
+Wed Jan 20 11:49:59 EST 1999 Mandrake <mandrake@mandrake.net>
+	* fixed the NEW_GNOME declarations in Makefile.PL
+
+01-16-99 Tuomas J. Lukka <lukka@iki.fi> 
+	* Add Gnome::Canvas::new_aa
+
 01-15-99 Kenneth J. Albanowski <kjahds@kjahds.com>
 	* This marks the 0.5000 point release of the Perl/Gtk module.
 	* Fixed gdkimlib example to point to a real image.

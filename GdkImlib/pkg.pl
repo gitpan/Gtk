@@ -6,6 +6,9 @@ add_xs qw( GdkImlib.xs );
 
 # we need to know what libraries are used by the
 # gdk_imlib lib we are going to link to....
-$libs =~ s/-l/-lgdk_imlib -lgif -ltiff -lpng -ljpeg -lz -l/; # hack hack
+
+$gdkimlibs = `imlib-config --libs-gdk` || "-lgdk_imlib -lgdk -rdynamic -lgmodule -lglib -lz";
+
+$libs = "$libs $gdkimlibs"; 
 
 add_boot "Gtk::Gdk::ImlibImage";

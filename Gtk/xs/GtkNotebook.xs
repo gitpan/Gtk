@@ -78,6 +78,8 @@ cur_page(self)
 int
 gtk_notebook_get_current_page(self)
 	Gtk::Notebook	self
+	ALIAS:
+		Gtk::Notebook::current_page = 1
 	CODE:
 #if GTK_HVER >= 0x010106
 	RETVAL = gtk_notebook_get_current_page(self);
@@ -87,7 +89,6 @@ gtk_notebook_get_current_page(self)
 #endif
 	OUTPUT:
 	RETVAL
-
 
 void
 gtk_notebook_set_page(self, page_num)

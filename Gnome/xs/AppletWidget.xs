@@ -34,7 +34,6 @@ static void start_new_callback(const char * param, gpointer data)
 void AppletInit_internal(char * app_id, AV * args)
 {
 		if (!did_we_init_gdk && !did_we_init_gtk && !did_we_init_gnome && !did_we_init_panel) {
-			struct argp parser = { };
 			int argc;
 			char ** argv = 0;
 			AV * ARGV = perl_get_av("ARGV", FALSE);
@@ -50,7 +49,7 @@ void AppletInit_internal(char * app_id, AV * args)
 			}
 
 			i = argc;
-			applet_widget_init(app_id, NULL /*&parser*/, argc, argv, 0, &i, "argv0", 0 /*last_die*/, 1 /*multi_applet*/, args ? start_new_callback : 0, args);
+			applet_widget_init(app_id, NULL , argc, argv, 0, &i, "argv0");
 
 			did_we_init_gdk = 1;
 			did_we_init_gtk = 1;
@@ -99,7 +98,7 @@ new(Class, param=0)
 	SV *	Class
 	char *	param
 	CODE:
-	RETVAL = APPLET_WIDGET(param ? applet_widget_new_with_param(param) : applet_widget_new());
+	RETVAL = APPLET_WIDGET(applet_widget_new(param));
 	OUTPUT:
 	RETVAL
 
@@ -119,9 +118,13 @@ applet_widget_add(aw, widget)
 	Gnome::Panel::AppletWidget	aw
 	Gtk::Widget	widget
 
+#if 0
+
 void
 applet_widget_remove_from_panel(aw)
 	Gnome::Panel::AppletWidget	aw
+
+#endif
 
 void
 applet_widget_sync_config(aw)

@@ -8,6 +8,8 @@ use Gtk::ColorSelectButton;
 
 Gtk->init;
 
+init Gtk::ColorSelectButton;
+
 $mw     = Gtk::Widget->new("GtkWindow",
 			   -type   =>	'toplevel',
 			   -title  =>   "Color chooser");

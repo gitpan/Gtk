@@ -80,7 +80,7 @@ gtk_ctree_post_recursive(self, node, func, ...)
 		SV * arg;
 
 		args = newAV();
-		av_push(args, newRV(SvRV(ST(0))));
+		av_push(args, newRV_inc(SvRV(ST(0))));
 		PackCallbackST(args, 2);
 
 		gtk_ctree_post_recursive(self, node, ctree_func_handler, args);

@@ -20,14 +20,32 @@ gtk_paned_add2(paned, child)
 	Gtk::Widget	child
 
 void
-gtk_paned_handle_size(paned, size)
+gtk_paned_set_handle_size(paned, size)
 	Gtk::Paned	paned
 	int	size
+	ALIAS:
+		Gtk::Paned::handle_size = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	/* DEPRECATED */
+	gtk_paned_handle_size(paned, size);
+#else
+	gtk_paned_set_handle_size(paned, size);
+#endif
 
 void
-gtk_paned_gutter_size(paned, size)
+gtk_paned_set_gutter_size(paned, size)
 	Gtk::Paned	paned
 	int	size
+	ALIAS:
+		Gtk::Paned::gutter_size = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	/* DEPRECATED */
+	gtk_paned_gutter_size(paned, size);
+#else
+	gtk_paned_set_gutter_size(paned, size);
+#endif
 
 #if GTK_HVER >= 0x010108
 

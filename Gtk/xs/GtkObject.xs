@@ -188,7 +188,7 @@ signal_connect(self, event, handler, ...)
 				NULL, (void*)args);
 		
 				
-		av_push(args, newRV(SvRV(ST(0))));
+		av_push(args, newRV_inc(SvRV(ST(0))));
 		av_push(args, newSVsv(ST(1)));
 		av_push(args, newSViv(type));
 		

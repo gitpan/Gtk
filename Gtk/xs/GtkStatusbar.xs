@@ -54,7 +54,7 @@ gtk_statusbar_messages(self)
 			hv_store(hv, "context_id", 10, newSViv(msg->context_id), 0);
 			hv_store(hv, "message_id", 10, newSViv(msg->message_id), 0);
 			
-			PUSHs(sv_2mortal(newRV((SV*)hv)));
+			PUSHs(sv_2mortal(newRV_inc((SV*)hv)));
 			SvREFCNT_dec(hv);
 		}
 	}

@@ -5,8 +5,6 @@
 #ifndef _Gtk_Types_h_
 #define _Gtk_Types_h_
 
-#include "Pollution.h"
-
 #ifndef PerlGtkDeclareFunc
 #include "PerlGtkInt.h"
 #endif

@@ -14,11 +14,6 @@
 
 #include "GtkDefs.h"
 
-#ifndef boolSV
-# define boolSV(b) ((b) ? &sv_yes : &sv_no)
-#endif
-
-
 static int
 not_here(s)
 char *s;
@@ -2116,6 +2111,15 @@ gdk_window_set_functions (window, functions)
 	Gtk::Gdk::WMFunction  functions	
 
 MODULE = Gtk        PACKAGE = Gtk::Gdk::Pixmap  PREFIX = gdk_window_
+
+unsigned int
+XWINDOW(window)
+	Gtk::Gdk::Window	window
+	CODE:
+	RETVAL = GDK_WINDOW_XWINDOW(window);
+	OUTPUT:
+	RETVAL
+
 
 Gtk::Gdk::WindowType
 gdk_window_get_type(window)

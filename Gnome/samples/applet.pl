@@ -5,7 +5,8 @@
 
 use Gnome;
 
-init Gnome;
+init Gnome "applet.pl";
+
 
 $NAME = 'Applet';
 

@@ -25,9 +25,18 @@ new(Class, label=0)
 	RETVAL
 
 void
-gtk_toggle_button_set_state(self, state)
+gtk_toggle_button_set_active(self, state)
 	Gtk::ToggleButton	self
 	int	state
+	ALIAS:
+		Gtk::ToggleButton::set_state = 1
+	CODE:
+#if GTK_HVER < 0x010114
+	/* DEPRECATED */
+	gtk_toggle_button_set_state(self, state);
+#else
+	gtk_toggle_button_set_active(self, state);
+#endif
 
 void
 gtk_toggle_button_set_mode(self, draw_indicator)

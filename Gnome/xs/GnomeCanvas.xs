@@ -17,6 +17,18 @@ gnome_canvas_new(Class)
 	OUTPUT:
 	RETVAL
 
+#ifdef NEW_GNOME
+
+Gnome::Canvas_Sink
+gnome_canvas_new_aa(Class)
+	SV*	Class
+	CODE:
+	RETVAL= GNOME_CANVAS(gnome_canvas_new_aa());
+	OUTPUT:
+	RETVAL
+
+#endif
+
 Gnome::CanvasGroup
 gnome_canvas_root(self)
 	Gnome::Canvas	self
@@ -34,11 +46,15 @@ gnome_canvas_set_pixels_per_unit(self, n)
 	Gnome::Canvas	self
 	double	n
 
+#if 0
+
 void
 gnome_canvas_set_size(self, width, height)
 	Gnome::Canvas	self
 	int	width
 	int	height
+
+#endif
 
 void
 gnome_canvas_scroll_to(self, x, y)

@@ -11,11 +11,15 @@
  
  Gtk+ 1.1.11: success.
  
+ Gtk+ 1.2.0: success.
+ 
  Gnome 0.30 (Bouncing Bonobo): success of the portions that I tried.
  
- Zvt (from Gnome 0.30): success.
+ Gnome 1.0: success of everything but applet.
  
- XmHTML (from Gnome 0.30): success.
+ Zvt (from Gnome 0.30 & 1.0): success.
+ 
+ XmHTML (from Gnome 0.30 & 1.0): success.
  
  GdkImlib 1.8.1: success.
  

@@ -24,10 +24,20 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
+
 void
-gtk_check_menu_item_set_state(check_menu_item, state)
+gtk_check_menu_item_set_active(check_menu_item, state)
 	Gtk::CheckMenuItem	check_menu_item
 	int	state
+	ALIAS:
+		Gtk::CheckMenuItem::set_state = 1
+	CODE:
+#if GTK_HVER < 0x010113
+	/* DEPRECATED */
+	gtk_check_menu_item_set_state(check_menu_item, state);
+#else
+	gtk_check_menu_item_set_active(check_menu_item, state);
+#endif
 
 void
 gtk_check_menu_item_toggled(check_menu_item)

@@ -44,6 +44,17 @@ void
 gtk_button_leave(button)
 	Gtk::Button	button
 
+Gtk::Widget_Up
+child(widget, newvalue=0)
+	Gtk::Button	widget
+	Gtk::Widget_OrNULL	newvalue
+	CODE:
+	RETVAL = widget->child;
+	if (newvalue)
+		widget->child = newvalue;
+	OUTPUT:
+	RETVAL
+
 # void FIXME
 # gtk_button_set_relief(button, newstyle)
 # 	Gtk::Button 	button

@@ -40,7 +40,7 @@ gtk_packer_add(packer, child, side, anchor, options, border_width, pad_x, pad_y,
 	int	ipad_y
 
 void
-gtk_packer_configure(packer, child, side, anchor, options, border_width, pad_x, pad_y, ipad_x, ipad_y)
+gtk_packer_set_child_packing(packer, child, side, anchor, options, border_width, pad_x, pad_y, ipad_x, ipad_y)
 	Gtk::Packer	packer
 	Gtk::Widget	child
 	Gtk::SideType	side
@@ -51,6 +51,15 @@ gtk_packer_configure(packer, child, side, anchor, options, border_width, pad_x, 
 	int	pad_y
 	int	ipad_x
 	int	ipad_y
+	ALIAS:
+		Gtk::Packer::configure = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	/* DEPRECATED */
+	gtk_packer_configure(packer, child, side, anchor, options, border_width, pad_x, pad_y, ipad_x, ipad_y);
+#else
+	gtk_packer_set_child_packing(packer, child, side, anchor, options, border_width, pad_x, pad_y, ipad_x, ipad_y);
+#endif
 
 void
 gtk_packer_reorder_child(packer,child,position)

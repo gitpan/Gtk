@@ -103,5 +103,23 @@ void
 gtk_editable_changed (editable)
 	Gtk::Editable editable
 
+#if GTK_HVER > 0x010101
+
+int
+gtk_editable_get_position (editable)
+	Gtk::Editable editable
+
+void
+gtk_editable_set_position (editable, position)
+	Gtk::Editable editable
+	int           position
+
+void
+gtk_editable_set_editable (editable, is_editable)
+	Gtk::Editable editable
+	bool          is_editable
+
+#endif
+
 #endif
 

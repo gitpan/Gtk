@@ -9,6 +9,7 @@ add_boot 'Gtk::Gdk::GL', 'Gtk::GLArea::Constants';
 
 add_headers "<gtkgl/gtkglarea.h>", "<gtkgl/gdkgl.h>"; #, "<GL/gl.h>", "<GL/glu.h>";
 
-add_pm 'Constants.pm' => '$(INST_LIBDIR)/Gtk/GLArea/Constants.pm';
+add_pm 'Constants.pm' => '$(INST_LIBDIR)/Gtk/GLArea/Constants.pm',
+	'Glut.pm' => '$(INST_LIBDIR)/Gtk/GLArea/Glut.pm';
 
 $libs =~ s/-l/-lgtkgl -lMesaGL -lMesaGLU -l/; #hack hack

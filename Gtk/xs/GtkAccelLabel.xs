@@ -19,8 +19,19 @@ gtk_accel_label_new(Class, string)
 	RETVAL
 
 unsigned int
-gtk_accel_label_accelerator_width(self)
+gtk_accel_label_get_accel_width(self)
 	Gtk::AccelLabel	self
+	ALIAS:
+		Gtk::AccelLabel::accelerator_width = 1
+	CODE:
+#if GTK_HVER < 0x010106
+	/* DEPRECATED */
+	RETVAL = gtk_accel_label_accelerator_width(self);
+#else
+	RETVAL = gtk_accel_label_get_accel_width(self);
+#endif
+	OUTPUT:
+	RETVAL
 
 void
 gtk_accel_label_set_accel_widget(self, accel_widget)

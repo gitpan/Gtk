@@ -7,7 +7,7 @@
 
 #if defined(LAZY_LOAD) || defined(NEED_DERIVED)
 
-#include "Pollution.h"
+#include "ppport.h"
 
 /*
  * Contributed by Graham Barr  <Graham.Barr@tiuk.ti.com>

@@ -60,15 +60,44 @@ if ($gtk_major == 0) {
 			print "1.1.6\n";
 			do "Gtk/gtk-1.1.6.pl";
 		}
-		
-
 		print "1.1-only\n";
 		do "Gtk/gtk-1.1-only.pl";
-
-	} elsif ($gtk_minor >= 2) {
-		die "Gtk+ >= 1.1.x is not supported by this package.\n";
+	} elsif ($gtk_minor == 2) {
+		print "0.99\n";
+		do "Gtk/gtk-0.99.pl";
+		print "1.0\n";
+		do "Gtk/gtk-1.0.pl";
+		print "1.1\n";
+		do "Gtk/gtk-1.1.pl";
+		print "1.1.1\n";
+		do "Gtk/gtk-1.1.1.pl";
+		print "1.1.3\n";
+		do "Gtk/gtk-1.1.3.pl";
+		print "1.1.4\n";
+		do "Gtk/gtk-1.1.4.pl";
+		print "1.1.6\n";
+		do "Gtk/gtk-1.1.6.pl";
+		print "1.2\n";
+		do "gtk-1.2.pl";
+	} elsif ($gtk_minor == 3) {
+		print "0.99\n";
+		do "Gtk/gtk-0.99.pl";
+		print "1.0\n";
+		do "Gtk/gtk-1.0.pl";
+		print "1.1\n";
+		do "Gtk/gtk-1.1.pl";
+		print "1.1.1\n";
+		do "Gtk/gtk-1.1.1.pl";
+		print "1.1.3\n";
+		do "Gtk/gtk-1.1.3.pl";
+		print "1.1.4\n";
+		do "Gtk/gtk-1.1.4.pl";
+		print "1.1.6\n";
+		do "Gtk/gtk-1.1.6.pl";
+		print "1.2\n";
+		do "gtk-1.2.pl";
 	} 
 
-} elsif ($gtk_major >= 2) {
-	die "Gtk+ >= 1.1.x is not supported by this package.\n";
+} elsif ($gtk_major >= 3) {
+	die "I don't know where you got a version higher than 1.3 of gtk+\n";
 }

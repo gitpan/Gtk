@@ -34,7 +34,7 @@ show $scrollbar;
 show $table;
 show $w;
 
-if ($term->forkpty == 0) {
+if ($term->forkpty(0) == 0) {
 	exec "/bin/bash";
 	kill "KILL", $$;
 }

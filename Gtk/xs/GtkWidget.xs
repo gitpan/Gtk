@@ -8,11 +8,6 @@
 
 #include "GtkDefs.h"
 
-#ifndef boolSV
-# define boolSV(b) ((b) ? &sv_yes : &sv_no)
-#endif
-
-
 MODULE = Gtk::Widget		PACKAGE = Gtk::Widget		PREFIX = gtk_widget_
 
 #ifdef GTK_WIDGET

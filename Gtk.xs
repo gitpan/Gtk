@@ -412,10 +412,11 @@ void GdkInit_internal() {
 		initPerlGdkDefs();
 }
 
+/*GtkType perl_sv_type = 0;*/
 
 void GtkInit_internal() {
 
-		/*static GtkTypeInfo PerlType = { "perl" };*/
+		/*static GtkTypeInfo PerlType = { "perl_sv" };*/
 		
 		char buf[20];
 		
@@ -424,7 +425,7 @@ void GtkInit_internal() {
 		initPerlGdkDefs();
 		initPerlGtkDefs();
 		
-		/*gtk_type_unique(GTK_TYPE_BOXED, &PerlType);*/
+		/*perl_sv_type = gtk_type_unique(GTK_TYPE_BOXED, &PerlType);*/
 		
 /*		signal_fixups = newHV();
 
@@ -2212,7 +2213,41 @@ color(colormap, idx)
 	OUTPUT:
 	RETVAL
 
-MODULE = Gtk		PACKAGE = Gtk::Gdk::Color
+MODULE = Gtk		PACKAGE = Gtk::Gdk::Colormap	PREFIX = gdk_
+
+void
+gdk_color_alloc(colormap, color)
+	Gtk::Gdk::Colormap	colormap
+	Gtk::Gdk::Color	color
+
+void
+gdk_color_change(colormap, color)
+	Gtk::Gdk::Colormap	colormap
+	Gtk::Gdk::Color	color
+
+void
+gdk_color_white(colormap)
+	Gtk::Gdk::Colormap	colormap
+	PPCODE:
+	{
+		GdkColor col;
+		int result = gdk_color_white(colormap, &col);
+		if (result)
+			PUSHs(sv_2mortal(newSVGdkColor(&col)));
+	}
+
+void
+gdk_color_black(colormap)
+	Gtk::Gdk::Colormap	colormap
+	PPCODE:
+	{
+		GdkColor col;
+		int result = gdk_color_black(colormap, &col);
+		if (result)
+			PUSHs(sv_2mortal(newSVGdkColor(&col)));
+	}
+
+MODULE = Gtk		PACKAGE = Gtk::Gdk::Color		PREFIX = gdk_color_
 
 int
 red(color, new_value=0)
@@ -2255,10 +2290,22 @@ pixel(color, new_value=0)
 	RETVAL
 
 void
-DESTROY(self)
-	Gtk::Gdk::Color	self
-	CODE:
-	UnregisterMisc((HV*)SvRV(ST(0)),self);
+parse_color(self, name)
+	char *	name
+	PPCODE:
+	{
+		GdkColor col;
+		int result = gdk_color_parse(name, &col);
+		if (result)
+			PUSHs(sv_2mortal(newSVGdkColor(&col)));
+	}
+
+
+int
+gdk_color_equal(colora, colorb)
+	Gtk::Gdk::Color	colora
+	Gtk::Gdk::Color	colorb
+
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Cursor
 
@@ -2290,13 +2337,6 @@ destroy(self)
 	Gtk::Gdk::Cursor	self
 	CODE:
 	gdk_cursor_destroy(self);
-	UnregisterMisc((HV*)SvRV(ST(0)),self);
-
-void
-DESTROY(self)
-	Gtk::Gdk::Cursor	self
-	CODE:
-	UnregisterMisc((HV*)SvRV(ST(0)),self);
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Pixmap	PREFIX = gdk_pixmap_
 
@@ -2789,15 +2829,6 @@ gdk_rectangle_intersect(Class, src1, src2)
 			PUSHs(sv_2mortal(newSVGdkRectangle(&dest)));
 		}
 	}
-
-MODULE = Gtk		PACKAGE = Gtk::Gdk::Event	PREFIX = gdk_event_
-
-void
-DESTROY(self)
-	Gtk::Gdk::Event self
-	CODE:
-	gdk_event_free(self);
-	/*printf("Freeing GdkEvent copyed to %d, HV %d\n", self, SvRV(ST(0)));*/
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Font	PREFIX = gdk_
 

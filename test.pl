@@ -2396,6 +2396,7 @@ sub color_idle_func {
 	return 1;
 }
 
+
 sub color_preview_destroy {
 	my($widget,$windowref) = @_;
 	if ($color_idle) {

@@ -40,7 +40,7 @@ static void generic_perl_gtk_class_init(GtkObjectClass * klass)
 	PUSHMARK(sp);
 	XPUSHs(sv_2mortal(newSVsv(perlClass)));
 	PUTBACK;
-	perl_call_method("class_init", G_DISCARD);
+	perl_call_method("CLASS_INIT", G_DISCARD);
 
 }
 
@@ -57,7 +57,7 @@ static void generic_perl_gtk_object_init(GtkObject * object)
 	PUSHMARK(sp);
 	XPUSHs(sv_2mortal(s));
 	PUTBACK;
-	perl_call_method("init", G_DISCARD);
+	perl_call_method("INIT", G_DISCARD);
 	
 }
 
@@ -80,7 +80,7 @@ static void generic_perl_gtk_arg_get_func(GtkObject * object, GtkArg * arg, guin
 	XPUSHs(sv_2mortal(newSVpv(arg->name,0)));
 	XPUSHs(sv_2mortal(newSViv(arg_id)));
 	PUTBACK;
-	count = perl_call_method("get_arg", G_SCALAR); 
+	count = perl_call_method("GET_ARG", G_SCALAR); 
 	SPAGAIN;
 	if (count != 1)
 		croak("Big trouble\n");
@@ -109,9 +109,14 @@ static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guin
 	XPUSHs(sv_2mortal(newSViv(arg_id)));
 	XPUSHs(sv_2mortal(GtkGetArg(arg)));
 	PUTBACK;
-	perl_call_method("set_arg", G_DISCARD); 
+	perl_call_method("SET_ARG", G_DISCARD); 
 	/* Errors are OK ! */
 	
+}
+
+void destroy_data(gpointer data)
+{
+	SvREFCNT_dec((SV*)data);
 }
 
 
@@ -193,21 +198,8 @@ get_user_data(object)
 	Gtk::Object	object
 	CODE:
 	{
-		int type = (int)gtk_object_get_data(object, "user_data_type_Perl");
-		gpointer data = gtk_object_get_user_data(object);
-		if (!data)
-			RETVAL = newSVsv(&sv_undef);
-		else {
-			if (!type)
-				croak("Unable to retrieve arbitrary user data");
-			switch(type) {
-			case 1:
-				RETVAL = newSVGtkObjectRef((GtkObject*)data,0);
-				break;
-			default:
-				croak("Unknown user data type");
-			}
-		}
+	    gpointer data = gtk_object_get_data(object, "_perl_user_data");
+        RETVAL = newSVsv(data ? data : &sv_undef);
 	}
 	OUTPUT:
 	RETVAL
@@ -218,23 +210,10 @@ set_user_data(object, data)
 	SV *	data
 	CODE:
 	{
-		if (!data || !SvOK(data)) {
-			gtk_object_set_user_data(object, 0);
-			gtk_object_set_data(object, "user_data_type_Perl", 0);
-		} else {
-			int type=0;
-			gpointer ptr=0;
-			if (SvRV(data)) {
-				if (sv_derived_from(data, "Gtk::Object")) {
-					type = 1;
-					ptr = SvGtkObjectRef(data, 0);
-				}
-			}
-			if (!type)
-				croak("Unable to store user data of that type");
-			gtk_object_set_user_data(object, ptr);
-			gtk_object_set_data(object, "user_data_type_Perl", (gpointer)type);
-		}
+		if (!data || !SvOK(data))
+			gtk_object_remove_data(object, "_perl_user_data");
+		else
+		    gtk_object_set_data_full(object, "_perl_user_data", newSVsv(data), destroy_data);
 	}
 
 Gtk::Object_Sink_Up

@@ -15,6 +15,7 @@ Gtk::ColorSelectButton - Choose a color
     ...
     print $color_button->color; #shortcut for ->get('color')
     ...
+    $color_button->set( color => "10 40 250" ); # R G B
 
 =head1 DESCRIPTION
 
@@ -49,18 +50,18 @@ my @class_def_color = (255,175,0);
 
 register_type Gtk::ColorSelectButton;
 
-sub class_init {
+sub CLASS_INIT {
 	my($class) = shift;
 	
 	add_arg_type $class "color", "string", 3; #R/W
 }
 
-sub init {
+sub INIT {
     my (@color) = @class_def_color;
     
     my($color_button) = @_;
     
-    $color_button->{color} ||= [@color];
+    $color_button->{_color} ||= [@color];
 
     my $preview = new Gtk::Preview -color;
     
@@ -69,13 +70,13 @@ sub init {
     	my($x,$y,$w,$h) = @$allocation;
     	$w -= 6;
     	$h -= 6;
-    	$self->{preview_width} = $w;
-    	$self->{preview_height} = $h;
-    	$self->{preview}->size($w,$h);
+    	$self->{_preview_width} = $w;
+    	$self->{_preview_height} = $h;
+    	$self->{_preview}->size($w,$h);
     	update_color $self;
     };
     
-    $color_button->{preview} = $preview;
+    $color_button->{_preview} = $preview;
     $color_button->add($preview);
         
     signal_connect $color_button "clicked" => \&cb_color_button;
@@ -83,15 +84,15 @@ sub init {
     $preview->show;
 }
 
-sub set_arg {
+sub SET_ARG {
 	my($self,$arg,$id, $value) = @_;
-	$self->{color} = [split(' ',$value)];
+	$self->{_color} = [split(' ',$value)];
 	$self->update_color;
 }
 
-sub get_arg {
+sub GET_ARG {
 	my($self,$arg,$id) = @_;
-	return join(' ',@{$self->{color}});
+	return join(' ',@{$self->{_color}});
 }
 
 sub new {
@@ -102,10 +103,10 @@ sub new {
 sub update_color($) {
     my($this) = shift;
     
-    return unless $this->{preview};
+    return unless defined $this->{_preview} and defined $this->{_preview_width};
     
-    my($preview, $color) = ($this->{preview}, $this->{color});
-    my($width, $height) = ($this->{preview_width}, $this->{preview_height});
+    my($preview, $color) = ($this->{_preview}, $this->{_color});
+    my($width, $height) = ($this->{_preview_width}, $this->{_preview_height});
     
     my($buf) = pack("C3", @$color) x $width;
 
@@ -119,24 +120,35 @@ sub color_selection_ok {
     my($widget, $dialog, $color_button) = @_;
 	
     my(@color) = $dialog->colorsel->get_color;
-    @{$color_button->{color}} = map(int(255.99*$_),@color);
+    @{$color_button->{_color}} = map(int(255.99*$_),@color);
 
 	$color_button->update_color();
     $dialog->destroy();
+    delete $color_button->{_cs_window};
 }
 
 sub cb_color_button {
     my($color_button) = @_;
+    
+    if (defined $color_button->{_cs_window}) {
+    	if (!$color_button->{_cs_window}->mapped) {
+	    	$color_button->{_cs_window}->hide;
+	    }
+    	$color_button->{_cs_window}->show;
+    	$color_button->{_cs_window}->window->raise;
+    	return;
+    }
 
     my $cs_window=new Gtk::ColorSelectionDialog("Color");
-    $cs_window->colorsel->set_color(map($_*1/255,@{$color_button->{color}}));
+    $cs_window->colorsel->set_color(map($_*1/255,@{$color_button->{_color}}));
     $cs_window->show();
     $cs_window->ok_button->signal_connect("clicked",
 					  \&color_selection_ok,
 					  $cs_window,
 					  $color_button);
     $cs_window->cancel_button->signal_connect("clicked",
-					      sub { $cs_window->destroy });
+					      sub { $cs_window->destroy; delete $color_button->{_cs_window} });
+	$color_button->{_cs_window} = $cs_window;
 }
 
 1;

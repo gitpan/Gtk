@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/bin/perl -w
 
 use Gtk;
 use Gtk::ColorSelectButton;
@@ -24,6 +24,8 @@ $color_button->show();
 $hbox->show();
 
 $vbox->pack_start($hbox, 1,1,10);
+
+$color_button->set('color' => "1 90 199");
 
 # Quit button
 $button_quit = Gtk::Widget->new("GtkButton",

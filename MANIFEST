@@ -154,6 +154,7 @@ testhtml.pl
 testinput.pl
 testmf.pl
 testpacker.pl
+testpdl.pl
 testselection.pl
 tree_minus.xpm
 tree_plus.xpm

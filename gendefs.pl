@@ -139,6 +139,17 @@ foreach $node (parse_lisp($_)) {
 		if ( exists $struct{$node[1]} ) {
 			warn "Overriding struct `$node[1]'\n";
 		}
+
+		foreach $node (@node[2..$#node]) {
+			my (@node) = @$node;
+			if ($node[0] eq "members") {
+				foreach $node (@node[1..$#node]) {
+					my(@node) = @$node;
+					push @{$struct->{members}}, { name => $node[0], type => $node[1] };
+				}
+			}
+		}
+
 		$struct{$node[1]} = $struct;
 		
 	} elsif ($node[0] eq "define-object") {
@@ -236,6 +247,7 @@ delete $flags{""};
 delete $struct{""};
 
 delete $objectlc{""}; # Shut up warning
+delete $overridestruct{""}; # Shut up warning
 delete $overrideboxed{""}; # Shut up warning
 
 #
@@ -378,7 +390,60 @@ extern long SvOptsHash(SV * value, char * name, HV * hash);
 extern SV * newSVFlagsHash(long value, char * name, HV * hash, int);
 extern long SvFlagsHash(SV * value, char * name, HV * hash);*/
 
+#define newSVgchar(x) newSViv(x)
+#define Svgchar(x) SvIV(x)
+
+#define newSVgshort(x) newSViv(x)
+#define Svgshort(x) SvIV(x)
+
+#define newSVglong(x) newSViv(x)
+#define Svglong(x) SvIV(x)
+
+#define newSVgint(x) newSViv(x)
+#define Svgint(x) SvIV(x)
+
+#define newSVgboolean(x) newIV(x)
+#define Svgboolean(x) SvIV(x)
+
+#define newSVgfloat(x) newSVnv(x)
+#define Svgfloat(x) SvNV(x)
+
+#define newSVgdouble(x) newSVnv(x)
+#define Svgdouble(x) SvNV(x)
+
+#define newSVguchar(x) newSViv(x)
+#define Svguchar(x) SvIV(x)
+
+#define newSVgushort(x) newSViv(x)
+#define Svgushort(x) SvIV(x)
+
+#define newSVgulong(x) newSViv(x)
+#define Svgulong(x) SvIV(x)
+
+#define newSVguint(x) newSViv(x)
+#define Svguint(x) SvIV(x)
+
+#define newSVgint8(x) newSViv(x)
+#define Svgint8(x) SvIV(x)
+
+#define newSVgint16(x) newSViv(x)
+#define Svgint16(x) SvIV(x)
+
+#define newSVgint32(x) newSViv(x)
+#define Svgint32(x) SvIV(x)
+
+#define newSVguint8(x) newSViv(x)
+#define Svguint8(x) SvIV(x)
+
+#define newSVguint16(x) newSViv(x)
+#define Svguint16(x) SvIV(x)
+
+#define newSVguint32(x) newSViv(x)
+#define Svguint32(x) SvIV(x)
+
 EOT
+
+
 $i = 0;
 foreach (sort keys %enum) {
 	print "#define pGE_$_ pGtkType[$i]\n";
@@ -416,11 +481,13 @@ foreach (sort keys %boxed) {
 }
 foreach (sort keys %struct) {
 	print "extern SV * newSV$_($_ * value);\n";
-	print "extern $_ * Sv$_(SV * value);\n";
+	print "extern $_ * SvSet$_(SV * value, $_ * dest);\n";
+	print "#define Sv$_(value) SvSet$_((value), 0)\n";
 	print "typedef $_ * $struct{$_}->{xsname};\n";
 	if ($_ !~ /^Gtk/) {
 		print "#define newSVGtk$_ newSV$_\n";
 		print "#define SvGtk$_ Sv$_\n";
+		print "#define SvSetGtk$_ SvSet$_\n";
 	}
 }
 foreach (sort keys %object) {
@@ -431,6 +498,8 @@ foreach (sort keys %object) {
 	print "#define Cast$object{$_}->{xsname} $object{$_}->{cast}\n";
 	print "#define Cast$object{$_}->{xsname}_OrNULL $object{$_}->{cast}\n";
 	print "#define Cast$object{$_}->{xsname}_Sink $object{$_}->{cast}\n";
+	print "#define newSV$_(x) newSVGtkObjectRef(GTK_OBJECT(x),0)\n";
+	print "#define Sv$_(x) $object{$_}->{cast}(SvGtkObjectRef((x),0))\n";
 	print "#endif\n";
 }
 
@@ -528,6 +597,74 @@ SV * newSV$_($_ * value) {
 }
 
 $_ * Sv$_(SV * value) { return ($_*)SvMiscRef(value, "$boxed{$_}->{perlname}"); }
+EOT
+}
+
+foreach (sort keys %struct) {
+	next if $overridestruct{$_};
+	print <<"EOT";
+
+SV * newSV$_($_ * value) {
+	HV * h;
+	SV * r;
+	
+	if (!value)
+	  return newSVsv(&sv_undef);
+
+	h = newHV();
+	r = newRV((SV*)h);
+	SvREFCNT_dec(h);
+
+	sv_bless(r, gv_stashpv("$struct{$_}->{perlname}", TRUE));
+	
+EOT
+
+	foreach $member (@{$struct{$_}->{members}}) {
+		my($name) = $member->{name};
+		my($type) = $member->{type};
+		if ($struct{$type}) {
+			print "	hv_store(h, \"",$name,"\", ",length($name),", newSV$member->{type}(&value->$name), 0);\n";
+		} else {
+			print "	hv_store(h, \"",$name,"\", ",length($name),", newSV$member->{type}(value->$name), 0);\n";
+		}
+	}
+
+	print <<"EOT";
+	
+	return r;
+}
+
+$_ * SvSet$_(SV * value, $_ * dest) {
+	SV ** s;
+	HV * h;
+	
+	if (!SvOK(value) || !(h=(HV*)SvRV(value)) || (SvTYPE(h) != SVt_PVHV))
+		return 0;
+	
+	if (!dest) {
+		dest = alloc_temp(sizeof($_));
+	}
+
+	memset(dest, 0, sizeof($_));
+	
+EOT
+
+	foreach $member (@{$struct{$_}->{members}}) {
+		my($name) = $member->{name};
+		my($type) = $member->{type};
+		if ($struct{$type}) {
+			print "	if ((s=hv_fetch(h, \"",$name,"\", ",length($name),", 0)) && SvOK(*s))\n";
+			print "		SvSet$member->{type}(*s, &dest->$name);\n";
+		} else {
+			print "	if ((s=hv_fetch(h, \"",$name,"\", ",length($name),", 0)) && SvOK(*s))\n";
+			print "		dest->$member->{name} = Sv$member->{type}(*s);\n";
+		}
+	}
+
+	print <<"EOT";
+	
+	return dest;
+}
 EOT
 }
 
@@ -740,7 +877,7 @@ EOT
 foreach (sort keys %struct) {
 	print "#ifdef $struct{$_}->{typename}\n";
 	print "			if (a->type == $struct{$_}->{typename})\n";
-	print "				GTK_VALUE_POINTER(*a) = Sv$_(v, 0);\n";
+	print "				GTK_VALUE_POINTER(*a) = Sv$_(v);\n";
 	print "			else\n";
 	print "#endif\n";
 }
@@ -841,7 +978,7 @@ EOT
 foreach (sort keys %struct) {
 	print "#ifdef $struct{$_}->{typename}\n";
 	print "			if (a->type == $struct{$_}->{typename})\n";
-	print "				GTK_VALUE_POINTER(*a) = Sv$_(v, 0);\n";
+	print "				GTK_VALUE_POINTER(*a) = Sv$_(v);\n";
 	print "			else\n";
 	print "#endif\n";
 }
@@ -1313,9 +1450,9 @@ __END__;
 
 ;(define-object GtkToolbar (GtkContainer))
 
-(define-boxed GtkNotebookPage
-	"(void)"
-	"(void)")
+;(define-boxed GtkNotebookPage
+;	"(void)"
+;	"(void)")
 
 (define-boxed GtkBoxChild
 	"(void)"
@@ -1353,3 +1490,90 @@ __END__;
 (define-boxed GdkColorContext
 	"(void)"
 	"(void)")
+
+(define-struct GdkColor
+	(members
+		(pixel	gulong)
+		(red	gushort)
+		(green	gushort)
+		(blue	gushort)
+	)
+)
+
+(define-struct GdkEvent
+)
+
+; Speculation
+;(define-struct GdkEvent
+;	(temporary) ;; never retained past creation context
+;	(members
+;		(window	GdkWindow)
+;		(send_event	gint8)
+;		(type	GdkEventType)
+;	)
+;	(union-element type
+;		(GDK_EXPOSE
+;			(members
+;				(area	GdkRectangle)
+;				(count	gint)
+;			)
+;		)
+;		(GDK_VISIBILITY
+;			(members
+;				(state	GdkVisibilityState)
+;			)
+;		)
+;		(GDK_EVENT_MOTION
+;			(members
+;				(send_event		gint8)
+;				(time			guint32)
+;				(x				gdouble)
+;				(y				gdouble)
+;				(pressure		gdouble)
+;				(xtilt			gdouble)
+;				(ytilt			gdouble)
+;				(state			guint)
+;				(is_hint		gint16)
+;				(source			GdkInputSource)
+;				(deviceid		guint32)
+;				(x_root			gdouble)
+;				(y_root			gdouble)
+;			)
+;		)
+;	)
+;)
+
+(define-struct GtkAllocation
+	(members
+		(x		gint16)
+		(y		gint16)
+		(width	gint16)
+		(height	gint16)
+	)
+)
+
+(define-struct GtkRequisition
+	(members
+		(width	gint16)
+		(height	gint16)
+	)
+)
+
+(define-struct GtkNotebookPage
+	(temporary) ;; never retained past creation context
+	(members
+		(child			GtkWidget)
+		(tab_label		GtkWidget)
+		(menu_label		GtkWidget)
+		(default_menu	guint)
+		(default_tab	guint)
+		(requisition	GtkRequisition)
+		(allocation		GtkAllocation)
+	)
+)
+
+(define-boxed GdkCursor
+	"(void)"
+	"(void)")
+
+

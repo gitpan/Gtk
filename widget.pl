@@ -21,23 +21,23 @@ sub new {
 	return Gtk::Object::new(@_);
 }
 
-sub init {
+sub INIT {
 	print "init: ";
 	print Dumper([@_]);
 }
 
-sub set_arg {
+sub SET_ARG {
 	print "set_arg: ";
 	print Dumper([@_]);
 }
 
-sub get_arg {
+sub GET_ARG {
 	print "get_arg: ";
 	print Dumper([@_]);
 	return "$_[1]-result";
 }
 
-sub class_init {
+sub CLASS_INIT {
 	print "class_init: ";
 	print Dumper([@_]);
 }

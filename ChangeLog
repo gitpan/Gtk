@@ -1,4 +1,21 @@
 
+0.2_03		Sun Jun  7, 1998	Kenneth Albanowski
+
+	Uses gtk+-1.0.4.
+	
+	Started to add support for sensible struct types, as opposed to boxed
+	types. (Basic idea is pass-by-value as opposed to pass-by-refernce.)
+	
+	Version numbering changed to trip up less code. (Hopefully.)
+	
+	Added some colormap & color support.
+	
+	Added testpdl.pl program to demonstrate very crude use of PDL with
+	previews.  (Thanks to Marc Lehmann for the idea.)
+	
+	Modified GtkColorSelectButton widget to prepend all internal variables
+	with underscore.
+
 0.2.2		Wed May 27, 1998	Kenneth Albanowski
 
 	Uses gtk+-1.0.3 (may also work with 1.0.1 & 1.0.2)

@@ -15,8 +15,7 @@ $boxed{GdkBitmap} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref",
 $overrideboxed{GdkWindow} = 1;
 $overrideboxed{GdkPixmap} = 1;
 $overrideboxed{GdkBitmap} = 1;
-delete $boxed{GdkEvent};
-delete $boxed{GdkColor};
+$overridestruct{GdkEvent} = 1;
 delete $flags{GtkWidgetFlags};
 
 $object{GtkObject} = {perlname => "Gtk::Object", cast => "GTK_OBJECT", 

@@ -6,7 +6,7 @@
 /*typedef GdkPixmap * Gtk__Gdk__Pixmap;
 typedef GdkBitmap * Gtk__Gdk__Bitmap;
 typedef GdkWindow * Gtk__Gdk__Window;*/
-typedef GdkCursor * Gtk__Gdk__Cursor;
+/*typedef GdkCursor * Gtk__Gdk__Cursor;*/
 typedef GdkGC * Gtk__Gdk__GC;
 typedef GdkGCValues * Gtk__Gdk__GCValues;
 typedef GdkDeviceInfo * Gtk__Gdk__DeviceInfo;
@@ -18,10 +18,10 @@ typedef GdkVisual * Gtk__Gdk__Visual;
 typedef GdkColormap * Gtk__Gdk__Colormap;
 typedef GdkFont * Gtk__Gdk__Font;*/
 
-typedef GdkEvent * Gtk__Gdk__Event;
+/*typedef GdkEvent * Gtk__Gdk__Event;*/
 typedef GdkRegion * Gtk__Gdk__Region;
 typedef GdkRectangle * Gtk__Gdk__Rectangle;
-typedef GdkColor * Gtk__Gdk__Color;
+/*typedef GdkColor * Gtk__Gdk__Color;*/
 /*typedef GdkImageType Gtk__Gdk__ImageType;*/
 /*typedef GdkWindowType Gtk__Gdk__WindowType;*/
 /*typedef GdkSubwindowMode Gtk__Gdk__SubwindowMode;*/
@@ -107,8 +107,8 @@ extern SV * newSVGdkImageRef(GdkImage * i);
 extern GdkImage * SvGdkImageRef(SV * data);*/
 extern SV * newSVGdkRectangle(GdkRectangle * rect);
 extern GdkRectangle * SvGdkRectangle(SV * data, GdkRectangle * rect);
-extern SV * newSVGdkColor(GdkColor * color);
-extern GdkColor * SvGdkColor(SV * data);
+/*extern SV * newSVGdkColor(GdkColor * color);
+extern GdkColor * SvGdkColor(SV * data);*/
 extern SV * newSVGdkAtom(GdkAtom a);
 extern GdkAtom SvGdkAtom(SV * data);
 extern SV * newSVGdkEvent(GdkEvent * e);

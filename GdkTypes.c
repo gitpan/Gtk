@@ -24,8 +24,8 @@ GdkBitmap * SvGdkBitmapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Bitmap
 SV * newSVGdkColormapRef(GdkColormap * w) { return newSVMiscRef(w, "Gtk::Gdk::Colormap",0); }
 GdkColormap * SvGdkColormapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Colormap"); }*/
 
-SV * newSVGdkColor(GdkColor * c) { return newSVMiscRef(c, "Gtk::Gdk::Color",0); }
-GdkColor * SvGdkColor(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Color"); }
+/*SV * newSVGdkColor(GdkColor * c) { return newSVMiscRef(c, "Gtk::Gdk::Color",0); }
+GdkColor * SvGdkColor(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Color"); }*/
 
 SV * newSVGdkRegion(GdkRegion * c) { return newSVMiscRef(c, "Gtk::Gdk::Region",0); }
 GdkRegion * SvGdkRegion(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Region"); }
@@ -155,18 +155,12 @@ GdkGCValues * SvGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 	memset(v,0,sizeof(GdkGCValues));
 
 	if ((s=hv_fetch(h, "foreground", 10, 0)) && SvOK(*s)) {
-		GdkColor * c = SvMiscRef(*s, "Gtk::Gdk::Color");
-		if (c) {
-			v->foreground = *c;
-			*m |= GDK_GC_FOREGROUND;
-		}
+		SvSetGdkColor(*s, &v->foreground);
+		*m |= GDK_GC_FOREGROUND;
 	}
 	if ((s=hv_fetch(h, "background", 10, 0)) && SvOK(*s)) {
-		GdkColor * c = SvMiscRef(*s, "Gtk::Gdk::Color");
-		if (c) {
-			v->background = *c;
-			*m |= GDK_GC_BACKGROUND;
-		}
+		SvSetGdkColor(*s, &v->background);
+		*m |= GDK_GC_BACKGROUND;
 	}
 	if ((s=hv_fetch(h, "font", 4, 0)) && SvOK(*s)) {
 		v->font = SvMiscRef(*s, "Gtk::Gdk::Font");
@@ -404,14 +398,17 @@ SV * newSVGdkEvent(GdkEvent * e)
 	return r;
 }
 
-GdkEvent * SvGdkEvent(SV * data)
+GdkEvent * SvSetGdkEvent(SV * data, GdkEvent * e)
 {
 	HV * h;
 	SV ** s;
-	GdkEvent * e;
 
       	if (!data || !SvOK(data) || !(h=(HV*)SvRV(data)) || (SvTYPE(h) != SVt_PVHV))
                 return 0;
+        
+        if (!e)
+        	e = alloc_temp(sizeof(GdkEvent));
+        
         s = hv_fetch(h, "_ptr", 4, 0);
         if (!s || !SvIV(*s))
                 croak("event is damaged");

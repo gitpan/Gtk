@@ -405,7 +405,7 @@ SV * newSVGtkMenuEntry(GtkMenuEntry * e)
 	return r;
 }
 
-GtkRequisition * SvGtkRequisition(SV * data, GtkRequisition * e)
+/*GtkRequisition * SvGtkRequisition(SV * data, GtkRequisition * e)
 {
 	HV * h;
 	SV ** s;
@@ -446,7 +446,7 @@ SV * newSVGtkRequisition(GtkRequisition * e)
 	hv_store(h, "height", 6, newSViv(e->height), 0);
 	
 	return r;
-}
+}*/
 
 SV * newSVGtkSelectionDataRef(GdkWindow * w) { return newSVMiscRef(w, "Gtk::SelectionData",0); }
 GdkWindow * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::SelectionData"); }

@@ -448,15 +448,15 @@
   gdk_window_ref
   gdk_window_unref)
 
-(define-boxed GdkEvent
-  gdk_event_copy
-  gdk_event_free
-  "sizeof(GdkEvent)")
+;(define-boxed GdkEvent
+;  gdk_event_copy
+;  gdk_event_free
+;  "sizeof(GdkEvent)")
 
-(define-boxed GdkColor
-  gdk_color_copy
-  gdk_color_free
-  "sizeof(GdkColor)")
+;;(define-boxed GdkColor
+;;  gdk_color_copy
+;;  gdk_color_free
+;;  "sizeof(GdkColor)")
 
 
 (define-func gtk_style_get_white_interp

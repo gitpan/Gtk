@@ -37,8 +37,8 @@ int type_name(char * name) {
 SV * newSVGdkColormap(GdkColormap * value) {
 	int n = 0;
 	SV * result = newSVMiscRef(value, "Gtk::Gdk::Colormap", &n);
-	if (n)
-		gdk_colormap_ref(value);
+	/*if (n)
+		gdk_colormap_ref(value);*/
 	return result;
 }
 
@@ -108,16 +108,16 @@ SV * GtkGetArg(GtkArg * a)
 {
 	SV * result;
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); return;
-		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); return;
-		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); return;
-		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); return;
-		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); return;
-		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); return;
-		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); return;	
-		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); return;
-		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); return;
-		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); return;
+		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); break;
+		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); break;
+		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); break;
+		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); break;
+		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); break;
+		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); break;
+		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); break;	
+		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); break;
+		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); break;
+		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
 		case GTK_TYPE_SIGNAL:
 		{
 			AV * args = (AV*)GTK_VALUE_SIGNAL(*a).d;
@@ -395,6 +395,9 @@ SV * GtkGetArg(GtkArg * a)
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				result = newSVGdkEvent(GTK_VALUE_BOXED(*a));
+			else
 #ifdef GTK_TYPE_GDK_COLORMAP
 			if (a->type == GTK_TYPE_GDK_COLORMAP)
 				result = newSVGdkColormap(GTK_VALUE_BOXED(*a));
@@ -442,16 +445,17 @@ SV * GtkGetArg(GtkArg * a)
 void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 {
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); return;
-		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); return;
-		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); return;
-		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); return;
-		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); return;
-		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); return;
-		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); return;	
-		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); return;
-		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); return;
-		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); break;
+		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); break;
+		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); break;
+		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); break;
+		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
+		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
+		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
+		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
+		case GTK_TYPE_C_CALLBACK: break;
 		case GTK_TYPE_SIGNAL:
 		{
 			AV * args;
@@ -736,6 +740,9 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				GTK_VALUE_BOXED(*a) = SvGdkEvent(v);
+			else
 #ifdef GTK_TYPE_GDK_COLORMAP
 			if (a->type == GTK_TYPE_GDK_COLORMAP)
 				GTK_VALUE_BOXED(*a) = SvGdkColormap(v);
@@ -782,16 +789,17 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 {
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); return;
-		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); return;
-		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); return;
-		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); return;
-		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); return;
-		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); return;
-		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); return;	
-		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); return;
-		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); return;
-		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); break;
+		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); break;
+		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); break;
+		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); break;
+		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); break;
+		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); break;
+		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;
+		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
+		case GTK_TYPE_C_CALLBACK: break;
 		case GTK_TYPE_ENUM:
 #ifdef GTK_TYPE_GDK_AXIS_USE
 			if (a->type == GTK_TYPE_GDK_AXIS_USE)
@@ -1054,6 +1062,9 @@ void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				*GTK_RETLOC_BOXED(*a) = SvGdkEvent(v);
+			else
 #ifdef GTK_TYPE_GDK_COLORMAP
 			if (a->type == GTK_TYPE_GDK_COLORMAP)
 				GTK_VALUE_BOXED(*a) = SvGdkColormap(v);
@@ -1115,6 +1126,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "ytilt", 5, newSViv(GDK_AXIS_YTILT), 0);
 	hv_store(h, "last", 4, newSViv(GDK_AXIS_LAST), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::AxisUse", 17, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[1] = h;
@@ -1122,6 +1134,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "lsb-first", 9, newSViv(GDK_LSB_FIRST), 0);
 	hv_store(h, "msb-first", 9, newSViv(GDK_MSB_FIRST), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::ByteOrder", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[2] = h;
@@ -1131,12 +1144,14 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "round", 5, newSViv(GDK_CAP_ROUND), 0);
 	hv_store(h, "projecting", 10, newSViv(GDK_CAP_PROJECTING), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::CapStyle", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[3] = h;
 	pGtkTypeName[3] = "Gtk::Gdk::CursorType";
 	hv_store(h, "cursor", 6, newSViv(GDK_LAST_CURSOR), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::CursorType", 20, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[4] = h;
@@ -1154,6 +1169,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "mime", 4, newSViv(GDK_DNDTYPE_MIME), 0);
 	hv_store(h, "end", 3, newSViv(GDK_DNDTYPE_END), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::DndType", 17, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[5] = h;
@@ -1181,6 +1197,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "selection-notify", 16, newSViv(GDK_SELECTION_NOTIFY), 0);
 	hv_store(h, "other-event", 11, newSViv(GDK_OTHER_EVENT), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::EventType", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[6] = h;
@@ -1190,6 +1207,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "stippled", 8, newSViv(GDK_STIPPLED), 0);
 	hv_store(h, "opaque-stippled", 15, newSViv(GDK_OPAQUE_STIPPLED), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::Fill", 14, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[7] = h;
@@ -1198,6 +1216,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "invert", 6, newSViv(GDK_INVERT), 0);
 	hv_store(h, "xor", 3, newSViv(GDK_XOR), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::Function", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[8] = h;
@@ -1206,6 +1225,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "shared", 6, newSViv(GDK_IMAGE_SHARED), 0);
 	hv_store(h, "fastest", 7, newSViv(GDK_IMAGE_FASTEST), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::ImageType", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[9] = h;
@@ -1214,6 +1234,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "screen", 6, newSViv(GDK_MODE_SCREEN), 0);
 	hv_store(h, "window", 6, newSViv(GDK_MODE_WINDOW), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::InputMode", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[10] = h;
@@ -1223,6 +1244,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "eraser", 6, newSViv(GDK_SOURCE_ERASER), 0);
 	hv_store(h, "cursor", 6, newSViv(GDK_SOURCE_CURSOR), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::InputSource", 21, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[11] = h;
@@ -1231,6 +1253,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "round", 5, newSViv(GDK_JOIN_ROUND), 0);
 	hv_store(h, "bevel", 5, newSViv(GDK_JOIN_BEVEL), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::JoinStyle", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[12] = h;
@@ -1239,6 +1262,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "on-off-dash", 11, newSViv(GDK_LINE_ON_OFF_DASH), 0);
 	hv_store(h, "double-dash", 11, newSViv(GDK_LINE_DOUBLE_DASH), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::LineStyle", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[13] = h;
@@ -1250,6 +1274,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "nonlinear-virtual", 17, newSViv(GDK_NOTIFY_NONLINEAR_VIRTUAL), 0);
 	hv_store(h, "unknown", 7, newSViv(GDK_NOTIFY_UNKNOWN), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::NotifyType", 20, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[14] = h;
@@ -1258,6 +1283,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "prepend", 7, newSViv(GDK_PROP_MODE_PREPEND), 0);
 	hv_store(h, "append", 6, newSViv(GDK_PROP_MODE_APPEND), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::PropMode", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[15] = h;
@@ -1265,6 +1291,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "new-value", 9, newSViv(GDK_PROPERTY_NEW_VALUE), 0);
 	hv_store(h, "delete", 6, newSViv(GDK_PROPERTY_DELETE), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::PropertyState", 23, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[16] = h;
@@ -1272,6 +1299,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "primary", 7, newSViv(GDK_SELECTION_PRIMARY), 0);
 	hv_store(h, "secondary", 9, newSViv(GDK_SELECTION_SECONDARY), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::Selection", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[17] = h;
@@ -1282,6 +1310,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "error-file", 10, newSViv(GDK_ERROR_FILE), 0);
 	hv_store(h, "error-mem", 9, newSViv(GDK_ERROR_MEM), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::Status", 16, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[18] = h;
@@ -1289,6 +1318,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "clip-by-children", 16, newSViv(GDK_CLIP_BY_CHILDREN), 0);
 	hv_store(h, "include-inferiors", 17, newSViv(GDK_INCLUDE_INFERIORS), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::SubwindowMode", 23, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[19] = h;
@@ -1300,6 +1330,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "true-color", 10, newSViv(GDK_VISUAL_TRUE_COLOR), 0);
 	hv_store(h, "direct-color", 12, newSViv(GDK_VISUAL_DIRECT_COLOR), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::VisualType", 20, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[20] = h;
@@ -1307,6 +1338,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "input-output", 12, newSViv(GDK_INPUT_OUTPUT), 0);
 	hv_store(h, "input-only", 10, newSViv(GDK_INPUT_ONLY), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::WindowClass", 21, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[21] = h;
@@ -1318,6 +1350,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "temp", 4, newSViv(GDK_WINDOW_TEMP), 0);
 	hv_store(h, "pixmap", 6, newSViv(GDK_WINDOW_PIXMAP), 0);
 	hv_store(pG_EnumHash, "Gtk::Gdk::WindowType", 20, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[22] = h;
@@ -1327,6 +1360,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "left", 4, newSViv(GTK_ARROW_LEFT), 0);
 	hv_store(h, "right", 5, newSViv(GTK_ARROW_RIGHT), 0);
 	hv_store(pG_EnumHash, "Gtk::ArrowType", 14, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[23] = h;
@@ -1335,6 +1369,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "spline", 6, newSViv(GTK_CURVE_TYPE_SPLINE), 0);
 	hv_store(h, "free", 4, newSViv(GTK_CURVE_TYPE_FREE), 0);
 	hv_store(pG_EnumHash, "Gtk::CurveType", 14, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[24] = h;
@@ -1346,6 +1381,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "left", 4, newSViv(GTK_DIR_LEFT), 0);
 	hv_store(h, "right", 5, newSViv(GTK_DIR_RIGHT), 0);
 	hv_store(pG_EnumHash, "Gtk::DirectionType", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[25] = h;
@@ -1355,6 +1391,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "center", 6, newSViv(GTK_JUSTIFY_CENTER), 0);
 	hv_store(h, "fill", 4, newSViv(GTK_JUSTIFY_FILL), 0);
 	hv_store(pG_EnumHash, "Gtk::Justification", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[26] = h;
@@ -1363,6 +1400,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "menu-bar", 8, newSViv(GTK_MENU_FACTORY_MENU_BAR), 0);
 	hv_store(h, "option-menu", 11, newSViv(GTK_MENU_FACTORY_OPTION_MENU), 0);
 	hv_store(pG_EnumHash, "Gtk::MenuFactoryType", 20, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[27] = h;
@@ -1371,6 +1409,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "inches", 6, newSViv(GTK_INCHES), 0);
 	hv_store(h, "centimeters", 11, newSViv(GTK_CENTIMETERS), 0);
 	hv_store(pG_EnumHash, "Gtk::MetricType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[28] = h;
@@ -1378,6 +1417,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "start", 5, newSViv(GTK_PACK_START), 0);
 	hv_store(h, "end", 3, newSViv(GTK_PACK_END), 0);
 	hv_store(pG_EnumHash, "Gtk::PackType", 13, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[29] = h;
@@ -1385,6 +1425,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "always", 6, newSViv(GTK_POLICY_ALWAYS), 0);
 	hv_store(h, "automatic", 9, newSViv(GTK_POLICY_AUTOMATIC), 0);
 	hv_store(pG_EnumHash, "Gtk::PolicyType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[30] = h;
@@ -1394,6 +1435,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "top", 3, newSViv(GTK_POS_TOP), 0);
 	hv_store(h, "bottom", 6, newSViv(GTK_POS_BOTTOM), 0);
 	hv_store(pG_EnumHash, "Gtk::PositionType", 17, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[31] = h;
@@ -1401,6 +1443,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "color", 5, newSViv(GTK_PREVIEW_COLOR), 0);
 	hv_store(h, "grayscale", 9, newSViv(GTK_PREVIEW_GRAYSCALE), 0);
 	hv_store(pG_EnumHash, "Gtk::PreviewType", 16, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[32] = h;
@@ -1411,6 +1454,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "page-backward", 13, newSViv(GTK_SCROLL_PAGE_BACKWARD), 0);
 	hv_store(h, "page-forward", 12, newSViv(GTK_SCROLL_PAGE_FORWARD), 0);
 	hv_store(pG_EnumHash, "Gtk::ScrollType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[33] = h;
@@ -1420,6 +1464,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "multiple", 8, newSViv(GTK_SELECTION_MULTIPLE), 0);
 	hv_store(h, "extended", 8, newSViv(GTK_SELECTION_EXTENDED), 0);
 	hv_store(pG_EnumHash, "Gtk::SelectionMode", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[34] = h;
@@ -1430,6 +1475,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "etched-in", 9, newSViv(GTK_SHADOW_ETCHED_IN), 0);
 	hv_store(h, "etched-out", 10, newSViv(GTK_SHADOW_ETCHED_OUT), 0);
 	hv_store(pG_EnumHash, "Gtk::ShadowType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[35] = h;
@@ -1440,6 +1486,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "selected", 8, newSViv(GTK_STATE_SELECTED), 0);
 	hv_store(h, "insensitive", 11, newSViv(GTK_STATE_INSENSITIVE), 0);
 	hv_store(pG_EnumHash, "Gtk::StateType", 14, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[36] = h;
@@ -1447,6 +1494,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "left", 4, newSViv(GTK_DIRECTION_LEFT), 0);
 	hv_store(h, "right", 5, newSViv(GTK_DIRECTION_RIGHT), 0);
 	hv_store(pG_EnumHash, "Gtk::SubmenuDirection", 21, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[37] = h;
@@ -1454,6 +1502,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "top-bottom", 10, newSViv(GTK_TOP_BOTTOM), 0);
 	hv_store(h, "left-right", 10, newSViv(GTK_LEFT_RIGHT), 0);
 	hv_store(pG_EnumHash, "Gtk::SubmenuPlacement", 21, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[38] = h;
@@ -1462,6 +1511,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "start", 5, newSViv(GTK_TROUGH_START), 0);
 	hv_store(h, "end", 3, newSViv(GTK_TROUGH_END), 0);
 	hv_store(pG_EnumHash, "Gtk::TroughType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[39] = h;
@@ -1470,6 +1520,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "discontinuous", 13, newSViv(GTK_UPDATE_DISCONTINUOUS), 0);
 	hv_store(h, "delayed", 7, newSViv(GTK_UPDATE_DELAYED), 0);
 	hv_store(pG_EnumHash, "Gtk::UpdateType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[40] = h;
@@ -1478,6 +1529,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "center", 6, newSViv(GTK_WIN_POS_CENTER), 0);
 	hv_store(h, "mouse", 5, newSViv(GTK_WIN_POS_MOUSE), 0);
 	hv_store(pG_EnumHash, "Gtk::WindowPosition", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[41] = h;
@@ -1486,6 +1538,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "dialog", 6, newSViv(GTK_WINDOW_DIALOG), 0);
 	hv_store(h, "popup", 5, newSViv(GTK_WINDOW_POPUP), 0);
 	hv_store(pG_EnumHash, "Gtk::WindowType", 15, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[42] = h;
@@ -1507,6 +1560,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "structure-mask", 14, newSViv(GDK_STRUCTURE_MASK), 0);
 	hv_store(h, "all-events-mask", 15, newSViv(GDK_ALL_EVENTS_MASK), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::EventMask", 19, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[43] = h;
@@ -1530,6 +1584,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "cap-style", 9, newSViv(GDK_GC_CAP_STYLE), 0);
 	hv_store(h, "join-style", 10, newSViv(GDK_GC_JOIN_STYLE), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::GCValuesMask", 22, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[44] = h;
@@ -1538,6 +1593,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "write", 5, newSViv(GDK_INPUT_WRITE), 0);
 	hv_store(h, "exception", 9, newSViv(GDK_INPUT_EXCEPTION), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::InputCondition", 24, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[45] = h;
@@ -1556,6 +1612,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "button4-mask", 12, newSViv(GDK_BUTTON4_MASK), 0);
 	hv_store(h, "button5-mask", 12, newSViv(GDK_BUTTON5_MASK), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::ModifierType", 22, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[46] = h;
@@ -1567,6 +1624,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "colormap", 8, newSViv(GDK_WA_COLORMAP), 0);
 	hv_store(h, "visual", 6, newSViv(GDK_WA_VISUAL), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::WindowAttributesType", 30, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[47] = h;
@@ -1575,6 +1633,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "min-size", 8, newSViv(GDK_HINT_MIN_SIZE), 0);
 	hv_store(h, "max-size", 8, newSViv(GDK_HINT_MAX_SIZE), 0);
 	hv_store(pG_FlagsHash, "Gtk::Gdk::WindowHints", 21, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[48] = h;
@@ -1583,6 +1642,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "shrink", 6, newSViv(GTK_SHRINK), 0);
 	hv_store(h, "fill", 4, newSViv(GTK_FILL), 0);
 	hv_store(pG_FlagsHash, "Gtk::AttachOptions", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[49] = h;
@@ -1593,6 +1653,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "mask", 4, newSViv(GTK_RUN_MASK), 0);
 	hv_store(h, "no-recurse", 10, newSViv(GTK_RUN_NO_RECURSE), 0);
 	hv_store(pG_FlagsHash, "Gtk::SignalRunType", 18, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	h = newHV();
 	pGtkType[50] = h;
@@ -1613,6 +1674,7 @@ void initPerlGtkDefs(void) {
 	hv_store(h, "basic", 5, newSViv(GTK_BASIC), 0);
 	hv_store(h, "user-style", 10, newSViv(GTK_USER_STYLE), 0);
 	hv_store(pG_FlagsHash, "Gtk::WidgetFlags", 16, newRV((SV*)h), 0);
+ SvREFCNT_dec(h);
 
 	/*for(i=0;i<51;i++) {
 		HV * p = perl_get_hv(pGtkTypeName[i], TRUE);

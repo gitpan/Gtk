@@ -1,25 +1,29 @@
 TYPEMAP
 
 # These are synonyms for Gtk::Gdk::Pixmap (which itself is a renamed Gtk::Gdk::Window)
-Gtk::Gdk::Window	T_MISCPTROBJ
-Gtk::Gdk::Bitmap	T_MISCPTROBJ
+Gtk::Gdk::Window	T_SimpleVal
+Gtk::Gdk::Bitmap	T_SimpleVal
 
 Gtk::Gdk::Cursor	T_MISCPTROBJ
 Gtk::Gdk::GC		T_MISCPTROBJ
-Gtk::Gdk::Image		T_MISCPTROBJ
+Gtk::Gdk::Image		T_SimpleVal
 Gtk::Gdk::GCValues	T_MISCPTROBJ
 Gtk::Gdk::Atom		T_SimpleVal
 
-Gtk::Tooltips		T_PTROBJ
 Gtk::MenuFactory	T_MISCPTROBJ
 
 upGtk::Widget		T_GtkUPPTROBJ
 
-Gtk::Gdk::Event		T_SimplePtr
+Gtk::Gdk::Event		T_SimpleVal
 Gtk::Gdk::Rectangle	T_SimplePtr
-Gtk::Gdk::Color		T_MISCPTROBJ
+Gtk::Gdk::Color		T_SimpleVal
+
+bool				T_BOOL
 
 INPUT
+
+T_BOOL
+	$var = (int)SvIV($arg)
 
 T_GtkPTROBJ
 	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
@@ -53,6 +57,9 @@ T_SimplePtr
 
 OUTPUT
 
+T_BOOL
+	$arg = boolSV($var);
+
 T_GtkPTROBJ
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"${ntype}\"));
 	SvREFCNT_dec(SvRV($arg));
@@ -75,7 +82,7 @@ T_REFPTROBJ
 	}
 
 T_SimpleVal
-	sv_setsv($arg,newSV@{[grep {s/://g,s/^GtkGdk/Gdk/,1} $ntype]}($var));
+	sv_setsv($arg,sv_2mortal(newSV@{[grep {s/://g,s/^GtkGdk/Gdk/,1} $ntype]}($var)));
 
 T_SimplePtr
-	sv_setsv($arg,newSV@{[grep {s/://g,s/^GtkGdk/Gdk/,1} $ntype]}($var));
+	sv_setsv($arg,sv_2mortal(newSV@{[grep {s/://g,s/^GtkGdk/Gdk/,1} $ntype]}($var)));

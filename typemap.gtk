@@ -121,10 +121,10 @@ Gtk::VSeparator	T_GtkPTROBJ
 Gtk::Viewport	T_GtkPTROBJ
 Gtk::Widget	T_GtkPTROBJ
 Gtk::Window	T_GtkPTROBJ
-Gtk::Gdk::Colormap	T_MISCPTROBJ
-Gtk::Gdk::Font	T_MISCPTROBJ
-Gtk::Gdk::Pixmap	T_MISCPTROBJ
-Gtk::Gdk::Visual	T_MISCPTROBJ
-Gtk::AcceleratorTable	T_MISCPTROBJ
-Gtk::Style	T_MISCPTROBJ
-Gtk::Tooltips	T_MISCPTROBJ
+Gtk::Gdk::Colormap	T_SimpleVal
+Gtk::Gdk::Font	T_SimpleVal
+Gtk::Gdk::Pixmap	T_SimpleVal
+Gtk::Gdk::Visual	T_SimpleVal
+Gtk::AcceleratorTable	T_SimpleVal
+Gtk::Style	T_SimpleVal
+Gtk::Tooltips	T_SimpleVal

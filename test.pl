@@ -1,6 +1,7 @@
 
 use Gtk;
-#use Data::Dumper;
+
+init Gtk;
 
 sub destroy_window {
 	my($widget, $windowref) = @_;
@@ -14,14 +15,6 @@ sub button_window {
 	} else {
 		hide $button;
 	}
-}
-
-sub drop_window {
-	print "drop\n";
-}
-
-sub drag_begin_window {
-	print "drag\n";
 }
 
 sub create_buttons {
@@ -47,8 +40,6 @@ sub create_buttons {
 		for (0..8) { $button[$_] = new Gtk::Button "button".($_+1); }
 		
 		$button[0]->signal_connect("clicked", \&button_window, $button[1]);
-		$button[0]->signal_connect("drop_notify_event", \&drop_notify_event);
-		$button[0]->signal_connect("drag_begin_notify_event", \&drag_begin_notify_event);
 		$table->attach($button[0], 0, 1, 0, 1, {expand=>1,fill=>1}, {expand=>1,fill=>1},0,0);
 		$button[0]->show;
 
@@ -116,9 +107,7 @@ sub create_toggle_buttons {
 		$tb_window->set_title("toggle buttons");
 		$tb_window->border_width(0);
 		
-		#print "Creating box\n";
 		$box1 = new Gtk::VBox(0, 0);
-		#print Dumper($box1);
 		$tb_window->add($box1);
 		$box1->show;
 		
@@ -730,19 +719,31 @@ sub color_selection_changed {
 
 sub create_color_selection {
 	if (not defined $cs_window) {
+		print "1\n";
 		set_install_cmap Gtk::Preview 1;
+		print "2\n";
 		Gtk::Widget->push_visual(Gtk::Preview->get_visual);
+		print "3\n";
 		Gtk::Widget->push_colormap(Gtk::Preview->get_cmap);
 		
+		print "4\n";
 		$cs_window = new Gtk::ColorSelectionDialog "color selection dialog";
 		
+		print "5\n";
 		$cs_window->colorsel->set_opacity(1);
+		print "6\n";
 		$cs_window->colorsel->set_update_policy(-continuous);
+		print "7\n";
 		$cs_window->position(-mouse);
+		print "8\n";
 		signal_connect $cs_window destroy => \&destroy_window, \$cs_window;
+		print "9\n";
 		$cs_window->colorsel->signal_connect("color_changed", \&color_selection_changed, $cs_window);
+		print "10\n";
 		$cs_window->ok_button->signal_connect("clicked", \&color_selection_ok, $cs_window);
+		print "11\n";
 		$cs_window->cancel_button->signal_connect("clicked", sub { destroy $cs_window });
+		print "12\n";
 		
 		pop_colormap Gtk::Widget;
 		pop_visual Gtk::Widget;
@@ -881,7 +882,7 @@ sub create_text {
 		$text_window->set_name("text window");
 		$text_window->signal_connect("destroy", \&destroy_window, \$text_window);
 		$text_window->set_title("test");
-		$text_window->border_width(10);
+		$text_window->border_width(0);
 		
 		$box1 = new Gtk::VBox(0,0);
 		$text_window->add($box1);
@@ -1619,7 +1620,6 @@ sub create_main_window {
 	
 	$window->show;
 	
-	#print Dumper($window);
 }
 
 parse Gtk::Rc "testgtkrc";

@@ -86,7 +86,7 @@ extern SV * newSVGdkCursorType(int value);
 extern SV * newSVGdkEventMask(int value);*/
 extern int SvGdkInputCondition(SV * value);
 extern SV * newSVGdkInputCondition(int value);
-extern SV * newSVGdkWindowRef(GdkWindow * w);
+/*extern SV * newSVGdkWindowRef(GdkWindow * w);
 extern GdkWindow * SvGdkWindowRef(SV * data);
 extern SV * newSVGdkPixmapRef(GdkPixmap * w);
 extern GdkPixmap * SvGdkPixmapRef(SV * data);
@@ -103,14 +103,16 @@ extern GdkGC * SvGdkGCRef(SV * data);
 extern SV * newSVGdkFontRef(GdkFont * f);
 extern GdkFont * SvGdkFontRef(SV * data);
 extern SV * newSVGdkImageRef(GdkImage * i);
-extern GdkImage * SvGdkImageRef(SV * data);
+extern GdkImage * SvGdkImageRef(SV * data);*/
 extern SV * newSVGdkRectangle(GdkRectangle * rect);
 extern GdkRectangle * SvGdkRectangle(SV * data, GdkRectangle * rect);
 extern SV * newSVGdkColor(GdkColor * color);
-extern GdkColor * SvGdkColor(SV * data, GdkColor * color);
+extern GdkColor * SvGdkColor(SV * data);
 extern SV * newSVGdkAtom(GdkAtom a);
 extern GdkAtom SvGdkAtom(SV * data);
 extern SV * newSVGdkEvent(GdkEvent * e);
-extern GdkEvent * SvGdkEvent(SV * data, GdkEvent * e);
+extern GdkEvent * SvGdkEvent(SV * data);
 extern GdkWindowAttr * SvGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask);
 
+#define newSVGdkImage(data) newSVMiscRef((void*)data, "Gtk::Gdk::Image", 0)
+#define SvGdkImage(data) (GdkImage*)SvMiscRef(data,0)

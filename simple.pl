@@ -6,6 +6,8 @@ sub hello {
 	Gtk->print("hello world\n");
 }
 
+init Gtk;
+
 $window = new Gtk::Widget	"GtkWindow",
 		GtkObject::user_data		=>	undef,
 		GtkWindow::type			=>	-toplevel,

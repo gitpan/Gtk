@@ -2,7 +2,6 @@
 /* Copyright (C) 1997, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
    
-/*typedef GtkTooltips * Gtk__Tooltips;*/
 typedef GtkMenuFactory * Gtk__MenuFactory;
 
 #define newSVGdkBitmap newSVGdkPixmap

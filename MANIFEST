@@ -13,7 +13,9 @@ Makefile.PL
 MiscTypes.c
 MiscTypes.h
 README
+ToDo
 boxed.xsh
+demo_inherit.pl
 gendefs.pl
 gtk.defs
 marble.xpm

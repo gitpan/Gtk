@@ -3,8 +3,9 @@
 	Copyright (C) 1997, Kenneth Albanowski, and are licensed for
 	use under the same terms as Perl itself.
 
-The graphics files, testgtkrc file, and the origination for test.pl and
-simple.pl are from the gtk distribution, and are under this copyright:
+The graphics files, testgtkrc file, gtk.defs file, and the origination for
+test.pl and simple.pl are from the gtk distribution, and are under this
+copyright:
 
 /* GTK - The GIMP Toolkit
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -28,7 +29,7 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 970925, and there is
+Usage information: this package was designed around gtk 971025, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.
@@ -40,12 +41,13 @@ The code may very well still have leaks, and a few portions are incomplete
 documentation currently exists, but this code is designed to mimic the C
 calling sequences as much as is reasonable.
 
+If you have been using Gtk-0.1.8, several changes have been made to the API,
+including the change of enumeration and flag values to lowercase (to match
+the constants defined in gtk.defs), and the requirement for Gtk->init() to
+be invoked before any other Gtk functions.
+
 Please bring information regarding bugs and other issues to
 <gtk-list@redhat.com> or the author, at <kjahds@kjahds.com>.
-
-At this stage, even the test program breaks on several of the tests, so this
-version is definitely incomplete. I hope to get another version out sometime
-soon.
 
 Good Luck,
 Ken

@@ -85,6 +85,7 @@ SV * newSVMiscRef(void * object, char * classname, int * newref)
 	HV * previous = RetrieveMisc(object);
 	SV * result;
 	if (previous) {
+		/*printf("Retriveing object %d as HV %d\n", object, previous);*/
 		result = newRV((SV*)previous);
 		if (newref)
 			*newref = 0;
@@ -93,6 +94,7 @@ SV * newSVMiscRef(void * object, char * classname, int * newref)
 		hv_store(h, "_gtk", 4, newSViv((int)object), 0);
 		result = newRV((SV*)h);
 		RegisterMisc(h, object);
+		/*printf("Storing object %d as HV %d\n", object, h);*/
 		sv_bless(result, gv_stashpv(classname, FALSE));
 		SvREFCNT_dec(h);
 		if (newref)
@@ -277,6 +279,8 @@ void UnregisterMisc(HV * hv_object, void * gtk_object)
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 	if (!MiscCache)
 		MiscCache = newHV();
+	
+	/*printf("Removing object %d, HV %d\n", gtk_object, hv_object);*/
 	
 	hv_delete(hv_object, "_gtk", 4, G_DISCARD);
 	hv_delete(MiscCache, buffer, strlen(buffer), G_DISCARD);

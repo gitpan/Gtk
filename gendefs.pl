@@ -95,7 +95,7 @@ foreach (sort keys %object) {
 	print perlize($_),"\tT_GtkPTROBJ\n";
 }
 foreach (sort keys %boxed) {
-	print perlize($_),"\tT_MISCPTROBJ\n";
+	print perlize($_),"\tT_SimpleVal\n"; #MISCPTROBJ\n";
 }
 
 open(STDOUT,">GtkDefs.h");
@@ -226,16 +226,16 @@ SV * GtkGetArg(GtkArg * a)
 {
 	SV * result;
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); return;
-		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); return;
-		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); return;
-		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); return;
-		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); return;
-		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); return;
-		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); return;	
-		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); return;
-		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); return;
-		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); return;
+		case GTK_TYPE_BOOL:	result = newSViv(GTK_VALUE_BOOL(*a)); break;
+		case GTK_TYPE_CHAR:	result = newSViv(GTK_VALUE_CHAR(*a)); break;
+		case GTK_TYPE_INT:	result = newSViv(GTK_VALUE_INT(*a)); break;
+		case GTK_TYPE_LONG:	result = newSViv(GTK_VALUE_LONG(*a)); break;
+		case GTK_TYPE_UINT:	result = newSViv(GTK_VALUE_UINT(*a)); break;
+		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); break;
+		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); break;	
+		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); break;
+		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); break;
+		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
 		case GTK_TYPE_SIGNAL:
 		{
 			AV * args = (AV*)GTK_VALUE_SIGNAL(*a).d;
@@ -288,6 +288,9 @@ print <<"EOT";
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				result = newSVGdkEvent(GTK_VALUE_BOXED(*a));
+			else
 EOT
 
 foreach (sort keys %boxed) {
@@ -315,16 +318,16 @@ print <<"EOT";
 void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 {
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); return;
-		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); return;
-		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); return;
-		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); return;
-		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); return;
-		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); return;
-		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); return;	
-		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); return;
-		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); return;
-		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_CHAR:		GTK_VALUE_CHAR(*a) = SvIV(v); break;
+		case GTK_TYPE_BOOL:		GTK_VALUE_BOOL(*a) = SvIV(v); break;
+		case GTK_TYPE_INT:		GTK_VALUE_INT(*a) = SvIV(v); break;
+		case GTK_TYPE_UINT:		GTK_VALUE_UINT(*a) = SvIV(v); break;
+		case GTK_TYPE_LONG:		GTK_VALUE_LONG(*a) = SvIV(v); break;
+		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
+		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
+		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_SIGNAL:
 		{
 			AV * args;
@@ -382,6 +385,9 @@ print <<"EOT";
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				GTK_VALUE_BOXED(*a) = SvGdkEvent(v);
+			else
 EOT
 foreach (sort keys %boxed) {
 	$p = $_;
@@ -407,16 +413,16 @@ print <<"EOT";
 void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 {
 	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
-		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); return;
-		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); return;
-		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); return;
-		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); return;
-		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); return;
-		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); return;
-		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); return;	
-		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); return;
-		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); return;
-		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); return;
+		case GTK_TYPE_CHAR:		*GTK_RETLOC_CHAR(*a) = SvIV(v); break;
+		case GTK_TYPE_BOOL:		*GTK_RETLOC_BOOL(*a) = SvIV(v); break;
+		case GTK_TYPE_INT:		*GTK_RETLOC_INT(*a) = SvIV(v); break;
+		case GTK_TYPE_UINT:		*GTK_RETLOC_UINT(*a) = SvIV(v); break;
+		case GTK_TYPE_LONG:		*GTK_RETLOC_LONG(*a) = SvIV(v); break;
+		case GTK_TYPE_ULONG:	*GTK_RETLOC_ULONG(*a) = SvIV(v); break;
+		case GTK_TYPE_FLOAT:	*GTK_RETLOC_FLOAT(*a) = SvNV(v); break;	
+		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); break;
+		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;
+		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_ENUM:
 EOT
 
@@ -452,6 +458,9 @@ print <<"EOT";
 				goto d_fault;
 			break;
 		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				*GTK_RETLOC_BOXED(*a) = SvGdkEvent(v);
+			else
 EOT
 foreach (sort keys %boxed) {
 	$p = $_;
@@ -493,6 +502,7 @@ foreach (sort keys %enum) {
 	}
 	$p = perlize($_);
 	print "	hv_store(pG_EnumHash, \"$p\", ", length($p), ", newRV((SV*)h), 0);\n";
+	print " SvREFCNT_dec(h);\n";
 	$i++;
 }
 
@@ -507,6 +517,7 @@ foreach (sort keys %flags) {
 	}
 	$p = perlize($_);
 	print "	hv_store(pG_FlagsHash, \"$p\", ", length($p), ", newRV((SV*)h), 0);\n";
+	print " SvREFCNT_dec(h);\n";
 	$i++;
 }
 print <<"EOT";
@@ -551,9 +562,7 @@ pos = 0;
 
 __END__;
 
-gtk.defs from gtk+970925
-
-additions:
+additions over gtk.defs from gtk+970925:
 
 (define-enum GtkCurveType
   (linear GTK_CURVE_TYPE_LINEAR)

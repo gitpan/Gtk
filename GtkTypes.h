@@ -3,6 +3,7 @@
    This code may be distributed under the same terms as Perl itself. */
    
 typedef GtkMenuFactory * Gtk__MenuFactory;
+typedef GtkSelectionData * Gtk__SelectionData;
 
 #define newSVGdkBitmap newSVGdkPixmap
 #define newSVGdkWindow newSVGdkPixmap
@@ -23,5 +24,8 @@ extern void disconnect_GtkObjectRef(SV * o);
 
 extern SV * newSVGtkMenuEntry(GtkMenuEntry * o);
 extern GtkMenuEntry * SvGtkMenuEntry(SV * o, GtkMenuEntry * e);
+ 
+extern SV * newSVGtkSelectionDataRef(GtkSelectionData * o);
+extern GtkSelectionData * SvGtkSelectionDataRef(SV * data);
 
 int type_name(char * name);

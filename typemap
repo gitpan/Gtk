@@ -11,6 +11,7 @@ Gtk::Gdk::GCValues	T_MISCPTROBJ
 Gtk::Gdk::Atom		T_SimpleVal
 
 Gtk::MenuFactory	T_MISCPTROBJ
+Gtk::SelectionData      T_MISCPTROBJ
 
 upGtk::Widget		T_GtkUPPTROBJ
 

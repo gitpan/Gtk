@@ -173,6 +173,10 @@ SV * newSVGtkMenuEntry(GtkMenuEntry * e)
 	return r;
 }
 
+SV * newSVGtkSelectionDataRef(GdkWindow * w) { return newSVMiscRef(w, "Gtk::SelectionData",0); }
+GdkWindow * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::SelectionData"); }
+
+
 /*SV * newSVGtkMenuPath(GtkMenuPath * e)
 {
 	HV * h;

@@ -173,6 +173,10 @@ void marshal_signal (GtkObject *object, gpointer data, gint nparams, GtkArg * ar
 			encoding=6;
 			XPUSHs(sv_2mortal(newSVGdkEvent((GdkEvent*)GTK_VALUE_POINTER(args[0]))));
 			goto unpacked;
+ 		} else
+	 		if (strEQ(signame, "selection_received")) {
+ 			XPUSHs(sv_2mortal(newSVGtkSelectionDataRef((GtkSelectionData*)GTK_VALUE_POINTER(args[0]))));
+ 			goto unpacked;
 		}
 	}
 	for (i=0;i<nparams;i++)
@@ -313,6 +317,30 @@ void input_handler(gpointer data, gint source, GdkInputCondition condition) {
 	PUTBACK;
 
 	perl_call_sv(handler, G_DISCARD);
+}
+
+void selection_handler(GtkWidget *widget, GtkSelectionData *selection_data,
+		       gpointer data)
+{
+	AV * args = (AV *)data;
+	SV * handler = *av_fetch(args, 0, 0);
+	int i;
+	dSP;
+
+	PUSHMARK(sp);
+	for (i=1;i<=av_len(args);i++)
+		XPUSHs(sv_2mortal(newSVsv(*av_fetch(args, i, 0))));
+	XPUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(widget),0)));
+	XPUSHs(sv_2mortal(newSVGtkSelectionDataRef(selection_data)));
+	PUTBACK;
+
+	perl_call_sv(handler, G_DISCARD);
+}
+
+void selection_handler_remove (gpointer data)
+{
+	AV * args = (AV *)data;
+	SvREFCNT_dec(args);
 }
 
 void menu_pos_func (GtkMenu *menu, int *x, int *y, gpointer user_data)
@@ -1680,8 +1708,13 @@ insert_items(self, position, ...)
 	{
 		GList * list = 0;
 		int i;
-		for(i=2;i<items;i++)
+		for(i=2;i<items;i++) {
+			GtkObject * o;
+			o = SvGtkObjectRef(ST(i), "Gtk::ListItem");
+			if (!o)
+				croak("item cannot be undef");
 			list = g_list_prepend(list, SvGtkObjectRef(ST(i),"Gtk::ListItem"));
+		}	
 		g_list_reverse(list);
 		gtk_list_insert_items(self, list, position);
 	}
@@ -1696,6 +1729,8 @@ append_items(self, ...)
 		for(i=1;i<items;i++) {
 			GtkObject * o;
 			o = SvGtkObjectRef(ST(i), "Gtk::ListItem");
+			if (!o)
+				croak("item cannot be undef");
 			list = g_list_prepend(list, GTK_LIST_ITEM(o));
 		}
 		gtk_list_append_items(self, list);
@@ -1708,8 +1743,13 @@ prepend_items(self, ...)
 	{
 		GList * list = 0;
 		int i;
-		for(i=1;i<items;i++)
-			list = g_list_prepend(list, SvGtkObjectRef(ST(i),"Gtk::ListItem"));
+		for(i=1;i<items;i++) {
+			GtkObject * o;
+			o = SvGtkObjectRef(ST(i), "Gtk::ListItem");
+			if (!o)
+				croak("item cannot be undef");
+			list = g_list_prepend(list, GTK_LIST_ITEM(o));
+		}
 		g_list_reverse(list);
 		gtk_list_prepend_items(self, list);
 	}
@@ -1721,8 +1761,13 @@ remove_items(self, ...)
 	{
 		GList * list = 0;
 		int i;
-		for(i=1;i<items;i++)
-			list = g_list_prepend(list, SvGtkObjectRef(ST(i),"Gtk::ListItem"));
+		for(i=1;i<items;i++) {
+			GtkObject * o;
+			o = SvGtkObjectRef(ST(i), "Gtk::ListItem");
+			if (!o)
+				croak("item cannot be undef");
+			list = g_list_prepend(list, GTK_LIST_ITEM(o));
+		}
 		g_list_reverse(list);
 		gtk_list_remove_items(self, list);
 		g_list_free(list);
@@ -2268,7 +2313,7 @@ get_user_data(object)
 		int type = (int)gtk_object_get_data(object, "user_data_type_Perl");
 		gpointer data = gtk_object_get_user_data(object);
 		if (!data)
-			RETVAL = &sv_undef;
+			RETVAL = newSVsv(&sv_undef);
 		else {
 			if (!type)
 				croak("Unable to retrieve arbitrary user data");
@@ -2846,6 +2891,72 @@ gtk_selection_owner_set(Class, widget, atom, time)
 	RETVAL = gtk_selection_owner_set(widget, atom, time);
 	OUTPUT:
 	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::SelectionData PREFIX = gtk_selection_data_
+
+Gtk::Gdk::Atom
+selection(self)
+	Gtk::SelectionData	self
+	CODE:
+		RETVAL = self->selection;
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Atom
+target(self)
+	Gtk::SelectionData	self
+	CODE:
+		RETVAL = self->target;
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Atom
+type(self)
+	Gtk::SelectionData	self
+	CODE:
+		RETVAL = self->type;
+	OUTPUT:
+	RETVAL
+
+int
+format(self)
+	Gtk::SelectionData	self
+	CODE:
+		RETVAL = self->format;
+	OUTPUT:
+	RETVAL
+
+SV *
+data(self)
+	Gtk::SelectionData	self
+	CODE:
+		if (self->length < 0)
+			RETVAL = newSVsv(&sv_undef);
+		else
+			RETVAL = newSVpv(self->data, self->length);
+	OUTPUT:
+	RETVAL
+
+void
+set(self, type, format, data)
+	Gtk::SelectionData      self
+	Gtk::Gdk::Atom          type
+	int                     format
+	SV *                    data
+	CODE:
+	{
+		int len;
+		char *bytes;
+		bytes = SvPV (data, len);
+		gtk_selection_data_set (self, type, format, 
+					(guchar *)bytes, len);
+	}
+
+void
+DESTROY(self)
+	Gtk::SelectionData	self
+	CODE:
+	UnregisterMisc((HV *)SvRV(ST(0)), self);
 
 MODULE = Gtk		PACKAGE = Gtk::Separator
 
@@ -3778,7 +3889,7 @@ gtk_widget_intersect(widget, area)
 		if (result)
 			RETVAL = newSVGdkRectangle(&intersection);
 		else
-			RETVAL = &sv_undef;
+			RETVAL = newSVsv(&sv_undef);
 	}
 	OUTPUT:
 	RETVAL
@@ -4312,6 +4423,56 @@ gtk_widget_dnd_data_set(widget, event, data)
 		gtk_widget_dnd_data_set(widget, event, dataptr, len);
 	}
 
+int
+selection_owner_set (self, selection, time)
+	Gtk::Widget	self
+	Gtk::Gdk::Atom  selection
+	I32		time
+	CODE:
+	RETVAL = gtk_selection_owner_set (self, selection, time);
+	OUTPUT:
+	RETVAL
+
+void
+selection_add_handler (self, selection, target, handler, ...)
+	Gtk::Widget	self
+	Gtk::Gdk::Atom	selection
+	Gtk::Gdk::Atom	target
+	SV * 		handler
+	CODE:
+	{
+		AV * args;
+		SV * arg;
+		int i,j;
+		int type;
+		args = newAV();
+
+		if (SvOK(handler))
+		{
+			av_push(args, newSVsv(ST(3)));
+			for (j=4;j<items;j++)
+				av_push(args, newSVsv(ST(j)));
+
+			gtk_selection_add_handler (self, selection, target,
+						   selection_handler, selection_handler_remove,
+						   (gpointer) args);
+		} else {
+			gtk_selection_add_handler (self, selection, target,
+						   NULL, NULL, NULL);
+		}
+	}
+
+int
+selection_convert (self, selection, target, time)
+	Gtk::Widget	self
+	Gtk::Gdk::Atom	selection
+	Gtk::Gdk::Atom  target
+	I32		time
+	CODE:
+	RETVAL = gtk_selection_convert (self, selection, target, time);
+	OUTPUT:
+	RETVAL
+
 MODULE = Gtk		PACKAGE = Gtk::Window		PREFIX = gtk_window_
 
 Gtk::Window
@@ -4362,7 +4523,6 @@ gtk_window_position(window, position)
 	Gtk::Window	window
 	Gtk::WindowPosition	position
 	
-
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk		PREFIX = gdk_
 
@@ -5519,9 +5679,23 @@ load(Class, font_name)
 	OUTPUT:
 	RETVAL
 
+Gtk::Gdk::Font
+fontset_load(Class, fontset_name)
+	SV *	Class
+	char *	fontset_name
+	CODE:
+	RETVAL = gdk_fontset_load(fontset_name);
+	OUTPUT:
+	RETVAL
+
 void
 gdk_font_free(font)
 	Gtk::Gdk::Font	font
+	CODE:
+	if (font->type == GDK_FONT_FONTSET)
+		gdk_fontset_free(font);
+	else
+		gdk_font_free(font);
 
 int
 gdk_font_id(font)
@@ -5536,10 +5710,10 @@ gdk_font_equal(fonta, fontb)
 	Gtk::Gdk::Font	fonta
 	Gtk::Gdk::Font	fontb
 
-MODULE = Gtk		PACKAGE = Gtk::Gdk::Property	PREFIX = gdk_property_
+MODULE = Gtk		PACKAGE = Gtk::Gdk::Atom	PREFIX = gdk_atom_
 
 Gtk::Gdk::Atom
-atom_intern(Class, atom_name, only_if_exists)
+gdk_atom_intern(Class, atom_name, only_if_exists)
 	SV *	Class
 	char *	atom_name
 	int	only_if_exists
@@ -5547,6 +5721,24 @@ atom_intern(Class, atom_name, only_if_exists)
 	RETVAL = gdk_atom_intern(atom_name, only_if_exists);
 	OUTPUT:
 	RETVAL
+
+SV *
+gdk_atom_name(Class, atom)
+	SV *            Class
+	Gtk::Gdk::Atom	atom
+	CODE:
+	{
+		char *result = gdk_atom_name(atom);
+		if (result) {
+			RETVAL = newSVpv(result, 0);
+			g_free (result);
+		} else
+			RETVAL = newSVsv(&sv_undef);
+	}
+	OUTPUT:
+	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::Gdk::Property	PREFIX = gdk_property_
 
 void
 gdk_property_get(Class, window, property, type, offset, length, pdelete)
@@ -5583,21 +5775,7 @@ gdk_property_delete(Class, window, property)
 	CODE:
 	gdk_property_delete(window, property);
 
-MODULE = Gtk		PACKAGE = Gtk::Gdk::Rectangle	PREFIX = gdk_rectangle_
-
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Selection	PREFIX = gdk_selection_
-
-int
-gdk_selection_owner_set(Class, owner, selection, time, send_event)
-	SV *	Class
-	Gtk::Gdk::Window	owner
-	Gtk::Gdk::Atom	selection
-	int	time
-	int	send_event
-	CODE:
-	RETVAL = gdk_selection_owner_set(owner, selection, time, send_event);
-	OUTPUT:
-	RETVAL
 
 Gtk::Gdk::Window
 gdk_selection_owner_get(Class, selection)
@@ -5608,15 +5786,7 @@ gdk_selection_owner_get(Class, selection)
 	OUTPUT:
 	RETVAL
 
-Gtk::Gdk::Window
-gdk_selection_convert(Class, requestor, selection, target, time)
-	SV *	Class
-	Gtk::Gdk::Window	requestor
-	Gtk::Gdk::Atom	selection
-	Gtk::Gdk::Atom	target
-	int	time
-	CODE:
-	gdk_selection_convert(requestor,selection,target,time);
+MODULE = Gtk		PACKAGE = Gtk::Gdk::Rectangle	PREFIX = gdk_rectangle_
 
 void
 gdk_rectangle_intersect(Class, src1, src2)

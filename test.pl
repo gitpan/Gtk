@@ -1,5 +1,6 @@
 
 use Gtk;
+use Gtk::Atoms;
 
 init Gtk;
 
@@ -1343,6 +1344,96 @@ sub create_gamma_curve {
 	$curve_count++;
 }
 
+sub selection_test_received
+{
+    my ($list, $selection_data) = @_;
+
+	my $data = $selection_data->data;
+	
+    if (!defined $data) {
+		warn ("Selection retrieval failed\n");
+		return;
+    }
+    if ($selection_data->type != $Gtk::Atoms{ATOM}) {
+		warn ("Selection TARGETS was not returned as atoms!\n");
+		return;
+    }
+	
+    # Clear out any current list items
+
+    $list->clear_items (0, -1);
+	
+    # Add new items to list
+    my @atoms = unpack("L*", $data);
+    my @item_list = ();
+	
+    foreach (@atoms) {
+		my $name = Gtk::Gdk::Atom->name($_);
+		
+		my $list_item = new Gtk::ListItem (defined $name ? $name : "(bad atom)");
+		$list_item->show;
+		
+		push @item_list, $list_item;
+    }
+
+    $list->append_items (@item_list);
+}
+
+sub create_selection_test {
+    if (not defined $sel_window) {
+		$sel_window = new Gtk::Dialog;
+		$sel_window->signal_connect ("destroy", \&destroy_window, \$dialog_window);
+		$sel_window->set_title ("Selection Test");
+		$sel_window->border_width (0);
+		
+		# Create the list
+		
+		my $vbox = new Gtk::VBox (0, 5);
+		$vbox->border_width (10);
+		$sel_window->vbox->pack_start ($vbox, 1, 1, 0);
+		$vbox->show;
+		
+		my $label = new Gtk::Label "Get available targets for current selection";
+		$vbox->pack_start ($label, 0, 0, 0);
+		$label->show;
+		
+		my $scrolled_win = new Gtk::ScrolledWindow (undef, undef);
+		$scrolled_win->set_policy ('automatic', 'automatic');
+		$vbox->pack_start ($scrolled_win, 1, 1, 0);
+		$scrolled_win->set_usize (100, 200);
+		$scrolled_win->show;
+		
+		my $list = new Gtk::List;
+		$scrolled_win->add ($list);
+		
+		$list->signal_connect ("selection_received", 
+							   \&selection_test_received);
+		$list->show;
+		
+		# and create some buttons
+		my $button = new Gtk::Button "Get Targets";
+		$sel_window->action_area->pack_start ($button, 1, 1, 0);
+		
+		$button->signal_connect ("clicked",
+			 sub {
+				 $list->selection_convert ($Gtk::Atoms{PRIMARY},$Gtk::Atoms{TARGETS}, 0);
+			 });
+		$button->show;
+		
+		$button = new Gtk::Button "Quit";
+		$sel_window->action_area->pack_start ($button, 1, 1, 0);
+		
+		$button->signal_connect ("clicked", sub { $sel_window->destroy; } );
+		$button->show;
+    }
+	
+    if (!$sel_window->visible) {
+		$sel_window->show;
+    } else {
+		$sel_window->destroy;
+    }
+}
+
 my($timeout_count)=0;
 sub timeout_test {
 	my($label)=@_;
@@ -1573,6 +1664,7 @@ sub create_main_window {
       	"gray preview", \&create_gray_preview,
 		"dialog",	\&create_dialog,
       	"gamma curve", \&create_gamma_curve,
+		"test selection", \&create_selection_test,
 		"test timeout", \&create_timeout_test,
 		"create idle test", \&create_idle_test,
 		"create test",	\&create_test,

@@ -4,6 +4,7 @@
 #include "XSUB.h"
 
 #include <gtk/gtk.h>
+#include <gtk/gtkprivate.h>
 
 #include "GtkTypes.h"
 #include "GdkTypes.h"
@@ -59,7 +60,7 @@ allocation(widget)
 	{
 		GdkRectangle r;
 		r.x = widget->allocation.x;
-		r.x = widget->allocation.y;
+		r.y = widget->allocation.y;
 		r.width = widget->allocation.width;
 		r.height = widget->allocation.height;
 		RETVAL = newSVGdkRectangle(&r);
@@ -406,6 +407,8 @@ gtk_widget_mapped(widget, newvalue=0)
 	OUTPUT:
 	RETVAL
 
+#if 0
+
 int
 gtk_widget_unmapped(widget, newvalue=0)
 	Gtk::Widget	widget
@@ -416,6 +419,8 @@ gtk_widget_unmapped(widget, newvalue=0)
 		GTK_WIDGET_SET_FLAGS(widget, GTK_UNMAPPED);
 	OUTPUT:
 	RETVAL
+
+#endif 
 
 int
 gtk_widget_realized(widget, newvalue=0)
@@ -515,6 +520,7 @@ gtk_widget_can_default(widget, newvalue=0)
 	OUTPUT:
 	RETVAL
 
+#if 0
 
 int
 gtk_widget_propagate_state(widget, newvalue=0)
@@ -527,6 +533,7 @@ gtk_widget_propagate_state(widget, newvalue=0)
 	OUTPUT:
 	RETVAL
 
+#endif
 
 int
 gtk_widget_drawable(widget)
@@ -536,6 +543,7 @@ gtk_widget_drawable(widget)
 	OUTPUT:
 	RETVAL
 
+#if 0
 
 int
 gtk_widget_anchored(widget, newvalue=0)
@@ -548,6 +556,8 @@ gtk_widget_anchored(widget, newvalue=0)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 int
 gtk_widget_BASIC(widget, newvalue=0)
 	Gtk::Widget	widget
@@ -559,6 +569,7 @@ gtk_widget_BASIC(widget, newvalue=0)
 	OUTPUT:
 	RETVAL
 
+#if 0
 int
 gtk_widget_user_style(widget, newvalue=0)
 	Gtk::Widget	widget
@@ -569,6 +580,8 @@ gtk_widget_user_style(widget, newvalue=0)
 		GTK_WIDGET_SET_FLAGS(widget, GTK_USER_STYLE);
 	OUTPUT:
 	RETVAL
+
+#endif
 
 upGtk::Widget
 parent(self)
@@ -721,12 +734,12 @@ selection_add_handler (self, selection, target, handler, ...)
 			for (j=4;j<items;j++)
 				av_push(args, newSVsv(ST(j)));
 
-			gtk_selection_add_handler (self, selection, target,
-						   selection_handler, selection_handler_remove,
-						   (gpointer) args);
+			gtk_selection_add_handler_full (self, selection, target,
+						   selection_handler, NULL, (gpointer) args,
+						   selection_handler_remove);
 		} else {
 			gtk_selection_add_handler (self, selection, target,
-						   NULL, NULL, NULL);
+						   NULL, NULL);
 		}
 	}
 

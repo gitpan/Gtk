@@ -1,4 +1,14 @@
 	
+MODULE = Gtk	PACKAGE = Gtk::Gdk::Bitmap
+
+void
+DESTROY(self)
+	Gtk::Gdk::Bitmap	self
+	CODE:
+	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
+	gdk_window_unref(self);
+
+	
 MODULE = Gtk	PACKAGE = Gtk::Gdk::Colormap
 
 void
@@ -39,6 +49,16 @@ DESTROY(self)
 	gdk_visual_unref(self);
 
 	
+MODULE = Gtk	PACKAGE = Gtk::Gdk::Window
+
+void
+DESTROY(self)
+	Gtk::Gdk::Window	self
+	CODE:
+	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
+	gdk_window_unref(self);
+
+	
 MODULE = Gtk	PACKAGE = Gtk::AcceleratorTable
 
 void
@@ -57,14 +77,4 @@ DESTROY(self)
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
 	gtk_style_unref(self);
-
-	
-MODULE = Gtk	PACKAGE = Gtk::Tooltips
-
-void
-DESTROY(self)
-	Gtk::Tooltips	self
-	CODE:
-	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
-	gtk_tooltips_unref(self);
 

@@ -1,6 +1,6 @@
 
 	The source files in this distribution are 
-	Copyright (C) 1997, Kenneth Albanowski, and are licensed for
+	Copyright (C) 1997-1998, Kenneth Albanowski, and are licensed for
 	use under the same terms as Perl itself.
 
 The graphics files, testgtkrc file, gtk.defs file, and the origination for
@@ -29,10 +29,14 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 0.99.3, and there is
+Usage information: this package was designed around gtk 0.99.8, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.
+
+You may optionally run Makefile.PL with the --with-gdkimlib and/or
+--with-gnome switches to enable use of some Gtk widgets and Gdk functions
+available in those packages.
 
 Gtk is available at <ftp://ftp.gimp.org/pub/gtk/>.
 

@@ -19,27 +19,6 @@ MODULE = Gtk::ButtonBox		PACKAGE = Gtk::ButtonBox		PREFIX = gtk_button_box_
 
 #ifdef GTK_BUTTON_BOX
 
-Gtk::ButtonBox
-new(Class, label=0)
-	SV *	Class
-	char *	label
-	CODE:
-	if (!label)
-		RETVAL = GTK_BUTTON_BOX(gtk_button_new());
-	else
-		RETVAL = GTK_BUTTON_BOX(gtk_button_new_with_label(label));
-	OUTPUT:
-	RETVAL
-
-Gtk::Button
-new_with_label(Class, label)
-	SV *	Class
-	char *	label
-	CODE:
-	RETVAL = GTK_BUTTON(gtk_button_new_with_label(label));
-	OUTPUT:
-	RETVAL
-
 int
 gtk_button_box_get_layout(buttonbox)
 	Gtk::ButtonBox	buttonbox
@@ -73,6 +52,30 @@ gtk_button_box_set_child_size_default(Class, min_width, min_height)
 	gtk_button_box_set_child_size_default(min_width, min_height);
 
 void
+gtk_button_box_get_child_size_default (Class)
+	SV *    Class
+	PPCODE:
+	{
+		int min_width, min_height;
+		gtk_button_box_get_child_size_default(&min_width, &min_height);
+		EXTEND(sp,2);
+		PUSHs(sv_2mortal(newSViv(min_width)));
+		PUSHs(sv_2mortal(newSViv(min_height)));
+	}
+
+void
+gtk_button_box_get_child_size(self)
+	Gtk::ButtonBox   self
+	PPCODE:
+	{
+		int min_width, min_height;
+		gtk_button_box_get_child_size(self, &min_width, &min_height);
+		EXTEND(sp,2);
+		PUSHs(sv_2mortal(newSViv(min_width)));
+		PUSHs(sv_2mortal(newSViv(min_height)));
+	}
+
+void
 gtk_button_box_set_child_ipadding(buttonbox, ipad_x, ipad_y)
 	Gtk::ButtonBox	buttonbox
 	int	ipad_x
@@ -80,10 +83,34 @@ gtk_button_box_set_child_ipadding(buttonbox, ipad_x, ipad_y)
 
 void
 gtk_button_box_set_child_ipadding_default(Class, ipad_x, ipad_y)
-	SV *	Class
+	Gtk::ButtonBox	Class
 	int	ipad_x
 	int	ipad_y
 	CODE:
 	gtk_button_box_set_child_size_default(ipad_x, ipad_y);
+
+void
+gtk_button_box_get_child_ipadding_default (Class)
+	SV *    Class
+	PPCODE:
+	{
+		int ipad_x, ipad_y;
+		gtk_button_box_get_child_ipadding_default(&ipad_x, &ipad_y);
+		EXTEND(sp,2);
+		PUSHs(sv_2mortal(newSViv(ipad_x)));
+		PUSHs(sv_2mortal(newSViv(ipad_y)));
+	}
+
+void
+gtk_button_box_get_child_ipadding(self)
+	Gtk::ButtonBox    self
+	PPCODE:
+	{
+		int ipad_x, ipad_y;
+		gtk_button_box_get_child_ipadding(self, &ipad_x, &ipad_y);
+		EXTEND(sp,2);
+		PUSHs(sv_2mortal(newSViv(ipad_x)));
+		PUSHs(sv_2mortal(newSViv(ipad_y)));
+	}
 
 #endif

@@ -90,6 +90,14 @@ gtk_container_unblock_resize(self)
 	Gtk::Container	self
 
 void
+gtk_container_register_toplevel (self)
+	Gtk::Container  self
+
+void
+gtk_container_unregister_toplevel (self)
+	Gtk::Container  self
+
+void
 children(self)
 	Gtk::Container	self
 	PPCODE:

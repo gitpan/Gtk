@@ -5,10 +5,8 @@ use Gtk::Atoms;
 init Gtk;
 
 sub destroy_window {
-	my($widget, $windowref, $w2) = @_;
+	my($widget, $windowref) = @_;
 	$$windowref = undef;
-	$w2 = undef if defined $w2;
-	0;
 }
 
 sub button_window {
@@ -26,7 +24,6 @@ sub create_buttons {
 	if (not defined $buttons_window) {
 		$buttons_window = new Gtk::Window 'toplevel';
 		signal_connect $buttons_window "destroy", \&destroy_window, \$buttons_window;
-		signal_connect $buttons_window "delete_event", \&destroy_window, \$buttons_window;
 		$buttons_window->set_title("buttons");
 		$buttons_window->border_width(0);
 	
@@ -108,7 +105,6 @@ sub create_toggle_buttons {
 	if (not defined $tb_window) {
 		$tb_window = new Gtk::Window -toplevel;
 		$tb_window->signal_connect("destroy", \&destroy_window, \$tb_window);
-		$tb_window->signal_connect("delete_event", \&destroy_window, \$tb_window);
 		$tb_window->set_title("toggle buttons");
 		$tb_window->border_width(0);
 		
@@ -163,7 +159,6 @@ sub create_radio_buttons {
 	if (not defined $rb_window) {
 		$rb_window = new Gtk::Window -toplevel;
 		$rb_window->signal_connect("destroy", \&destroy_window, \$rb_window);
-		$rb_window->signal_connect("delete_event", \&destroy_window, \$rb_window);
 		$rb_window->set_title("radio buttons");
 		$rb_window->border_width(0);
 
@@ -213,120 +208,6 @@ sub create_radio_buttons {
 	}
 }
 
-sub new_pixmap {
-	my ($filename, $window, $background) = @_;
-	my ($pixmap, $mask) = create_from_xpm Gtk::Gdk::Pixmap($window, $background, $filename);
-
-	return new Gtk::Pixmap($pixmap, $mask);
-}
-
-sub create_toolbar_window {
-	my ($toolbar, $button, $window, $color);
-
-	if (!defined $toolbar_window ) {
-		$toolbar_window = new Gtk::Window "toplevel";
-		$toolbar_window->signal_connect("destroy", \&destroy_window, \$toolbar_window);
-		$toolbar_window->signal_connect("delete_event", \&destroy_window, \$toolbar_window);
-		$toolbar_window->set_title("toolbar");
-		$toolbar_window->border_width(0);
-
-		$toolbar_window->realize;
-
-		$toolbar = make_toolbar($toolbar_window);
-		$toolbar_window->add($toolbar);
-		$toolbar->show;
-	}
-
-	if (!$toolbar_window->visible) {
-		show $toolbar_window;
-	} else {
-		destroy $toolbar_window;
-	}
-}
-
-sub make_toolbar {
-	my ($toplevel) = shift;
-	my ($window, $color, $toolbar, $entry);
-
-	$toplevel->realize unless $toplevel->realized;
-
-	$window = $toplevel->window;
-	$color = $toplevel->style->bg('normal');
-	
-	$toolbar = new Gtk::Toolbar('horizontal', 'both');
-	$button = $toolbar->append_item ( "Horizontal", "Horizontal toolbar layout", 
-		"Toolbar/Horizontal", new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_orientation('horizontal')});
-	$button = $toolbar->append_item( "Vertical","Verticaltoolbarlayout",
-		"Toolbar/Vertical", new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_orientation('vertical')});
-
-	$toolbar->append_space();
-
-	$button = $toolbar->append_item( "Icons","Onlyshowtoolbaricons", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_style('icons')});
-	$button = $toolbar->append_item( "Text","Onlyshowtoolbartext", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_style('text')});
-	$button = $toolbar->append_item( "Both","Showtoolbariconsandtext", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_style('both')});
-
-	$toolbar->append_space;
-	
-	$entry = new Gtk::Entry;
-	$entry->set_text("Abracadabra");
-	$entry->set_max_length(3);
-	$entry->show;
-	$toolbar->append_widget($entry, "This is an unusable GtkEntry ;)", "Hey d on't click me!!!");
-
-	$button = $toolbar->append_item( "Small","Usesmallspaces", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_space_size(5)});
-	$button = $toolbar->append_item( "Big","Usebigspaces", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_space_size(10)});
-
-	$toolbar->append_space();
-
-	$button = $toolbar->append_item( "Enable","Enabletooltips", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_tooltips(1)});
-	$button = $toolbar->append_item( "Disable","Disabletooltips", undef,
-		new_pixmap("test.xpm",$window, $color));
-	$button->signal_connect('clicked', sub {$toolbar->set_tooltips(0)});
-
-	$toolbar;
-}
-
-sub create_handlebox {
-	my ($toolbar, $hbox);
-
-	if ( !defined $handlebox_window ) {
-		$handlebox_window = new Gtk::Window "toplevel";
-		$handlebox_window->signal_connect("destroy", \&destroy_window, \$handlebox_window);
-		$handlebox_window->signal_connect("delete_event", \&destroy_window, \$handlebox_window);
-		$handlebox_window->set_title("Handle Box Test");
-		$handlebox_window->border_width(20);
-
-		$hbox = new Gtk::HandleBox;
-		$hbox->show;
-		$handlebox_window->add($hbox);
-
-		$toolbar = make_toolbar($handlebox_window);
-		$toolbar->show;
-		$hbox->add($toolbar);
-	}
-
-	if (!$handlebox_window->visible) {
-		show $handlebox_window;
-	} else {
-		destroy $handlebox_window;
-	}
-
-}
-
 sub reparent_label {
 	my($widget, $new_parent) = @_;
 	my($label) = ($widget->get_user_data);
@@ -339,7 +220,6 @@ sub create_reparent {
 	if (not defined $reparent_window) {
 		$reparent_window = new Gtk::Window "toplevel";
 		$reparent_window->signal_connect("destroy", \&destroy_window, \$reparent_window);
-		$reparent_window->signal_connect("delete_event", \&destroy_window, \$reparent_window);
 		$reparent_window->set_title("buttons");
 		$reparent_window->border_width(0);
 		
@@ -417,7 +297,6 @@ sub create_pixmap {
 	if (not defined $pixmap_window) {
 		$pixmap_window = new Gtk::Window "toplevel";
 		signal_connect $pixmap_window "destroy", \&destroy_window, \$pixmap_window;
-		signal_connect $pixmap_window "delete_event", \&destroy_window, \$pixmap_window;
 		$pixmap_window->set_title("pixmap");
 		$pixmap_window->border_width(0);
 		$pixmap_window->realize;
@@ -479,7 +358,6 @@ sub create_tooltips {
 	if (not defined $tt_window) {
 		$tt_window = new Gtk::Window "toplevel";
 		signal_connect $tt_window "destroy", \&destroy_window, \$tt_window;
-		signal_connect $tt_window "delete_event", \&destroy_window, \$tt_window;
 		set_title $tt_window "tooltips";
 		border_width $tt_window 0;
 		
@@ -498,19 +376,19 @@ sub create_tooltips {
 		$box2->pack_start($button, 1, 1, 0);
 		$button->show;
 		
-		$tooltips->set_tip($button, "This is button 1", "ContextHelp/buttons/1");
+		$tooltips->set_tip($button, "This is button 1", "tip1");
 		
 		$button = new Gtk::ToggleButton("button2");
 		$box2->pack_start($button, 1, 1, 0);
 		show $button;
 		
-		set_tip $tooltips $button => "This is button 2";
+		set_tip $tooltips $button => "This is button 2", "tp2";
 		
 		$button = new Gtk::ToggleButton("button3");
 		$box2->pack_start($button, 1, 1, 0);
 		show $button;
 		
-		$tooltips->set_tip($button, "This is button 3. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.");
+		$tooltips->set_tip($button, "This is button 3. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "t3");
 		
 		$separator = new Gtk::HSeparator;
 		$box1->pack_start($separator, 0, 1, 0);
@@ -528,7 +406,7 @@ sub create_tooltips {
 		$button->grab_default;
 		$button->show;
 		
-		$tooltips->set_tip($button,"Push this button to close window");
+		$tooltips->set_tip($button,"Push this button to close window", "push");
     }
 	if (!visible $tt_window) {
 		show $tt_window;
@@ -543,7 +421,6 @@ sub create_scrolled_windows {
 	if (not defined $s_window) {
 		$s_window = new Gtk::Dialog;
 		$s_window->signal_connect("destroy", \&destroy_window, \$s_window);
-		$s_window->signal_connect("delete_event", \&destroy_window, \$s_window);
 		$s_window->set_title("dialog");
 		$s_window->border_width(0);
 		
@@ -584,12 +461,11 @@ sub create_scrolled_windows {
 }
 
 sub create_entry {
-	my($box1,$box2,$entry,$cb, $editable,$button,$separator);
+	my($box1,$box2,$entry,$button,$separator);
 	
 	if (not defined $entry_window) {
 		$entry_window = new Gtk::Window -toplevel;
 		$entry_window->signal_connect("destroy", \&destroy_window, \$entry_window);
-		$entry_window->signal_connect("delete_event", \&destroy_window, \$entry_window);
 		$entry_window->set_title("entry");
 		$entry_window->border_width(0);
 		
@@ -605,23 +481,9 @@ sub create_entry {
 		$entry = new Gtk::Entry;
 		#$entry->set_usize(0, 25);
 		$entry->set_text("hello world");
-		$entry->select_region(0, length($entry->get_text));
 		$box2->pack_start($entry, 1, 1, 0);
 		$entry->show;
-
-		#$cb = new Gtk::ComboBox;
-		#$cb->set_text('hello world');
-		#$cb->select_region(0, length($cb->get_text));
-		#$cb->set_popdown_strings('item1', 'item2', 'and item3');
-		#$cb->show;
-		#$box2->pack_start($cb, 1, 1, 0);
-
-		$editable = new Gtk::CheckButton('Editable');
-		$editable->signal_connect('toggled', sub {$entry->set_editable($_[0]->active)});
-		$editable->set_state(1);
-		$editable->show;
-		$box2->pack_start($editable, 1, 1, 0);
-
+		
 		$separator = new Gtk::HSeparator;
 		$box1->pack_start($separator, 0, 1, 0);
 		$separator->show;
@@ -678,7 +540,6 @@ sub create_list
 	if (not defined $list_window) {
 		$list_window = new Gtk::Window -toplevel;
 		$list_window->signal_connect("destroy", \&destroy_window, \$list_window);
-		$list_window->signal_connect("delete_event", \&destroy_window, \$list_window);
 		$list_window->set_title("list");
 		$list_window->border_width(0);
 		
@@ -744,112 +605,6 @@ sub create_list
 	}
 }
 
-
-# FIXME: clist signal handling..
-sub create_clist {
-	my (@titles, @text, $clist, $box1, $box2, $button, $separator);
-
-	@titles = (
-	    "Title 0",
-	    "Title 1",
-	    "Title 2",
-	    "Title 3",
-	    "Title 4",
-	    "Title 5",
-	    "Title 6"
-	);
-
-	if (not defined $clist_window) {
-		$clist_window = new Gtk::Window -toplevel;
-		$clist_window->signal_connect("destroy", \&destroy_window, \$clist_window);
-		$clist_window->signal_connect("delete_event", \&destroy_window, \$clist_window);
-		$clist_window->set_title("clist");
-		$clist_window->border_width(0);
-		
-		$box1 = new Gtk::VBox(0,0);
-		$clist_window->add($box1);
-		$box1->show;
-		
-		$box2 = new Gtk::HBox(0, 10);
-		$box2->border_width(10);
-		$box1->pack_start($box2, 0, 0, 0);
-		$box2->show;
-
-		$clist = new Gtk::CList(@titles);
-		
-		$button = new Gtk::Button('Add 1,000 Rows');
-		$button->show;
-		$button->signal_connect('clicked', \&add1000_clist); # FIXME
-		$box2->pack_start($button, 1, 1, 0);
-
-		$button = new Gtk::Button('Add 10,000 Rows');
-		$button->show;
-		$button->signal_connect('clicked', \&add10000_clist);
-		$box2->pack_start($button, 1, 1, 0);
-
-		$button = new Gtk::Button('Clear list');
-		$button->show;
-		$button->signal_connect('clicked', sub {$clist->clear; $clist_rows = 0;});
-		$box2->pack_start($button, 1, 1, 0);
-
-		$button = new Gtk::Button('Remove Row');
-		$button->show;
-		$button->signal_connect('clicked', sub {$clist->remove_row(0); $clist_rows--;});
-		$box2->pack_start($button, 1, 1, 0);
-
-		$box2 = new Gtk::VBox(0, 10);
-		$box2->border_width(10);
-		$box1->pack_start($box2, 1, 1, 0);
-		$box2->show;
-
-		$clist->set_row_height(20);
-
-		for $i ( 1 .. scalar(@titles) - 1 ) {
-			$clist->set_column_width($i, 80);
-		}
-		$clist->set_selection_mode('browse');
-		$clist->set_policy ('automatic', 'automatic');
-		$clist->set_column_justification(1, 'right');
-		$clist->set_column_justification(2, 'left');
-
-		for $i ( 0 .. scalar(@titles) - 1 ) {
-			$text[$i] = "Column $i";
-		}
-		$text[1] = 'Right';
-		$text[2] = 'Center';
-		shift( @text );
-		# FIXME
-		for  $i ( 0 .. 100 ) {
-			$clist->append("Row $i", @text);
-		}
-
-		$clist->border_width(5);
-		$box2->pack_start($clist, 1, 1, 0);
-		$clist->show;
-
-		$separator = new Gtk::HSeparator;
-		$separator->show;
-		$box1->pack_start($separator, 0, 1, 0);
-
-		$box2 = new Gtk::VBox(0, 10);
-		$box2->border_width(10);
-		$box1->pack_start($box2, 1, 1, 0);
-		$box2->show;
-
-		$button = new Gtk::Button('close');
-		$button->signal_connect('clicked', sub {$clist_window->destroy});
-		$button->can_default(1);
-		$button->grab_default;
-		$box2->pack_start($button, 1, 1, 0);
-		$button->show;
-	}
-	if (not $clist_window->visible) {
-		show $clist_window;
-	} else {
-		destroy $clist_window;
-	}
-}
-
 sub create_menu {
 	my($depth) = @_;
 	my($menu,$submenu,$menuitem);
@@ -868,9 +623,8 @@ sub create_menu {
 		my($buffer) = sprintf("item %2d - %d", $depth, $j);
 		$menuitem = new Gtk::RadioMenuItem($buffer, $menuitem);
 		$menu->append($menuitem);
-		$menuitem->set_show_toggle(1) if $depth % 2;
 		$menuitem->show;
-		if ($depth>1) {
+		if ($depth>0) {
 			if (not defined $submenu) {
 				$submenu = create_menu($depth-1);
 				$menuitem->set_submenu($submenu);
@@ -887,7 +641,6 @@ sub create_menus {
 	if (not defined $menu_window) {
 		$menu_window = new Gtk::Window -toplevel;
 		signal_connect $menu_window destroy => \&destroy_window, \$menu_window;
-		signal_connect $menu_window delete_event => \&destroy_window, \$menu_window;
 		$menu_window->set_title("menus");
 		$menu_window->border_width(0);
 		
@@ -906,14 +659,10 @@ sub create_menus {
 		$menubar->append($menuitem);
 		show $menuitem;
 
-		$menu = create_menu(3);
-
 		$menuitem = new Gtk::MenuItem("foo");
 		$menuitem->set_submenu($menu);
 		$menubar->append($menuitem);
 		show $menuitem;
-
-		$menu = create_menu(4);
 
 		$menuitem = new Gtk::MenuItem("bar");
 		$menuitem->set_submenu($menu);
@@ -1018,7 +767,6 @@ sub create_file_selection {
 		$fs_window = new Gtk::FileSelection "file selection dialog";
 		$fs_window->position(-mouse);
 		$fs_window->signal_connect("destroy", \&destroy_window, \$fs_window);
-		$fs_window->signal_connect("delete_event", \&destroy_window, \$fs_window);
 		$fs_window->ok_button->signal_connect("clicked", \&file_selection_ok, $fs_window);
 		$fs_window->cancel_button->signal_connect("clicked", sub { destroy $fs_window });
 		
@@ -1036,7 +784,6 @@ sub create_range_controls {
 	if (not defined $range_window) {
 		$range_window = new Gtk::Window -toplevel;
 		$range_window->signal_connect("destroy", \&destroy_window, \$range_window);
-		$range_window->signal_connect("delete_event", \&destroy_window, \$range_window);
 		$range_window->set_title("range controls");
 		$range_window->border_width(0);
 		
@@ -1093,7 +840,6 @@ sub create_rulers {
 	if (not defined $ruler_window) {
 		$ruler_window = new Gtk::Window 'toplevel';
 		$ruler_window->signal_connect("destroy", \&destroy_window, \$ruler_window);
-		$ruler_window->signal_connect("delete_event", \&destroy_window, \$ruler_window);
 		$ruler_window->set_title("rulers");
 		$ruler_window->set_usize(300, 300);
 		$ruler_window->set_events(["pointer-motion-mask", "pointer-motion-hint-mask"]);
@@ -1136,7 +882,6 @@ sub create_text {
 		$text_window = new Gtk::Window "toplevel";
 		$text_window->set_name("text window");
 		$text_window->signal_connect("destroy", \&destroy_window, \$text_window);
-		$text_window->signal_connect("delete_event", \&destroy_window, \$text_window);
 		$text_window->set_title("test");
 		$text_window->border_width(0);
 		
@@ -1246,7 +991,6 @@ sub create_notebook {
 	if (not defined $notebook_window) {
 		$notebook_window = new Gtk::Window "toplevel";
 		$notebook_window->signal_connect("destroy", \&destroy_window, \$notebook_window);
-		$notebook_window->signal_connect("delete_event", \&destroy_window, \$notebook_window);
 		$notebook_window->set_title("notebook");
 		$notebook_window->border_width(0);
 		
@@ -1324,7 +1068,6 @@ sub create_panes {
 	if (not defined $paned_window) {
 		$paned_window = new Gtk::Window "toplevel";
 		$paned_window->signal_connect("destroy", \&destroy_window, \$paned_window);
-		$paned_window->signal_connect("delete_event", \&destroy_window, \$paned_window);
 		$paned_window->set_title("Panes");
 		$paned_window->border_width(0);
 		
@@ -1382,7 +1125,6 @@ sub destroy_progress {
 	destroy_window($widget,$windowref);
 	Gtk->timeout_remove($progress_timer);
 	$progress_timer = 0;
-	1;
 }
 
 sub create_progress_bar {
@@ -1391,7 +1133,6 @@ sub create_progress_bar {
 	if (not defined $p_window) {
 		$p_window = new Gtk::Dialog;
 		signal_connect $p_window "destroy" => \&destroy_progress, \$p_window;
-		signal_connect $p_window "delete_event" => \&destroy_progress, \$p_window;
 		$p_window->set_title("dialog");
 		$p_window->border_width(0);
 		
@@ -1468,7 +1209,6 @@ sub create_color_preview {
 		
 		$cp_window = new Gtk::Window "toplevel";
 		$cp_window->signal_connect("destroy", \&color_preview_destroy, \$cp_window);
-		$cp_window->signal_connect("delete_event", \&color_preview_destroy, \$cp_window);
 		$cp_window->set_title("test");
 		$cp_window->border_width(10);
 		
@@ -1541,7 +1281,6 @@ sub create_gray_preview {
 		
 		$gp_window = new Gtk::Window "toplevel";
 		$gp_window->signal_connect("destroy", \&gray_preview_destroy, \$gp_window);
-		$gp_window->signal_connect("delete_event", \&gray_preview_destroy, \$gp_window);
 		$gp_window->set_title("test");
 		$gp_window->border_width(10);
 		
@@ -1644,7 +1383,6 @@ sub create_selection_test {
     if (not defined $sel_window) {
 		$sel_window = new Gtk::Dialog;
 		$sel_window->signal_connect ("destroy", \&destroy_window, \$dialog_window);
-		$sel_window->signal_connect ("delete_event", \&destroy_window, \$dialog_window);
 		$sel_window->set_title ("Selection Test");
 		$sel_window->border_width (0);
 		
@@ -1728,7 +1466,6 @@ sub create_timeout_test {
 	if (not defined $timeout_window) {
 		$timeout_window = new Gtk::Dialog;
 		$timeout_window->signal_connect("destroy", \&destroy_timeout_test, \$timeout_window);
-		$timeout_window->signal_connect("delete_event", \&destroy_timeout_test, \$timeout_window);
 		$timeout_window->set_title("Timeout Test");
 		$timeout_window->border_width(0);
 		
@@ -1784,7 +1521,6 @@ sub create_dialog {
 	if (not defined $dialog_window) {
 		$dialog_window = new Gtk::Dialog;
 		$dialog_window->signal_connect("destroy", \&destroy_window, \$dialog_window);
-		$dialog_window->signal_connect("delete_event", \&destroy_window, \$dialog_window);
 		$dialog_window->set_title("dialog");
 		$dialog_window->border_width(0);
 		
@@ -1841,7 +1577,6 @@ sub create_idle_test {
 	if (not defined $idle_window) {
 		$idle_window = new Gtk::Dialog;
 		signal_connect $idle_window destroy => \&destroy_idle_test, \$idle_window;
-		signal_connect $idle_window delete_event => \&destroy_idle_test, \$idle_window;
 		$idle_window->set_title("Idle Test");
 		$idle_window->border_width(0);
 
@@ -1886,7 +1621,6 @@ sub create_test {
 	if (not defined $test_window) {
 		$test_window = new Gtk::Window("toplevel");
 		$test_window->signal_connect("destroy" => \&test_destroy, \$test_window);
-		$test_window->signal_connect("delete_event" => \&test_destroy, \$test_window);
 		$test_window->set_title("test");
 		$test_window->border_width(0);
 	}
@@ -1905,13 +1639,11 @@ sub do_exit {
 }
 
 sub create_main_window {
-	my(@buttons,$window,$box1,$scw, $box2,$button,$separator);
+	my(@buttons,$window,$box1,$box2,$button,$separator);
 	@buttons = (
 		"buttons",	\&create_buttons,
 		"toggle buttons", \&create_toggle_buttons,
 		"radio buttons", \&create_radio_buttons,
-		"toolbar", \&create_toolbar_window,
-		"handlebox", \&create_handlebox,
 		"reparent", \&create_reparent,
 		"pixmap", \&create_pixmap,
 		"create tooltips", \&create_tooltips,
@@ -1920,7 +1652,6 @@ sub create_main_window {
 		"drawing areas", undef,
 		"entry", \&create_entry,
 		"list", \&create_list,
-		"clist", \&create_clist,
 		"color selection", \&create_color_selection,
       	"file selection", \&create_file_selection,
       	"range controls", \&create_range_controls,
@@ -1942,26 +1673,15 @@ sub create_main_window {
 	$window = new Gtk::Window('toplevel');
 	$window->set_name("main window");
 	$window->set_uposition(20, 20);
-	$window->set_usize(200, 400);
 	
-	$window->signal_connect("destroy" => \&destroy_window, \$window);
-	$window->signal_connect("delete_event" => \&destro_window, \$window);
-
 	$box1 = new Gtk::VBox(0, 0);
 	$window->add($box1);
 	$box1->show;
-
-	$scw = new Gtk::ScrolledWindow(undef, undef);
-	$scw->set_policy('automatic', 'automatic');
-	$scw->show;
-	$scw->border_width(10);
 	
 	$box2 = new Gtk::VBox(0, 0);
 	#border_width $box2 10;
-	$box1->pack_start($scw, 1, 1, 0);
+	$box1->pack_start($box2, 1, 1, 0);
 	$box2->show;
-	$box2->border_width(10);
-	$scw->add($box2);
 	
 	for($i=0;$i<@buttons;$i+=2) {
 		$button = new Gtk::Button($buttons[$i]);

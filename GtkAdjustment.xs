@@ -32,4 +32,9 @@ new(Class, value, lower, upper, step_increment, page_increment, page_size)
 	OUTPUT:
 	RETVAL
 
+void
+gtk_adjustment_set_value (self, value)
+	Gtk::Adjustment self
+	double value
+
 #endif

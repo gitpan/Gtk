@@ -23,8 +23,8 @@ MODULE = Gtk::ScrolledWindow		PACKAGE = Gtk::ScrolledWindow	PREFIX = gtk_scrolle
 Gtk::ScrolledWindow
 new(Class, hadj, vadj)
 	SV *	Class
-	Gtk::Adjustment	hadj
-	Gtk::Adjustment	vadj
+	Gtk::AdjustmentOrNULL	hadj
+	Gtk::AdjustmentOrNULL	vadj
 	CODE:
 	RETVAL = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(hadj, vadj));
 	OUTPUT:

@@ -27,6 +27,9 @@ GdkColormap * SvGdkColormapRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Co
 SV * newSVGdkColor(GdkColor * c) { return newSVMiscRef(c, "Gtk::Gdk::Color",0); }
 GdkColor * SvGdkColor(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Color"); }
 
+SV * newSVGdkRegion(GdkRegion * c) { return newSVMiscRef(c, "Gtk::Gdk::Region",0); }
+GdkRegion * SvGdkRegion(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Region"); }
+
 SV * newSVGdkCursorRef(GdkCursor * w) { return newSVMiscRef(w, "Gtk::Gdk::Cursor",0); }
 GdkCursor * SvGdkCursorRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Cursor"); }
 

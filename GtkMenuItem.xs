@@ -45,6 +45,10 @@ gtk_menu_item_set_submenu(self, child)
 	Gtk::Widget	child
 
 void
+gtk_menu_item_remove_submenu (self)
+	Gtk::MenuItem   self
+
+void
 gtk_menu_item_set_placement(self, placement)
 	Gtk::MenuItem	self
 	Gtk::SubmenuPlacement	placement

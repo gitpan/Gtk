@@ -24,7 +24,7 @@ Gtk::RadioMenuItem
 new(Class, label=0, previous=0)
 	SV *	Class
 	SV *	label
-	Gtk::RadioMenuItem	previous
+	Gtk::RadioMenuItemOrNULL	previous
 	CODE:
 	{
 		GSList * group = 0;
@@ -42,7 +42,7 @@ Gtk::RadioMenuItem
 new_with_label(Class, label, previous=0)
 	SV *	Class
 	char *	label
-	Gtk::RadioMenuItem	previous
+	Gtk::RadioMenuItemOrNULL	previous
 	CODE:
 	{
 		GSList * group = 0;

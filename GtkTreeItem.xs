@@ -47,6 +47,10 @@ gtk_tree_item_set_subtree(tree_item, subtree)
 	Gtk::Widget	subtree
 
 void
+gtk_tree_item_remove_subtree(tree_item)
+	Gtk::TreeItem   tree_item
+
+void
 gtk_tree_item_select(tree_item)
 	Gtk::TreeItem	tree_item
 

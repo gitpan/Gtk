@@ -7,6 +7,7 @@ GtkBin.o
 GtkBox.o
 GtkButton.o
 GtkButtonBox.o
+GtkCList.o
 GtkCheckButton.o
 GtkCheckMenuItem.o
 GtkColorSelection.o
@@ -17,6 +18,7 @@ GtkCurve.o
 GtkData.o
 GtkDialog.o
 GtkDrawingArea.o
+GtkEditable.o
 GtkEntry.o
 GtkEventBox.o
 GtkFileSelection.o
@@ -57,10 +59,14 @@ GtkScale.o
 GtkScrollbar.o
 GtkScrolledWindow.o
 GtkSeparator.o
+GtkSpinButton.o
+GtkStatusbar.o
 GtkTable.o
 GtkText.o
+GtkTipsQuery.o
 GtkToggleButton.o
 GtkToolbar.o
+GtkTooltips.o
 GtkTree.o
 GtkTreeItem.o
 GtkVBox.o

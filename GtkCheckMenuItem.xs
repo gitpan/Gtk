@@ -51,5 +51,9 @@ void
 gtk_check_menu_item_toggled(check_menu_item)
 	Gtk::CheckMenuItem	check_menu_item
 
+void
+gtk_check_menu_item_set_show_toggle(check_menu_item, always)
+	Gtk::CheckMenuItem	check_menu_item
+	bool	always
 
 #endif

@@ -37,6 +37,12 @@ set_title(self, title)
 	gtk_window_set_title(self, title);
 
 void
+gtk_window_set_wmclass(window, wmclass_name, wmclass_class)
+	Gtk::Window window
+	char* wmclass_name
+	char* wmclass_class
+
+void
 gtk_window_set_focus(window, focus)
 	Gtk::Window	window
 	Gtk::Widget	focus
@@ -67,5 +73,13 @@ void
 gtk_window_position(window, position)
 	Gtk::Window	window
 	Gtk::WindowPosition	position
+
+void
+gtk_window_activate_focus(window)
+	Gtk::Window window
+
+void
+gtk_window_activate_default(window)
+	Gtk::Window window
 	
 #endif

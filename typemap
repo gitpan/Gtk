@@ -16,8 +16,11 @@ Gtk::SelectionData      T_MISCPTROBJ
 upGtk::Widget		T_GtkUPPTROBJ
 
 Gtk::Gdk::Event		T_SimpleVal
+Gtk::Gdk::Region	T_SimpleVal
 Gtk::Gdk::Rectangle	T_SimplePtr
 Gtk::Gdk::Color		T_SimpleVal
+
+gfloat				T_FLOAT
 
 bool				T_BOOL
 
@@ -27,7 +30,13 @@ T_BOOL
 	$var = (int)SvIV($arg)
 
 T_GtkPTROBJ
-	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
+	if (SvTRUE($arg)) {
+		$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"));
+	} else
+		croak(\"$var is not of type ${ntype}\")
+
+T_GtkPTROBJOrNULL
+	$var = SvTRUE($arg) ? Cast$type(SvGtkObjectRef($arg, \"" . ($foo=$ntype,$foo=~s/OrNULL//,$foo). "\")) : 0
 
 T_GtkUPPTROBJ
 	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
@@ -62,8 +71,18 @@ T_BOOL
 	$arg = boolSV($var);
 
 T_GtkPTROBJ
+    if (!$var) {
+    	croak("failed to return mandatory object of type $ntype");
+    }
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"${ntype}\"));
 	SvREFCNT_dec(SvRV($arg));
+
+T_GtkPTROBJOrNULL
+    if ($var) {
+		sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"@{[map(s/OrNULL//,$ntype)]}\"));
+		SvREFCNT_dec(SvRV($arg));
+	} else
+		sv_setsv($arg, newSVsv(&sv_undef));
 
 T_GtkUPPTROBJ
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));

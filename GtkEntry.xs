@@ -27,6 +27,15 @@ new(Class)
 	OUTPUT:
 	RETVAL
 
+Gtk::Entry
+new_with_max_length(Class, len)
+	SV *	Class
+	int     len
+	CODE:
+	RETVAL = GTK_ENTRY(gtk_entry_new_with_max_length(len));
+	OUTPUT:
+	RETVAL
+
 void
 gtk_entry_set_text(self, text)
 	Gtk::Entry	self
@@ -50,5 +59,26 @@ gtk_entry_set_position(self, position)
 char *
 gtk_entry_get_text(self)
 	Gtk::Entry	self
+
+void
+gtk_entry_select_region (self, start, end)
+	Gtk::Entry  self
+	int start
+	int end
+
+void
+gtk_entry_set_visibility (self, visibility)
+	Gtk::Entry  self
+	bool visibility
+
+void
+gtk_entry_set_editable (self, editable)
+	Gtk::Entry  self
+	bool editable
+
+void
+gtk_entry_set_max_length (self, max)
+	Gtk::Entry  self
+	int max
 
 #endif

@@ -255,6 +255,38 @@ gtk_button_box_get_class_size(self)
 #endif
 
 	
+MODULE = Gtk	PACKAGE = Gtk::CList		PREFIX = gtk_clist_
+
+#ifdef GTK_CLIST
+
+int
+gtk_clist_get_type(self)
+	Gtk::CList	self
+	CODE:
+	RETVAL = gtk_clist_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_clist_get_size(self)
+	Gtk::CList	self
+	CODE:
+	RETVAL = sizeof(GtkCList);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_clist_get_class_size(self)
+	Gtk::CList	self
+	CODE:
+	RETVAL = sizeof(GtkCListClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
 MODULE = Gtk	PACKAGE = Gtk::CheckButton		PREFIX = gtk_check_button_
 
 #ifdef GTK_CHECK_BUTTON
@@ -569,6 +601,38 @@ gtk_drawing_area_get_class_size(self)
 	Gtk::DrawingArea	self
 	CODE:
 	RETVAL = sizeof(GtkDrawingAreaClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
+MODULE = Gtk	PACKAGE = Gtk::Editable		PREFIX = gtk_editable_
+
+#ifdef GTK_EDITABLE
+
+int
+gtk_editable_get_type(self)
+	Gtk::Editable	self
+	CODE:
+	RETVAL = gtk_editable_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_editable_get_size(self)
+	Gtk::Editable	self
+	CODE:
+	RETVAL = sizeof(GtkEditable);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_editable_get_class_size(self)
+	Gtk::Editable	self
+	CODE:
+	RETVAL = sizeof(GtkEditableClass);
 	OUTPUT:
 	RETVAL
 
@@ -1855,6 +1919,70 @@ gtk_separator_get_class_size(self)
 #endif
 
 	
+MODULE = Gtk	PACKAGE = Gtk::SpinButton		PREFIX = gtk_spin_button_
+
+#ifdef GTK_SPIN_BUTTON
+
+int
+gtk_spin_button_get_type(self)
+	Gtk::SpinButton	self
+	CODE:
+	RETVAL = gtk_spin_button_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_spin_button_get_size(self)
+	Gtk::SpinButton	self
+	CODE:
+	RETVAL = sizeof(GtkSpinButton);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_spin_button_get_class_size(self)
+	Gtk::SpinButton	self
+	CODE:
+	RETVAL = sizeof(GtkSpinButtonClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
+MODULE = Gtk	PACKAGE = Gtk::Statusbar		PREFIX = gtk_statusbar_
+
+#ifdef GTK_STATUSBAR
+
+int
+gtk_statusbar_get_type(self)
+	Gtk::Statusbar	self
+	CODE:
+	RETVAL = gtk_statusbar_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_statusbar_get_size(self)
+	Gtk::Statusbar	self
+	CODE:
+	RETVAL = sizeof(GtkStatusbar);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_statusbar_get_class_size(self)
+	Gtk::Statusbar	self
+	CODE:
+	RETVAL = sizeof(GtkStatusbarClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
 MODULE = Gtk	PACKAGE = Gtk::Table		PREFIX = gtk_table_
 
 #ifdef GTK_TABLE
@@ -1919,6 +2047,38 @@ gtk_text_get_class_size(self)
 #endif
 
 	
+MODULE = Gtk	PACKAGE = Gtk::TipsQuery		PREFIX = gtk_tips_query_
+
+#ifdef GTK_TIPS_QUERY
+
+int
+gtk_tips_query_get_type(self)
+	Gtk::TipsQuery	self
+	CODE:
+	RETVAL = gtk_tips_query_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_tips_query_get_size(self)
+	Gtk::TipsQuery	self
+	CODE:
+	RETVAL = sizeof(GtkTipsQuery);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_tips_query_get_class_size(self)
+	Gtk::TipsQuery	self
+	CODE:
+	RETVAL = sizeof(GtkTipsQueryClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
 MODULE = Gtk	PACKAGE = Gtk::ToggleButton		PREFIX = gtk_toggle_button_
 
 #ifdef GTK_TOGGLE_BUTTON
@@ -1977,6 +2137,38 @@ gtk_toolbar_get_class_size(self)
 	Gtk::Toolbar	self
 	CODE:
 	RETVAL = sizeof(GtkToolbarClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
+	
+MODULE = Gtk	PACKAGE = Gtk::Tooltips		PREFIX = gtk_tooltips_
+
+#ifdef GTK_TOOLTIPS
+
+int
+gtk_tooltips_get_type(self)
+	Gtk::Tooltips	self
+	CODE:
+	RETVAL = gtk_tooltips_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_tooltips_get_size(self)
+	Gtk::Tooltips	self
+	CODE:
+	RETVAL = sizeof(GtkTooltips);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_tooltips_get_class_size(self)
+	Gtk::Tooltips	self
+	CODE:
+	RETVAL = sizeof(GtkTooltipsClass);
 	OUTPUT:
 	RETVAL
 
@@ -2424,6 +2616,13 @@ BOOT:
 
 BOOT:
 {
+	#ifdef GTK_CLIST
+		boot_Gtk__CList(cv);
+	#endif
+}
+
+BOOT:
+{
 	#ifdef GTK_CHECK_BUTTON
 		boot_Gtk__CheckButton(cv);
 	#endif
@@ -2489,6 +2688,13 @@ BOOT:
 {
 	#ifdef GTK_DRAWING_AREA
 		boot_Gtk__DrawingArea(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_EDITABLE
+		boot_Gtk__Editable(cv);
 	#endif
 }
 
@@ -2774,6 +2980,20 @@ BOOT:
 
 BOOT:
 {
+	#ifdef GTK_SPIN_BUTTON
+		boot_Gtk__SpinButton(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_STATUSBAR
+		boot_Gtk__Statusbar(cv);
+	#endif
+}
+
+BOOT:
+{
 	#ifdef GTK_TABLE
 		boot_Gtk__Table(cv);
 	#endif
@@ -2788,6 +3008,13 @@ BOOT:
 
 BOOT:
 {
+	#ifdef GTK_TIPS_QUERY
+		boot_Gtk__TipsQuery(cv);
+	#endif
+}
+
+BOOT:
+{
 	#ifdef GTK_TOGGLE_BUTTON
 		boot_Gtk__ToggleButton(cv);
 	#endif
@@ -2797,6 +3024,13 @@ BOOT:
 {
 	#ifdef GTK_TOOLBAR
 		boot_Gtk__Toolbar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TOOLTIPS
+		boot_Gtk__Tooltips(cv);
 	#endif
 }
 

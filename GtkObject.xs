@@ -235,7 +235,7 @@ set_user_data(object, data)
 
 void
 DESTROY(self)
-	Gtk::Object	self
+	SV *	self
 	CODE:
 	disconnect_GtkObjectRef(ST(0));
 
@@ -341,10 +341,11 @@ new(klass, ...)
 	RETVAL
 
 void
-add_arg_type(Class, name, type, num=1)
+add_arg_type(Class, name, type, flags, num=1)
 	SV *	Class
 	SV *	name
 	char *	type
+	int     flags
 	int	num
 	CODE:
 	{
@@ -360,7 +361,7 @@ add_arg_type(Class, name, type, num=1)
 		if (!(typeval = type_name(type))) {
 			typeval = gtk_type_from_name(type);
 		}
-		gtk_object_add_arg_type(SvPV(name2,na), typeval, num);
+		gtk_object_add_arg_type(SvPV(name2,na), typeval, flags, num);
 	}
 
 void

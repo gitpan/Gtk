@@ -60,10 +60,13 @@ gtk_range_slider_update(self)
 	Gtk::Range	self
 
 void
-gtk_range_trough_click(self, x, y)
+gtk_range_trough_click(self, x, y, jump_perc=0)
 	Gtk::Range	self
 	int	x
-	int y
+	int	y
+	gfloat	&jump_perc
+	OUTPUT:
+	jump_perc
 
 void
 gtk_range_default_hslider_update(self)
@@ -74,16 +77,22 @@ gtk_range_default_vslider_update(self)
 	Gtk::Range	self
 
 void
-gtk_range_default_htrough_click(self, x, y)
+gtk_range_default_htrough_click(self, x, y, jump_perc=0)
 	Gtk::Range	self
 	int	x
 	int	y
+	gfloat &jump_perc
+	OUTPUT:
+	jump_perc
 
 void
-gtk_range_default_vtrough_click(self, x, y)
+gtk_range_default_vtrough_click(self, x, y, jump_perc=0)
 	Gtk::Range	self
 	int	x
 	int	y
+	gfloat &jump_perc
+	OUTPUT:
+	jump_perc
 
 void
 gtk_range_default_hmotion(self, xdelta, ydelta)
@@ -97,9 +106,13 @@ gtk_range_default_vmotion(self, xdelta, ydelta)
 	int	xdelta
 	int	ydelta
 
+#if 0
+
 double
 gtk_range_calc_value(self, position)
 	Gtk::Range	self
 	int	position
+
+#endif
 
 #endif

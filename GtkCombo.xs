@@ -44,6 +44,11 @@ gtk_combo_set_use_arrows_always(combo, val)
 	int	val
 
 void
+gtk_combo_set_case_sensitive (combo, val)
+	Gtk::Combo	combo
+	int	val
+
+void
 gtk_combo_set_item_string(combo, item, item_value)
 	Gtk::Combo	combo
 	Gtk::Item	item
@@ -60,6 +65,22 @@ gtk_combo_set_popdown_strings(combo, ...)
         	list = g_list_append(list, SvPV(ST(i),na));
         gtk_combo_set_popdown_strings(combo, g_list_first(list));
 	}
+
+upGtk::Widget
+list (combo)
+	Gtk::Combo	combo
+	CODE:
+	RETVAL = combo->list;
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+entry (combo)
+	Gtk::Combo	combo
+	CODE:
+	RETVAL = combo->entry;
+	OUTPUT:
+	RETVAL
 
 #endif
 

@@ -115,4 +115,21 @@ gtk_menu_set_accelerator_table(self, table)
 	Gtk::Menu	self
 	Gtk::AcceleratorTable	table
 
+#if 0
+
+void
+gtk_menu_attach_to_widget (self, attach_widget, detacher)
+	Gtk::Menu   self
+	Gtk::Widget attach_widget
+
+Gtk::Widget
+gtk_menu_get_attach_widget (self)
+	Gtk::Menu   self
+
+void
+gtk_menu_detach (self)
+	Gtk::Menu   self
+
+#endif
+
 #endif

@@ -39,6 +39,14 @@ char *
 gtk_file_selection_get_filename(self)
 	Gtk::FileSelection	self
 
+void
+gtk_file_selection_show_fileop_buttons (self)
+	Gtk::FileSelection	self
+
+void
+gtk_file_selection_hide_fileop_buttons (self)
+	Gtk::FileSelection	self
+
 upGtk::Widget
 ok_button(fs)
 	Gtk::FileSelection	fs

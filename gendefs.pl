@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Minimal perl lexer/parser. No quote escapes currently handled.
 sub parse_lisp
@@ -62,20 +62,28 @@ $_ =~ s/;.*$//gm;
 
 foreach $node (parse_lisp($_)) {
 	@node = @$node;
-	
+
+	if ( !defined($node[0]) ) {
+		next;
+	}
 	if ($node[0] eq "define-enum") {
 		@enum = ();
 		foreach (@node[2..$#node]) {
 			push @enum, {simple => $_->[0], constant => $_->[1]};
 		}
-		
-		$enum{$node[1]}->{values} = [@enum];
+		if ( exists $enum{$node[1]} ) {
+			warn "Overriding enum `$node[1]'\n";
+		}
+		$enum{$node[1]}->{'values'} = [@enum];
 		$enum{$node[1]}->{perlname} = perlize($node[1]);
 		$enum{$node[1]}->{xsname} = xsize($node[1]);
 		$enum{$node[1]}->{typename} = typeize($node[1]);
 		
 	} elsif ($node[0] eq "define-boxed") {
-		$boxed{$node[1]}->{ref} = $node[2];
+		if ( exists $boxed{$node[1]} ) {
+			warn "Overriding boxed `$node[1]'\n";
+		}
+		$boxed{$node[1]}->{'ref'} = $node[2];
 		$boxed{$node[1]}->{unref} = $node[3];
 		if (defined $node[4]) {
 			$boxed{$node[1]}->{size} = $node[4];
@@ -90,7 +98,10 @@ foreach $node (parse_lisp($_)) {
 		foreach (@node[2..$#node]) {
 			push @flag, {simple => $_->[0], constant => $_->[1]};
 		}
-		$flags{$node[1]}->{values} = [@flag];
+		if ( exists $flags{$node[1]} ) {
+			warn "Overriding flags `$node[1]'\n";
+		}
+		$flags{$node[1]}->{'values'} = [@flag];
 		$flags{$node[1]}->{perlname} = perlize($node[1]);
 		$flags{$node[1]}->{xsname} = xsize($node[1]);
 		$flags{$node[1]}->{typename} = typeize($node[1]);
@@ -106,6 +117,9 @@ foreach $node (parse_lisp($_)) {
 				}
 				$object->{fields} = [@fields];
 			}
+		}
+		if ( exists $object{$node[1]} ) {
+			warn "Overriding object `$node[1]'\n";
 		}
 		$object{$node[1]} = $object;
 		$object{$node[1]}->{perlname} = perlize($node[1]);
@@ -145,6 +159,9 @@ foreach $node (parse_lisp($_)) {
 		$func->{perlname} = perlize($node[1]);
 		$func->{xsname} = xsize($node[1]);
 		
+		if ( exists $func{$node[1]} ) {
+			warn "Overriding func `$node[1]'\n";
+		}
 		$func{$node[1]} = $func;
 
 	} 	
@@ -158,16 +175,29 @@ foreach $node (parse_lisp($_)) {
 #print Dumper(\%object);
 #print Dumper(\%func);
 
-$boxed{GdkPixmap} = { ref => "gdk_window_ref", unref => "gdk_window_unref", 
+$boxed{GdkPixmap} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
 						perlname => "Gtk::Gdk::Pixmap", xsname => "Gtk__Gdk__Pixmap",
 						 typename => "GTK_TYPE_GDK_WINDOW"};
 
-delete $boxed{GdkWindow};
+$boxed{GdkWindow} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
+                                               perlname => "Gtk::Gdk::Window", xsname => "Gtk__Gdk__Window",
+                                                typename => "GTK_TYPE_GDK_WINDOW"};
+
+$boxed{GdkBitmap} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
+                                               perlname => "Gtk::Gdk::Bitmap", xsname => "Gtk__Gdk__Bitmap",
+                                                typename => "GTK_TYPE_GDK_WINDOW"};
+
+#delete $boxed{GdkWindow};
 delete $boxed{GdkEvent};
 delete $boxed{GdkColor};
 delete $flags{GtkWidgetFlags};
 
 $object{GtkObject} = {perlname => "Gtk::Object", cast => "GTK_OBJECT", xsname => "Gtk__Object", prefix => "gtk_object"};
+
+delete $object{""};
+delete $func{""};
+delete $boxed{""};
+delete $flags{""};
 
 #
 #foreach (keys %func) {
@@ -271,6 +301,7 @@ foreach (sort keys %flags) {
 }
 foreach (sort keys %object) {
 	print $object{$_}->{perlname},"\tT_GtkPTROBJ\n";
+	print $object{$_}->{perlname},"OrNULL\tT_GtkPTROBJOrNULL\n";
 	#print perlize($_),"\tT_GtkPTROBJ\n";
 }
 foreach (sort keys %boxed) {
@@ -324,7 +355,9 @@ foreach (sort keys %boxed) {
 foreach (sort keys %object) {
 	print "#ifdef $object{$_}->{cast}\n";
 	print "typedef $_ * $object{$_}->{xsname};\n";
+	print "typedef $_ * $object{$_}->{xsname}OrNULL;\n";
 	print "#define Cast$object{$_}->{xsname} $object{$_}->{cast}\n";
+	print "#define Cast$object{$_}->{xsname}OrNULL $object{$_}->{cast}\n";
 	print "#endif\n";
 }
 
@@ -387,7 +420,7 @@ SV * newSV$_($_ * value) {
 	int n = 0;
 	SV * result = newSVMiscRef(value, "$boxed{$_}->{perlname}", &n);
 	if (n)
-		$boxed{$_}->{ref}(value);
+		$boxed{$_}->{'ref'}(value);
 	return result;
 }
 
@@ -634,7 +667,7 @@ foreach (sort keys %enum) {
 	print "\n	h = newHV();\n";
 	print "	pGtkType[$i] = h;\n";
 	print "	pGtkTypeName[$i] = \"$enum{$_}->{perlname}\";\n";
-	foreach (@{$enum{$_}->{values}}) {
+	foreach (@{$enum{$_}->{'values'}}) {
 		print "	hv_store(h, \"$_->{simple}\", ", length($_->{simple}), ", newSViv(", $_->{constant},"), 0);\n";
 	}
 	print "	hv_store(pG_EnumHash, \"$enum{$_}->{perlname}\", ", length($enum{$_}->{perlname}), ", newRV((SV*)h), 0);\n";
@@ -646,7 +679,7 @@ foreach (sort keys %flags) {
 	print "\n	h = newHV();\n";
 	print "	pGtkType[$i] = h;\n";
 	print "	pGtkTypeName[$i] = \"$flags{$_}->{perlname}\";\n";
-	foreach (@{$flags{$_}->{values}}) {
+	foreach (@{$flags{$_}->{'values'}}) {
 		print "	hv_store(h, \"$_->{simple}\", ", length($_->{simple}), ", newSViv(", $_->{constant},"), 0);\n";
 	}
 	print "	hv_store(pG_FlagsHash, \"$flags{$_}->{perlname}\", ", length($flags{$_}->{perlname}), ", newRV((SV*)h), 0);\n";
@@ -665,6 +698,7 @@ print <<"EOT";
 
 EOT
 foreach (sort keys %object) {
+	next if not length $object{$_}->{cast};
 	print "#ifdef $object{$_}->{cast}\n";
 	print "\tadd_typecast(", $object{$_}->{prefix}, "_get_type(),	\"$object{$_}->{perlname}\");\n"
 		;#unless /preview/i;
@@ -750,7 +784,7 @@ print "\"\n";
 foreach (sort keys %object) {
 	print "$_.o\n";
 }
-print "\"\n;";
+print "\"\n;\n";
 
 exit;
 
@@ -1347,7 +1381,7 @@ pos = 0;
 
 __END__;
 
-additions over gtk.defs from gtk+-0.99.2:
+;additions over gtk.defs from gtk+-0.99.2:
 
 ;(define-enum GtkCurveType
 ;  (linear GTK_CURVE_TYPE_LINEAR)
@@ -1417,22 +1451,18 @@ additions over gtk.defs from gtk+-0.99.2:
 ;  (mime GDK_DNDTYPE_MIME)
 ;  (end GDK_DNDTYPE_END))
 
-;(define-boxed GtkTooltips
-;  gtk_tooltips_ref
-;  gtk_tooltips_unref)
-
 ;(define-enum GtkUpdateType
 ;  (continuous GTK_UPDATE_CONTINUOUS)
 ;  (discontinuous GTK_UPDATE_DISCONTINUOUS)
 ;  (delayed GTK_UPDATE_DELAYED))
 
-(define-object GtkHandleBox (GtkEventBox))
+;(define-object GtkHandleBox (GtkEventBox))
 
 
 ;(define-object GtkAdjustment (GtkData))
-(define-object GtkAspectFrame (GtkFrame))
+;(define-object GtkAspectFrame (GtkFrame))
 ;(define-object GtkAlignment (GtkBin))
-(define-object GtkArrow (GtkMisc))
+;(define-object GtkArrow (GtkMisc))
 ;(define-object GtkBin (GtkContainer))
 ;(define-object GtkBox (GtkContainer))
 ;(define-object GtkButton (GtkContainer))
@@ -1440,22 +1470,22 @@ additions over gtk.defs from gtk+-0.99.2:
 ;(define-object GtkColorSelection (GtkVBox))
 ;(define-object GtkColorSelectionDialog (GtkWindow))
 ;(define-object GtkContainer (GtkWidget))
-(define-object GtkCurve (GtkDrawingArea))
+;(define-object GtkCurve (GtkDrawingArea))
 ;(define-object GtkData (GtkObject))
 ;(define-object GtkDialog (GtkWindow))
-(define-object GtkDrawingArea (GtkWidget))
+;(define-object GtkDrawingArea (GtkWidget))
 ;(define-object GtkEntry (GtkWidget))
-(define-object GtkFileSelection (GtkWindow))
+;(define-object GtkFileSelection (GtkWindow))
 ;(define-object GtkFrame (GtkBin))
-(define-object GtkGammaCurve (GtkVBox))
+;(define-object GtkGammaCurve (GtkVBox))
 ;(define-object GtkHBox (GtkBox))
 ;(define-object GtkHPaned (GtkPaned))
-(define-object GtkHRuler (GtkRuler))
+;(define-object GtkHRuler (GtkRuler))
 ;(define-object GtkHScale (GtkScale))
 ;(define-object GtkHScrollbar (GtkScrollbar))
 ;(define-object GtkHSeparator (GtkSeparator))
 (define-object GtkImage (GtkMisc))
-(define-object GtkInputDialog (GtkWindow))
+;(define-object GtkInputDialog (GtkWindow))
 ;(define-object GtkItem (GtkBin))
 ;(define-object GtkLabel (GtkMisc))
 ;(define-object GtkList (GtkContainer))
@@ -1475,7 +1505,7 @@ additions over gtk.defs from gtk+-0.99.2:
 ;(define-object GtkRadioButton (GtkCheckButton))
 ;(define-object GtkRadioMenuItem (GtkCheckMenuItem))
 ;(define-object GtkRange (GtkWidget))
-(define-object GtkRuler (GtkWidget))
+;(define-object GtkRuler (GtkWidget))
 ;(define-object GtkScale (GtkRange))
 ;(define-object GtkScrollbar (GtkRange))
 ;(define-object GtkScrolledWindow (GtkContainer))
@@ -1483,12 +1513,12 @@ additions over gtk.defs from gtk+-0.99.2:
 ;(define-object GtkTable (GtkContainer))
 ;(define-object GtkText (GtkWidget))
 ;(define-object GtkToggleButton (GtkButton))
-(define-object GtkTree (GtkContainer))
-(define-object GtkTreeItem (GtkItem))
+;(define-object GtkTree (GtkContainer))
+;(define-object GtkTreeItem (GtkItem))
 ;(define-object GtkVBox (GtkBox))
-(define-object GtkViewport (GtkBin))
+;(define-object GtkViewport (GtkBin))
 ;(define-object GtkVPaned (GtkPaned))
-(define-object GtkVRuler (GtkRuler))
+;(define-object GtkVRuler (GtkRuler))
 ;(define-object GtkVScale (GtkScale))
 ;(define-object GtkVScrollbar (GtkScrollbar))
 ;(define-object GtkVSeparator (GtkSeparator))
@@ -1496,15 +1526,15 @@ additions over gtk.defs from gtk+-0.99.2:
 ;(define-object GtkWindow (GtkBin))
 ;
 ;(define-object GtkCheckMenuItem (GtkMenuItem))
-(define-object GtkButtonBox (GtkBox))
-(define-object GtkEventBox (GtkBin))
-(define-object GtkFixed (GtkContainer))
-(define-object GtkHButtonBox (GtkButtonBox))
-(define-object GtkVButtonBox (GtkButtonBox))
+;(define-object GtkButtonBox (GtkBox))
+;(define-object GtkEventBox (GtkBin))
+;(define-object GtkFixed (GtkContainer))
+;(define-object GtkHButtonBox (GtkButtonBox))
+;(define-object GtkVButtonBox (GtkButtonBox))
 
-(define-boxed GdkFont
-  gdk_font_ref
-  gdk_font_unref)
+;(define-boxed GdkFont
+;  gdk_font_ref
+;  gdk_font_unref)
 
 (define-enum GdkInputSource
   (mouse GDK_SOURCE_MOUSE)
@@ -1526,13 +1556,5 @@ additions over gtk.defs from gtk+-0.99.2:
   (y-tilt GDK_AXIS_YTILT)
   (last GDK_AXIS_LAST))
 
-(define-object GtkToolbar (GtkContainer))
+;(define-object GtkToolbar (GtkContainer))
 
-(define-enum GtkToolbarStyle
-  (icons GTK_TOOLBAR_ICONS)
-  (text GTK_TOOLBAR_TEXT)
-  (both GTK_TOOLBAR_BOTH))
-
-(define-enum GtkOrientation
-  (horizontal GTK_ORIENTATION_HORIZONTAL)
-  (vertical GTK_ORIENTATION_VERTICAL))

@@ -5,11 +5,6 @@
 typedef GtkMenuFactory * Gtk__MenuFactory;
 typedef GtkSelectionData * Gtk__SelectionData;
 
-#define newSVGdkBitmap newSVGdkPixmap
-#define newSVGdkWindow newSVGdkPixmap
-#define SvGdkBitmap SvGdkPixmap
-#define SvGdkWindow SvGdkPixmap
-
 typedef GtkWidget * upGtk__Widget;
 
 #define CastupGtk__Widget GTK_WIDGET

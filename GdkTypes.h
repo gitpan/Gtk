@@ -3,9 +3,9 @@
    This code may be distributed under the same terms as Perl itself. */
    
 
-/*typedef GdkPixmap * Gtk__Gdk__Pixmap;*/
+/*typedef GdkPixmap * Gtk__Gdk__Pixmap;
 typedef GdkBitmap * Gtk__Gdk__Bitmap;
-typedef GdkWindow * Gtk__Gdk__Window;
+typedef GdkWindow * Gtk__Gdk__Window;*/
 typedef GdkCursor * Gtk__Gdk__Cursor;
 typedef GdkGC * Gtk__Gdk__GC;
 typedef GdkGCValues * Gtk__Gdk__GCValues;
@@ -19,6 +19,7 @@ typedef GdkColormap * Gtk__Gdk__Colormap;
 typedef GdkFont * Gtk__Gdk__Font;*/
 
 typedef GdkEvent * Gtk__Gdk__Event;
+typedef GdkRegion * Gtk__Gdk__Region;
 typedef GdkRectangle * Gtk__Gdk__Rectangle;
 typedef GdkColor * Gtk__Gdk__Color;
 /*typedef GdkImageType Gtk__Gdk__ImageType;*/
@@ -112,6 +113,8 @@ extern SV * newSVGdkAtom(GdkAtom a);
 extern GdkAtom SvGdkAtom(SV * data);
 extern SV * newSVGdkEvent(GdkEvent * e);
 extern GdkEvent * SvGdkEvent(SV * data);
+extern SV * newSVGdkRegion(GdkRegion * e);
+extern GdkRegion * SvGdkRegion(SV * data);
 extern GdkWindowAttr * SvGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * mask);
 
 #define newSVGdkImage(data) newSVMiscRef((void*)data, "Gtk::Gdk::Image", 0)

@@ -86,6 +86,25 @@ gtk_container_focus(self, direction)
 	Gtk::DirectionType	direction
 
 void
+gtk_container_set_focus_child(self, child)
+	Gtk::Container	self
+	Gtk::Widget	child
+
+#ifdef GTK_HAVE_CONTAINER_FOCUS_ADJUSTMENTS
+
+void
+gtk_container_set_focus_hadjustment(self, adjustment)
+	Gtk::Container	self
+	Gtk::Adjustment	adjustment
+
+void
+gtk_container_set_focus_vadjustment(self, adjustment)
+	Gtk::Container	self
+	Gtk::Adjustment	adjustment
+
+#endif
+
+void
 gtk_container_unblock_resize(self)
 	Gtk::Container	self
 

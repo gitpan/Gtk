@@ -16,6 +16,11 @@ typedef GtkWidget * Gtk__Widget_Sink_Up;
 
 #define CastupGtk__Widget GTK_WIDGET
 
+typedef GtkObject * Gtk__Object_Up;
+typedef GtkObject * Gtk__Object_Sink_Up;
+
+#define CastupGtk__Object GTK_OBJECT
+
 extern void UnregisterGtkObject(SV * sv_object, GtkObject * gtk_object);
 extern void RegisterGtkObject(SV * sv_object, GtkObject * gtk_object);
 extern SV * RetrieveGtkObject(GtkObject * gtk_object);
@@ -47,7 +52,7 @@ extern void FreeHVObject(HV * hv_object);
 
 int type_name(char * name);
 
-extern void FindArgumentType(GtkObject * object, SV * name, GtkArg * result);
+extern GtkType FindArgumentType(GtkObject * object, SV * name, GtkArg * result);
 
 #ifdef GTK_TTY
 

@@ -4,6 +4,10 @@ require Exporter;
 require DynaLoader;
 require AutoLoader;
 
+use Carp;
+
+$VERSION = '0.2.2';
+
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -61,17 +65,47 @@ if ((defined $Gtk::_init_package) && ($Gtk::_init_package ne "none")) {
 
 package Gtk::Object;
 
+use Carp;
+
 sub AUTOLOAD {
     # This AUTOLOAD is used to automatically perform settor/gettor functions
     # for Gtk object data members, in lieu of defined functions.
     
-    if (@_ == 2) {
-    	$_[0]->set($AUTOLOAD, $_[1]);
-    } elsif (@_ == 1) {
-    	$_[0]->get($AUTOLOAD);
-    } else {
-    	die;
-    }
+    my($result);
+   
+    eval {
+	    if (@_ == 2) {
+	    	$_[0]->set($AUTOLOAD, $_[1]);
+	    } elsif (@_ == 1) {
+	    	$result = $_[0]->get($AUTOLOAD);
+	    } else {
+	    	die;
+	    }
+	    
+	    # Set up real method, to speed subsequent access
+	    eval <<"EOT";
+	    
+	    sub $AUTOLOAD {
+	    	if (\@_ == 2) {
+	    		\$_[0]->set('$AUTOLOAD', \$_[1]);
+	    	} elsif (\@_ == 1) {
+	    		\$_[0]->get('$AUTOLOAD');
+	    	} else {
+	    		die "Usage: $AUTOLOAD (Object [, new_value])";
+	    	}
+	    }
+EOT
+	    
+	};
+	if ($@) {
+		if (ref $_[0]) {
+			$AUTOLOAD =~ s/^.*:://;
+			croak "Can't locate object method \"$AUTOLOAD\" via package \"" . ref($_[0]) . "\"";
+		} else {
+			croak "Undefined subroutine \&$AUTOLOAD called";
+		}
+	}
+	$result;
 }
 
 package Gtk;

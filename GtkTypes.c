@@ -470,28 +470,42 @@ GdkWindow * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::Sele
 }
 */
 
-void FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
+GtkType FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
 	char * argname = SvPV(name, na);
-	GtkType t;
+	GtkType t = GTK_TYPE_INVALID;
 
-	/* Strip the ticklish dash */
+	/* Strip the ticklish dash:
+	
+	   -foo => foo
+	 */
 	if (argname[0] == '-')
 		argname++;
-
-	/* Convert Perl naming convention to Gtk style */
+	
+	/* Convert Perl naming convention to Gtk:
+	 
+	   Gtk::... => Gtk...
+	 */
 	if (strncmp(argname, "Gtk::", 5) == 0) {
 		SV * work = sv_2mortal(newSVpv("Gtk", 3)); 
 		sv_catpv(work, argname+5);
 		argname = SvPV(work, na);
 	}
+
+	/* Fix something that's hard to deal with, otherwise:
 	
-	/* Fix something that's hard to deal with, otherwise */
+	   signal::... => GtkObject::signal:... 
+	 */
 	if (strncmp(argname, "signal::", 8) ==0) {
 		SV * work = sv_2mortal(newSVpv("GtkObject::", 11)); 
 		sv_catpv(work, argname);
 		argname = SvPV(work, na);
 	}
-	
+
+	/* If there isn't a class included, try the object class,
+	   and then its parents, until a match is found:
+	   
+	   foo => GtkSomeType::foo 
+	 */
 	if (!strchr(argname, ':') || ((t = gtk_object_get_arg_type(argname)) == GTK_TYPE_INVALID)) {
 		SV * work = sv_2mortal(newSVsv(&sv_undef)); 
 		GtkType pt;
@@ -500,6 +514,7 @@ void FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
 			sv_setpv(work, gtk_type_name(pt));
 			sv_catpv(work, "::");
 			sv_catpv(work, argname);
+
 			if ((t = gtk_object_get_arg_type(SvPV(work, na))) != GTK_TYPE_INVALID) {
 				argname = SvPV(work, na);
 				break;
@@ -508,18 +523,37 @@ void FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
 		}
 	}
 	
-	
 	if (t == GTK_TYPE_INVALID) {
 		SV * work = sv_2mortal(newSVpv("GtkObject::signal::", 0));
 		/* Last resort, try it as a signal name */
 		sv_catpv(work, argname);
 		argname = SvPV(work, na);
-		t = gtk_object_get_arg_type(argname);
+		
+		t = gtk_object_get_arg_type(argname); /* Useless, always succeeds */
 	}
+
+	if (t == GTK_TYPE_SIGNAL) {
 	
+		/* Gtk will say anything is a signal, regardless of
+		   whether it is or not. Actually look up the signal
+		   to verify that it exists */
+	
+		int id;
+		char * a = argname;
+		if (strnEQ(a, "GtkObject::", 11))
+			a += 11;
+		if (strnEQ(a, "signal::", 8))
+			a += 8;
+		id = gtk_signal_lookup(a, object ? object->klass->type : 0);
+		if (!id)
+			t = GTK_TYPE_INVALID;
+	}
+
 	if (t == GTK_TYPE_INVALID)
-		croak("Unknown argument %s", argname);
+		croak("Unknown argument %s of %s", SvPV(name,na), 0 ? "(none)" : gtk_type_name(object->klass->type));
 	
 	result->name = argname;
 	result->type = t;
+	
+	return t;
 }

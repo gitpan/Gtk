@@ -115,9 +115,6 @@ static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guin
 }
 
 
-/* Define if Gtk has gtk_signal_emitv... */
-#undef emitv
-
 MODULE = Gtk::Object		PACKAGE = Gtk::Object		PREFIX = gtk_object_
 
 #ifdef GTK_OBJECT
@@ -240,13 +237,31 @@ set_user_data(object, data)
 		}
 	}
 
+Gtk::Object_Sink_Up
+new_from_pointer(klass, pointer)
+	SV *	klass
+	unsigned long	pointer
+	CODE:
+	RETVAL = (GtkObject*)pointer;
+	OUTPUT:
+	RETVAL
+
+
+unsigned long
+_return_pointer(self)
+	Gtk::Object	self
+	CODE:
+	RETVAL = (unsigned long)self;
+	OUTPUT:
+	RETVAL
+
 void
 DESTROY(self)
 	SV *	self
 	CODE:
 	FreeHVObject((HV*)SvRV(ST(0)));
 
-SV *
+void
 set(self, name, value, ...)
 	Gtk::Object	self
 	SV *	name
@@ -257,7 +272,6 @@ set(self, name, value, ...)
 		GtkArg	argv[3];
 		int p;
 		int argc;
-		RETVAL = newSVsv(ST(0));
 		
 		for(p=1;p<items;) {
 		
@@ -276,8 +290,7 @@ set(self, name, value, ...)
 			p += 1 + argc;
 		}
 	}
-	OUTPUT:
-	RETVAL
+
 
 void
 get(self, name, ...)
@@ -295,11 +308,13 @@ get(self, name, ...)
 			FindArgumentType(self, ST(p), &argv[0]);
 		
 			argc = 1;
+			t=argv[0].type;
 			
 			gtk_object_getv(self, argc, argv);
 			
 			EXTEND(sp,1);
 			PUSHs(sv_2mortal(GtkGetArg(&argv[0])));
+			
 			
 			if (t == GTK_TYPE_STRING)
 				g_free(GTK_VALUE_STRING(argv[0]));
@@ -371,7 +386,7 @@ add_arg_type(Class, name, type, flags, num=1)
 		gtk_object_add_arg_type(SvPV(name2,na), typeval, flags, num);
 	}
 
-#ifndef emitv
+#ifndef GTK_HAVE_SIGNAL_EMIT
 
 void
 signal_emit(self, name)
@@ -432,6 +447,15 @@ signal_emit(self, name, ...)
 		
 		free(args);
 	}
+
+int
+signal_n_emissions(self, name)
+	Gtk::Object self
+	char *	name
+	CODE:
+	RETVAL = gtk_signal_n_emissions_by_name(self, name);
+	OUTPUT:
+	RETVAL
 
 #endif
 
@@ -612,5 +636,29 @@ gtk_object_ref(self)
 void
 gtk_object_unref(self)
 	Gtk::Object	self
+
+bool
+gtk_object_destroyed(self)
+	Gtk::Object	self
+	CODE:
+	RETVAL = GTK_OBJECT_DESTROYED(self);
+	OUTPUT:
+	RETVAL
+
+bool
+gtk_object_floating(self)
+	Gtk::Object	self
+	CODE:
+	RETVAL = GTK_OBJECT_FLOATING(self);
+	OUTPUT:
+	RETVAL
+
+bool
+gtk_object_connected(self)
+	Gtk::Object	self
+	CODE:
+	RETVAL = GTK_OBJECT_CONNECTED(self);
+	OUTPUT:
+	RETVAL
 
 #endif

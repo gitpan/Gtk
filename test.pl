@@ -8,7 +8,7 @@ sub bbox_widget_destroy {
 }
 
 sub destroy_tooltips {
-	print "Destroy_tooltips: ", Dumper(\@_);
+#	print "Destroy_tooltips: ", Dumper(\@_);
 	my($widget, $window) = @_;
 	#$$window->{tooltips}->unref;
 	$$window = undef;
@@ -1133,11 +1133,11 @@ sub create_pixmap {
 	}
 }
 
-use Data::Dumper;
+#use Data::Dumper;
 
 sub tips_query_widget_entered {
 	print "entered: ";
-	print Dumper(\@_);
+#	print Dumper(\@_);
 	my($tips_query, $widget, $tip_text, $tip_private, $toggle) = @_;
 	
 	if ($toggle->active) {
@@ -1149,7 +1149,7 @@ sub tips_query_widget_entered {
 
 sub tips_query_widget_selected {
 	print "selected: ";
-	print Dumper(\@_);
+#	print Dumper(\@_);
 	my($tips_query, $widget, $tip_text, $tip_private, $event, $func_data) = @_;
 	if ($widget) {
 		printf "Help \"%s\" requested for <%s>\n", defined($tip_private) ? $tip_private : "None", $widget->type_name;

@@ -87,19 +87,18 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 		if (f(args, nparams))
 			goto packed;
 	}*/
-
-
+	
 	/*printf("Handling signal %s\n", signame);*/
 	/*XPUSHs(sv_2mortal(newSVpv(signame, 0)));*/
 	if (sv_derived_from(sv_object, "Gtk::CList")) {
-		if (strEQ(signame, "select_row")) {
+		if (strEQ(signame, "select-row")) {
 			encoding=20;
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[0]))));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
 			XPUSHs(sv_2mortal(newSVGdkEvent(GTK_VALUE_POINTER(args[2]))));
 			goto unpacked;
 		} else
-		if (strEQ(signame, "unselect_row")) {
+		if (strEQ(signame, "unselect-row")) {
 			encoding=21;
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[0]))));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
@@ -108,22 +107,22 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 		}
 	}
 	/*if (sv_derived_from(sv_object, "Gtk::List")) {
-		if (strEQ(signame, "select_child")	||
-			strEQ(signame, "unselect_child")) {
+		if (strEQ(signame, "select-child")	||
+			strEQ(signame, "unselect-child")) {
 			encoding=12;
 			XPUSHs(sv_2mortal(newSVGtkObjectRef(GTK_VALUE_OBJECT(args[0]),0)));
 			goto unpacked;
 		}
 	}*/
 	if (sv_derived_from(sv_object, "Gtk::TipsQuery")) {
-		if (strEQ(signame, "widget_selected")) {
+		if (strEQ(signame, "widget-selected")) {
 			encoding=15;
 			args[3].type = GTK_TYPE_GDK_EVENT;
 			goto packed;
 		}
 	}
 	if (sv_derived_from(sv_object, "Gtk::Notebook")) {
-		if (strEQ(signame, "switch_page")) {
+		if (strEQ(signame, "switch-page")) {
 			encoding=14;
 			XPUSHs(sv_2mortal(newSVGtkNotebookPage((GtkNotebookPage*)GTK_VALUE_POINTER(args[0]))));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
@@ -131,7 +130,7 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 		}
 	}
 	if (sv_derived_from(sv_object, "Gtk::Window")) {
-		if (strEQ(signame, "move_resize")) {
+		if (strEQ(signame, "move-resize")) {
 			encoding=13;
 			XPUSHs(sv_2mortal(newSViv(*GTK_RETLOC_INT(args[0]))));
 			XPUSHs(sv_2mortal(newSViv(*GTK_RETLOC_INT(args[1]))));
@@ -143,7 +142,7 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 	/*if (sv_derived_from(sv_object, "Gtk::Container")) {
 		if (strEQ(signame, "add")		||
 			strEQ(signame, "remove")	||
-			strEQ(signame, "need_resize")) {
+			strEQ(signame, "need-resize")) {
 			encoding=7;
 			XPUSHs(sv_2mortal(newSVGtkObjectRef(GTK_VALUE_OBJECT(args[0]),0)));
 			goto unpacked;
@@ -160,14 +159,14 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 		}
 	}*/
 	if (sv_derived_from(sv_object, "Gtk::Entry")) {
-		if (strEQ(signame, "insert_text")) {
+		if (strEQ(signame, "insert-text")) {
 			encoding=10;
 			XPUSHs(sv_2mortal(newSVpv(GTK_VALUE_STRING(args[0]),0)));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
 			XPUSHs(sv_2mortal(newSViv(*GTK_RETLOC_INT(args[2]))));
 			goto unpacked;
 		}/* else
-		if (strEQ(signame, "delete_text")) {
+		if (strEQ(signame, "delete-text")) {
 			encoding=11;
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[0]))));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
@@ -180,14 +179,14 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 			XPUSHs(sv_2mortal(newSVGdkRectangle((GdkRectangle*)GTK_VALUE_POINTER(args[0]))));
 			goto unpacked;
 		} else
-		if (strEQ(signame, "size_request")) {
+		if (strEQ(signame, "size-request")) {
 			GtkRequisition * r = (GtkRequisition*)GTK_VALUE_POINTER(args[0]);
 			encoding=2;
 			XPUSHs(sv_2mortal(newSViv(r->width)));
 			XPUSHs(sv_2mortal(newSViv(r->height)));
 			goto unpacked;
 		} else
-		if (strEQ(signame, "size_allocate")) {
+		if (strEQ(signame, "size-allocate")) {
 			GtkAllocation * a = (GtkAllocation*)GTK_VALUE_POINTER(args[0]);
 			GdkRectangle r;
 			encoding=3;
@@ -198,45 +197,45 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 			XPUSHs(sv_2mortal(newSVGdkRectangle(&r)));
 			goto unpacked;
 		} else
-		/*if (strEQ(signame, "install_accelerator")) {
+		/*if (strEQ(signame, "install-accelerator")) {
 			encoding=4;
 			XPUSHs(sv_2mortal(newSVpv(GTK_VALUE_STRING(args[0]),0)));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
 			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[2]))));
 			goto unpacked;
 		} else
-		if (strEQ(signame, "remove_accelerator")) {
+		if (strEQ(signame, "remove-accelerator")) {
 			encoding=5;
 			XPUSHs(sv_2mortal(newSVpv(GTK_VALUE_STRING(args[0]),0)));
 			goto unpacked;
 		} else*/
 		if (strEQ(signame, "event")	||
-			strEQ(signame, "button_press_event")	||
-			strEQ(signame, "button_release_event")	||
-			strEQ(signame, "button_notify_event")	||
-			strEQ(signame, "motion_notify_event")	||
-			strEQ(signame, "delete_event")	||
-			strEQ(signame, "destroy_event")	||
-			strEQ(signame, "expose_event")	||
-			strEQ(signame, "key_press_event")	||
-			strEQ(signame, "key_release_event")	||
-			strEQ(signame, "enter_notify_event")	||
-			strEQ(signame, "leave_notify_event")	||
-			strEQ(signame, "configure_event")	||
-			strEQ(signame, "focus_in_event")	||
-			strEQ(signame, "focus_out_event")	||
-			strEQ(signame, "map_event")	||
-			strEQ(signame, "unmap_event")	||
-			strEQ(signame, "property_notify_event")	||
-			strEQ(signame, "selection_clear_event")	||
-			strEQ(signame, "selection_request_event")	||
-			strEQ(signame, "selection_notify_event")	||
-			strEQ(signame, "other_event")) {
+			strEQ(signame, "button-press-event")	||
+			strEQ(signame, "button-release-event")	||
+			strEQ(signame, "button-notify-event")	||
+			strEQ(signame, "motion-notify-event")	||
+			strEQ(signame, "delete-event")	||
+			strEQ(signame, "destroy-event")	||
+			strEQ(signame, "expose-event")	||
+			strEQ(signame, "key-press-event")	||
+			strEQ(signame, "key-release-event")	||
+			strEQ(signame, "enter-notify-event")	||
+			strEQ(signame, "leave-notify-event")	||
+			strEQ(signame, "configure-event")	||
+			strEQ(signame, "focus-in-event")	||
+			strEQ(signame, "focus-out-event")	||
+			strEQ(signame, "map-event")	||
+			strEQ(signame, "unmap-event")	||
+			strEQ(signame, "property-notify-event")	||
+			strEQ(signame, "selection-clear-event")	||
+			strEQ(signame, "selection-request-event")	||
+			strEQ(signame, "selection-notify-event")	||
+			strEQ(signame, "other-event")) {
 			encoding=6;
 			XPUSHs(sv_2mortal(newSVGdkEvent((GdkEvent*)GTK_VALUE_POINTER(args[0]))));
 			goto unpacked;
  		} else
-	 		if (strEQ(signame, "selection_received")) {
+	 		if (strEQ(signame, "selection-received")) {
  			XPUSHs(sv_2mortal(newSVGtkSelectionDataRef((GtkSelectionData*)GTK_VALUE_POINTER(args[0]))));
  			goto unpacked;
 		}
@@ -977,7 +976,7 @@ set(self, type, format, data)
 	SV *                    data
 	CODE:
 	{
-		int len;
+		STRLEN len;
 		char *bytes;
 		bytes = SvPV (data, len);
 		gtk_selection_data_set (self, type, format, 
@@ -1383,8 +1382,6 @@ init(Class)
 			SV * ARGV0 = perl_get_sv("0", FALSE);
 			int i;
 
-		printf("In Gtk::Gdk::init\n");
-			
 			argc = av_len(ARGV)+2;
 			if (argc) {
 				argv = malloc(sizeof(char*)*argc);
@@ -1583,10 +1580,10 @@ gdk_pointer_grab(Class, window, owner_events, event_mask, confine_to, cursor, ti
 	Gtk::Gdk::Cursor	cursor
 	int	time
 	CODE:
-	printf("gdk_pointer_grab(window: %d, owner_events: %d, event_mask: %d, confine_to: %d, cursor: %d, time: %d)\n",
-		window, owner_events, event_mask, confine_to, cursor, time);
+	/*printf("gdk_pointer_grab(window: %d, owner_events: %d, event_mask: %d, confine_to: %d, cursor: %d, time: %d)\n",
+		window, owner_events, event_mask, confine_to, cursor, time);*/
 	RETVAL = gdk_pointer_grab(window, owner_events, event_mask, confine_to, cursor, time);
-	printf("Returned: %d\n", RETVAL);
+	/*printf("Returned: %d\n", RETVAL);*/
 	OUTPUT:
 	RETVAL
 
@@ -1660,6 +1657,49 @@ ROOT_PARENT(Class)
 	RETVAL = GDK_ROOT_PARENT();
 	OUTPUT:
 	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::Gdk::ColorContext	PREFIX = gdk_color_context_
+
+Gtk::Gdk::ColorContext
+new(Self, visual, colormap)
+	SV *	Self
+	Gtk::Gdk::Visual	visual
+	Gtk::Gdk::Colormap	colormap
+	CODE:
+	RETVAL = gdk_color_context_new(visual, colormap);
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::ColorContext
+new_mono(Self, visual, colormap)
+	SV *	Self
+	Gtk::Gdk::Visual	visual
+	Gtk::Gdk::Colormap	colormap
+	CODE:
+	RETVAL = gdk_color_context_new_mono(visual, colormap);
+	OUTPUT:
+	RETVAL
+
+void
+get_pixel(object, red, green, blue)
+	Gtk::Gdk::ColorContext	object
+	int	red
+	int	green
+	int	blue
+	PPCODE:
+	{
+		int failed = 0;
+		unsigned long result = gdk_color_context_get_pixel(object, red, green, blue, &failed);
+		if (!failed) {
+			PUSHs(sv_2mortal(newSViv(result)));
+		}
+	}
+
+void
+free(object)
+	Gtk::Gdk::ColorContext	object
+	CODE:
+	gdk_color_context_free(object);
 
 
 MODULE = Gtk		PACKAGE = Gtk::Gdk::Window	PREFIX = gdk_window_

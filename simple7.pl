@@ -16,7 +16,26 @@ $button->signal_connect (clicked => sub {
 	show $w;
 });
 
-$app->set_contents($button);
+show $button;
+
+$vbox = new Gtk::VBox 0, 1;
+show $vbox;
+
+$vbox->pack_start($button, 1, 1, 1);
+
+eval {
+	$calc = new Gtk::Gnome::Calculator;
+	show $calc;
+	$vbox->pack_start($calc, 1, 1, 1);
+};
+
+eval {
+	$date = new Gtk::Gnome::DateEdit time(), 1, 0;
+	show $date;
+	$vbox->pack_start($date, 1, 1, 1);
+};
+
+$app->set_contents($vbox);
 
 show $app;
 

@@ -1,4 +1,24 @@
 
+0.2.2		Wed May 27, 1998	Kenneth Albanowski
+
+	Uses gtk+-1.0.3 (may also work with 1.0.1 & 1.0.2)
+
+	Added Gtk::Object->new_from_pointer and $GtkObject->_return_pointer
+	methods that allow raw GtkObject* values (expressed as integers),
+	including GtkWidget* and other descendant types, to be converted
+	into the equivalent Perl types, and vice versa.
+	
+	$Gtk::VERSION now provided.
+	
+	Partial color_context support added to Gtk, and sample6 (test of Gtktty)
+	now allocates colors properly.
+	
+	Added preliminary GtkPacker support. (Disabled, edit end of gendefs.pl
+	to renenable. testpacker.pl's options are buggy, in a suspicious
+	manner.)
+	
+	Added basic support for a few of the newer Gnome widgets.
+
 0.2.1		Thu May  7, 1998	Kenneth Albanowski
 
 	Included a variation of a module contributed by Dov Grobgeld

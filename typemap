@@ -18,6 +18,9 @@ Gtk::SelectionData      T_MISCPTROBJ
 Gtk::Widget_Up		T_GtkPTROBJUp
 Gtk::Widget_Sink_Up		T_GtkPTROBJSinkUp
 
+Gtk::Object_Up		T_GtkPTROBJUp
+Gtk::Object_Sink_Up		T_GtkPTROBJSinkUp
+
 Gtk::Gdk::Event		T_SimpleVal
 Gtk::Gdk::Region	T_SimpleVal
 Gtk::Gdk::Rectangle	T_SimplePtr

@@ -23,20 +23,14 @@ Gtk::Button_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
+	ALIAS:
+		Gtk::Button::new = 0
+		Gtk::Button::new_with_label = 1
 	CODE:
 	if (!label)
 		RETVAL = GTK_BUTTON(gtk_button_new());
 	else
 		RETVAL = GTK_BUTTON(gtk_button_new_with_label(label));
-	OUTPUT:
-	RETVAL
-
-Gtk::Button_Sink
-new_with_label(Class, label)
-	SV *	Class
-	char *	label
-	CODE:
-	RETVAL = GTK_BUTTON(gtk_button_new_with_label(label));
 	OUTPUT:
 	RETVAL
 

@@ -17,7 +17,7 @@ $win = new Gtk::Gdk::Window( {
 	'window_type' => 'toplevel',
 	'width' => $w,
 	'height' => $h,
-	'event_mask' => ['structure-mask']
+	'event_mask' => ['structure_mask']
 });
 
 $im->render($w, $h);

@@ -108,7 +108,7 @@ SV * newSVMiscRef(void * object, char * classname, int * newref)
 long SvOptsHash(SV * name, char * optname, HV * o) 
 {
 	int i;
-	int len;
+	STRLEN len;
 	char * n = SvPV(name, len);
 	SV ** s;
 	if (*n == '-') {
@@ -193,7 +193,7 @@ SV * newSVFlagsHash(long value, char * optname, HV * o, int hash)
 			
 		if ((value & val) == val) {
 			if (hash)
-				hv_store((HV*)target, key, len, newSVsv(s), 0);
+				hv_store((HV*)target, key, len, newSViv(1), 0);
 			else
 				av_push((AV*)target, newSVpv(key, len));
 			value &= ~val;

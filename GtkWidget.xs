@@ -662,6 +662,25 @@ grab_remove(self)
 	gtk_grab_remove(self);
 
 Gtk::Widget_Sink_Up
+new_from_pointer(klass, pointer)
+	SV *	klass
+	unsigned long	pointer
+	CODE:
+	RETVAL = (GtkWidget*)pointer;
+	OUTPUT:
+	RETVAL
+
+
+unsigned long
+_return_pointer(self)
+	Gtk::Widget	self
+	CODE:
+	RETVAL = (unsigned long)self;
+	OUTPUT:
+	RETVAL
+
+
+Gtk::Widget_Sink_Up
 new(Class, widget_class, ...)
 	SV *	Class
 	char *	widget_class

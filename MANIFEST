@@ -11,11 +11,20 @@ Gnome.pm
 Gnome.xs
 GnomeAbout.xs
 GnomeApp.xs
+GnomeCalculator.xs
 GnomeClient.xs
+GnomeDateEdit.xs
+GnomeDialog.xs
 GnomeEntry.xs
+GnomeFileEntry.xs
 GnomeFontSelector.xs
+GnomeIconList.xs
+GnomeLamp.xs
+GnomeLess.xs
 GnomeMessageBox.xs
 GnomePixmap.xs
+GnomePropertyBox.xs
+GnomeRootWin.xs
 GnomeScores.xs
 Gtk.pm
 Gtk.xs
@@ -70,6 +79,7 @@ GtkMisc.xs
 GtkNotebook.xs
 GtkObject.xs
 GtkOptionMenu.xs
+GtkPacker.xs
 GtkPaned.xs
 GtkPixmap.xs
 GtkPreview.xs
@@ -143,6 +153,7 @@ testgtkrc
 testhtml.pl
 testinput.pl
 testmf.pl
+testpacker.pl
 testselection.pl
 tree_minus.xpm
 tree_plus.xpm

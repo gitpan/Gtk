@@ -17,6 +17,17 @@
 (define-object GtkClock (GtkLabel))
 (define-object GtkTed (GtkTable))
 
+;; post 0.13 widgets
+(define-object GnomeDialog (GtkWindow))
+(define-object GnomeDateEdit (GtkHBox))
+(define-object GnomeCalculator (GtkVBox))
+(define-object GnomeFileEntry (GtkHBox))
+(define-object GnomeIconList (GtkContainer))
+(define-object GnomeLamp (GnomePixmap))
+(define-object GnomeLess (GtkVBox))
+(define-object GnomePropertyBox (GnomeDialog))
+(define-object GnomeRootWin (GtkWindow) (cast GNOME_ROOTWIN))
+
 
 (define-enum GnomeAppWidgetPositionType ; Can say "Gnome::AppWidgetPositionType" here 
 										; to override default of "Gtk::Gnome::AppWidgetPositionType"

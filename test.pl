@@ -839,7 +839,7 @@ sub create_rulers {
 		my($ruler) = new Gtk::HRuler;
 		$ruler->set_range(5, 15, 0, 20);
 		$ruler_window->signal_connect("motion_notify_event", 
-			sub { my($widget,$sig,$event)=@_; $ruler->motion_notify_event($event) });
+			sub { my($widget,$event)=@_; $ruler->motion_notify_event($event) });
 		$table->attach($ruler, 1, 2, 0, 1, ["EXPAND", "FILL"], ["FILL"], 0, 0);
 		$ruler->show;
 		}
@@ -848,7 +848,7 @@ sub create_rulers {
 		my($ruler) = new Gtk::VRuler;
 		$ruler->set_range(5, 15, 0, 20);
 		$ruler_window->signal_connect("motion_notify_event", 
-			sub { my($widget,$sig,$event)=@_; $ruler->motion_notify_event($event) });
+			sub { my($widget,$event)=@_; $ruler->motion_notify_event($event) });
 		$table->attach($ruler, 0, 1, 1, 2, ["FILL"], ["EXPAND","FILL"], 0, 0);
 		$ruler->show;
 		}
@@ -1030,6 +1030,50 @@ sub create_notebook {
 		show $notebook_window;
 	} else {
 		destroy $notebook_window;
+	}
+}
+
+sub create_panes {
+	my($frame,$hpaned,$vpaned);
+	if (not defined $paned_window) {
+		$paned_window = new Gtk::Window "TOPLEVEL";
+		$paned_window->signal_connect("destroy", \&destroy_window, \$paned_window);
+		$paned_window->set_title("Panes");
+		$paned_window->border_width(0);
+		
+		$vpaned = new Gtk::VPaned;
+		$paned_window->add($vpaned);
+		$vpaned->border_width(5);
+		$vpaned->show;
+
+		$hpaned = new Gtk::HPaned;
+		$vpaned->add1($hpaned);
+
+		$frame = new Gtk::Frame;
+		$frame->set_shadow_type("IN");
+		$frame->set_usize(60,60);
+		$hpaned->add1($frame);
+		$frame->show;
+
+		$frame = new Gtk::Frame;
+		$frame->set_shadow_type("IN");
+		$frame->set_usize(80,60);
+		$hpaned->add2($frame);
+		$frame->show;
+		
+		$hpaned->show;
+		
+		$frame = new Gtk::Frame;
+		$frame->set_shadow_type("IN");
+		$frame->set_usize(60,80);
+		$vpaned->add2($frame);
+		$frame->show;
+
+	}
+	if (not visible $paned_window) {
+		show $paned_window;
+	} else {
+		destroy $paned_window;
 	}
 }
 
@@ -1239,30 +1283,27 @@ sub create_gray_preview {
 
 my($curve_count)=0;
 
-sub create_curve {
-	my($curve);
+sub create_gamma_curve {
+	my($curve,@vec,$i,$max);
+
 	if (not defined $curve_window) {
-		my($max);
-		
 		$curve_window = new Gtk::Window "TOPLEVEL";
-		$curve_window->signal_connect("destroy",\&destroy_window,\$curve_window);
 		$curve_window->set_title("test");
 		$curve_window->border_width(10);
 		
-		$max = 127  + ($count % 2)*128;
-		
-		$curve = new Gtk::Curve;
-		$curve->set_range(0,$max,0,$max);
-		$curve_window->add($curve);
-		$curve->show;
-		
-		my(@vec);
-		my($i);
-		for($i=0;$i<$max;$i++) {
-			$vec[$i] = ($max / sqrt($max))*sqrt($i);
-		}
-		$curve->set_vector(@vec);
+		$gamma_curve = new Gtk::GammaCurve;
+		$curve_window->add($gamma_curve);
+		$gamma_curve->show;
 	}
+
+	$max = 127 + ($curve_count % 2) * 128;
+	$gamma_curve->curve->set_range(0, $max, 0, $max);
+	
+	for($i=0;$i<$max;$i++) {
+		$vec[$i] = (127 / sqrt($max))*sqrt($i);
+	}
+	$gamma_curve->curve->set_vector(@vec);
+	
 	if (!visible $curve_window) {
 		show $curve_window;
 	} elsif ($curve_count % 4 == 3) {
@@ -1497,11 +1538,12 @@ sub create_main_window {
       	"rulers", \&create_rulers,
 		"text", \&create_text,
       	"notebook", \&create_notebook,
+      	"panes", \&create_panes,
       	"progress bar", \&create_progress_bar,
       	"color preview", \&create_color_preview,
       	"gray preview", \&create_gray_preview,
 		"dialog",	\&create_dialog,
-      	"curve", \&create_curve,
+      	"gamma curve", \&create_gamma_curve,
 		"test timeout", \&create_timeout_test,
 		"create idle test", \&create_idle_test,
 		"create test",	\&create_test,

@@ -34,6 +34,12 @@ Gtk::Gdk::SubwindowMode	T_SimpleVal
 Gtk::Gdk::LineStyle	T_SimpleVal
 Gtk::Gdk::GCValuesMask	T_SimpleVal
 Gtk::Gdk::ModifierType	T_SimpleVal
+Gtk::Gdk::InputCondition	T_SimpleVal
+Gtk::Gdk::InputMode	T_SimpleVal
+Gtk::Gdk::InputSource	T_SimpleVal
+Gtk::Gdk::AxisUse	T_SimpleVal
+Gtk::Gdk::DeviceInfo	T_SimpleVal
+Gtk::Gdk::DeviceTimeCoord	T_SimpleVal
 
 Gtk::ShadowType		T_SimpleVal
 Gtk::SelectionMode	T_SimpleVal
@@ -51,6 +57,7 @@ Gtk::MenuFactoryType		T_SimpleVal
 Gtk::MenuPath		T_SimpleVal
 Gtk::MenuEntry		T_SimpleVal
 Gtk::PreviewType		T_SimpleVal
+Gtk::CurveType		T_SimpleVal
 
 Gtk::Adjustment	T_GtkPTROBJ
 Gtk::AspectFrame	T_GtkPTROBJ
@@ -70,12 +77,15 @@ Gtk::DrawingArea	T_GtkPTROBJ
 Gtk::Entry	T_GtkPTROBJ
 Gtk::FileSelection	T_GtkPTROBJ
 Gtk::Frame	T_GtkPTROBJ
+Gtk::GammaCurve	T_GtkPTROBJ
 Gtk::HBox	T_GtkPTROBJ
+Gtk::HPaned	T_GtkPTROBJ
 Gtk::HRuler	T_GtkPTROBJ
 Gtk::HScale	T_GtkPTROBJ
 Gtk::HScrollbar	T_GtkPTROBJ
 Gtk::HSeparator	T_GtkPTROBJ
 Gtk::Image	T_GtkPTROBJ
+Gtk::InputDialog	T_GtkPTROBJ
 Gtk::Item	T_GtkPTROBJ
 Gtk::Label	T_GtkPTROBJ
 Gtk::List	T_GtkPTROBJ
@@ -88,6 +98,7 @@ Gtk::Misc	T_GtkPTROBJ
 Gtk::Notebook	T_GtkPTROBJ
 Gtk::Object	T_GtkPTROBJ
 Gtk::OptionMenu	T_GtkPTROBJ
+Gtk::Paned	T_GtkPTROBJ
 Gtk::Pixmap	T_GtkPTROBJ
 Gtk::Preview	T_GtkPTROBJ
 Gtk::ProgressBar	T_GtkPTROBJ
@@ -106,6 +117,7 @@ Gtk::Tree	T_GtkPTROBJ
 Gtk::TreeItem	T_GtkPTROBJ
 Gtk::VBox	T_GtkPTROBJ
 Gtk::Viewport	T_GtkPTROBJ
+Gtk::VPaned	T_GtkPTROBJ
 Gtk::VRuler	T_GtkPTROBJ
 Gtk::VScale	T_GtkPTROBJ
 Gtk::VScrollbar	T_GtkPTROBJ

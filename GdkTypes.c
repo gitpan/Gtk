@@ -9,6 +9,15 @@
 #include "MiscTypes.h"
 #include "GdkTypes.h"
 
+struct _GdkDeviceTimeCoord {
+	guint32 time;
+	gdouble x;
+	gdouble y;
+	gdouble pressure;
+	gdouble xtilt;
+	gdouble ytilt;
+};
+
 static struct opts event_types[] = {
 	{ GDK_NOTHING, "NOTHING"} ,
 	{ GDK_DELETE, "DELETE"} ,
@@ -30,6 +39,8 @@ static struct opts event_types[] = {
 	{ GDK_SELECTION_CLEAR, "SELECTION_CLEAR"} ,
 	{ GDK_SELECTION_REQUEST, "SELECTION_REQUEST"} ,
 	{ GDK_SELECTION_NOTIFY, "SELECTION_NOTIFY"} ,
+	{ GDK_PROXIMITY_IN, "GDK_PROXIMITY_IN"} ,
+	{ GDK_PROXIMITY_OUT, "GDK_PROXIMITY_OUT"} ,
 	{ GDK_OTHER_EVENT, "OTHER_EVENT"} ,
 	{0,0}	
 };
@@ -49,6 +60,41 @@ static struct opts notify_types[] = {
 
 int SvGtkGdkNotifyType(SV * value) { return SvOpt(value, "GdkNotifyType", notify_types); }
 SV * newSVGtkGdkNotifyType(int value) { return newSVOpt(value, "GdkNotifyType", notify_types); }
+
+static struct opts input_sources[] = {
+	{ GDK_SOURCE_MOUSE, "MOUSE"},
+	{ GDK_SOURCE_PEN, "PEN"},
+	{ GDK_SOURCE_ERASER, "ERASER"},
+	{ GDK_SOURCE_CURSOR, "CURSOR"},
+	{0,0}	
+};
+
+int SvGtkGdkInputSource(SV * value) { return SvOpt(value, "GdkInputSource", input_sources); }
+SV * newSVGtkGdkInputSource(int value) { return newSVOpt(value, "GdkInputSource", input_sources); }
+
+static struct opts input_modes[] = {
+	{ GDK_MODE_DISABLED, "DISABLED"},
+	{ GDK_MODE_SCREEN, "SCREEN"},
+	{ GDK_MODE_WINDOW, "WINDOW"},
+	{0,0}	
+};
+
+int SvGtkGdkInputMode(SV * value) { return SvOpt(value, "GdkInputMode", input_modes); }
+SV * newSVGtkGdkInputMode(int value) { return newSVOpt(value, "GdkInputMode", input_modes); }
+
+static struct opts axes[] = {
+	{ GDK_AXIS_IGNORE, "IGNORE"},
+	{ GDK_AXIS_X, "X"},
+	{ GDK_AXIS_Y, "Y"},
+	{ GDK_AXIS_PRESSURE, "PRESSURE"},
+	{ GDK_AXIS_XTILT, "XTILT"},
+	{ GDK_AXIS_YTILT, "YTILT"},
+	{ GDK_AXIS_LAST, "LAST"},
+	{0,0}	
+};
+
+int SvGtkGdkAxisUse(SV * value) { return SvOpt(value, "GdkAxisUse", axes); }
+SV * newSVGtkGdkAxisUse(int value) { return newSVOpt(value, "GdkAxisUse", axes); }
 
 static struct opts window_types[] = {
 	{ GDK_WINDOW_ROOT,	"ROOT"},
@@ -79,6 +125,8 @@ static struct opts event_masks[] = {
 	{GDK_LEAVE_NOTIFY_MASK,		"LEAVE_NOTIFY"},
 	{GDK_FOCUS_CHANGE_MASK,		"FOCUS_CHANGE"},
 	{GDK_STRUCTURE_MASK,		"STRUCTURE"},
+	{GDK_PROXIMITY_IN_MASK,		"PROXIMITY_IN"},
+	{GDK_PROXIMITY_OUT_MASK,		"PROXIMITY_OUT"},
 	{GDK_ALL_EVENTS_MASK,		"ALL_EVENTS"},
 	{0,0}	
 };
@@ -117,6 +165,16 @@ static struct opts image_types[] = {
 
 int SvGtkGdkImageType(SV * value) { return SvOpt(value, "GdkImageType", image_types); }
 SV * newSVGtkGdkImageType(int value) { return newSVOpt(value, "GdkImageType", image_types); }
+
+static struct opts input_conditions[] = {
+	{GDK_INPUT_READ,		"READ"},
+	{GDK_INPUT_WRITE,		"WRITE"},
+	{GDK_INPUT_EXCEPTION,		"EXCEPTION"},
+	{0,0}	
+};
+
+int SvGtkGdkInputCondition(SV * value) { return SvOptFlags(value, "GdkInputCondition", input_conditions); }
+SV * newSVGtkGdkInputCondition(int value) { return newSVOptFlags(value, "GdkInputCondition", input_conditions, 1); }
 
 static struct opts subwindow_modes[] = {
 	{ GDK_CLIP_BY_CHILDREN,	"CLIP_BY_CHILDREN"},
@@ -512,6 +570,59 @@ GdkGCValues * SvGtkGdkGCValues(SV * data, GdkGCValues * v, GdkGCValuesMask * m)
 	return v;
 }
 
+SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * v)
+{
+	HV * h;
+	SV * r;
+	
+	if (!v)
+		return newSVsv(&sv_undef);
+		
+	h = newHV();
+	r = newRV((SV*)h);
+	SvREFCNT_dec(h);
+
+	hv_store(h, "deviceid", 8, newSViv(v->deviceid), 0);
+	hv_store(h, "name", 4, newSVpv(v->name, 0), 0);
+	hv_store(h, "source", 6, newSVGtkGdkInputSource(v->source), 0);
+	hv_store(h, "mode", 4, newSVGtkGdkInputMode(v->mode), 0);
+	hv_store(h, "has_cursor", 10, newSViv(v->has_cursor), 0);
+	hv_store(h, "num_axes", 8, newSViv(v->num_axes), 0);
+	if (v->axes) {
+		int i;
+		AV * a = newAV();
+		for(i=0;i<v->num_axes;i++) {
+			av_push(a, newSVGtkGdkAxisUse(v->axes[i]));
+		}
+		hv_store(h, "axes", 4, newRV((SV*)a), 0);
+		SvREFCNT_dec(a);
+	}
+
+	return r;
+}
+
+SV * newSVGtkGdkDeviceTimeCoord(GdkDeviceTimeCoord * v)
+{
+	HV * h;
+	SV * r;
+	
+	if (!v)
+		return newSVsv(&sv_undef);
+		
+	h = newHV();
+	r = newRV((SV*)h);
+	SvREFCNT_dec(h);
+
+	hv_store(h, "time", 4, newSViv(v->time), 0);
+	hv_store(h, "x", 1, newSVnv(v->x), 0);
+	hv_store(h, "y", 1, newSVnv(v->y), 0);
+	hv_store(h, "pressure", 8, newSVnv(v->pressure), 0);
+	hv_store(h, "xtilt", 5, newSVnv(v->xtilt), 0);
+	hv_store(h, "ytilt", 5, newSVnv(v->ytilt), 0);
+
+	return r;
+}
+
 SV * newSVGtkGdkAtom(GdkAtom a)
 {
 	return newSViv(a);
@@ -542,11 +653,16 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		hv_store(h, "count", 5, newSViv(e->expose.count), 0);
 		break;
 	case GDK_MOTION_NOTIFY:
-		hv_store(h, "x", 1, newSViv(e->motion.x), 0);
-		hv_store(h, "y", 1, newSViv(e->motion.y), 0);
+		hv_store(h, "x", 1, newSVnv(e->motion.x), 0);
+		hv_store(h, "y", 1, newSVnv(e->motion.y), 0);
+		hv_store(h, "pressure", 8, newSVnv(e->motion.pressure), 0);
+		hv_store(h, "xtilt", 5, newSVnv(e->motion.xtilt), 0);
+		hv_store(h, "ytilt", 5, newSVnv(e->motion.ytilt), 0);
 		hv_store(h, "time", 4, newSViv(e->motion.time), 0);
 		hv_store(h, "state", 5, newSViv(e->motion.state), 0);
 		hv_store(h, "is_hint", 7, newSViv(e->motion.is_hint), 0);
+		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
 		break;
 	case GDK_BUTTON_PRESS:
 	case GDK_2BUTTON_PRESS:
@@ -555,8 +671,13 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		hv_store(h, "x", 1, newSViv(e->button.x), 0);
 		hv_store(h, "y", 1, newSViv(e->button.y), 0);
 		hv_store(h, "time", 4, newSViv(e->button.time), 0);
+		hv_store(h, "pressure", 8, newSVnv(e->motion.pressure), 0);
+		hv_store(h, "xtilt", 5, newSVnv(e->motion.xtilt), 0);
+		hv_store(h, "ytilt", 5, newSVnv(e->motion.ytilt), 0);
 		hv_store(h, "state", 5, newSViv(e->button.state), 0);
 		hv_store(h, "button", 6, newSViv(e->button.button), 0);
+		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
 		break;
 	case GDK_KEY_PRESS:
 	case GDK_KEY_RELEASE:
@@ -592,6 +713,13 @@ SV * newSVGtkGdkEvent(GdkEvent * e)
 		hv_store(h, "selection", 9, newSVGtkGdkAtom(e->selection.selection), 0);
 		hv_store(h, "property", 8, newSVGtkGdkAtom(e->selection.property), 0);
 		break;
+	case GDK_PROXIMITY_IN:
+	case GDK_PROXIMITY_OUT:
+		hv_store(h, "time", 4, newSViv(e->proximity.time), 0);
+		hv_store(h, "source", 6, newSVGtkGdkInputSource(e->motion.source), 0);
+		hv_store(h, "deviceid", 8, newSViv(e->motion.deviceid), 0);
+		break;
+		
 	}
 	
 	return r;
@@ -632,13 +760,31 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 		break;
 	case GDK_MOTION_NOTIFY:
 		if (s=hv_fetch(h, "x", 1, 0))
-			e->motion.x = SvIV(*s);
+			e->motion.x = SvNV(*s);
 		else
 			croak("event must contain x ordinate");
 		if (s=hv_fetch(h, "y", 1, 0))
-			e->motion.y = SvIV(*s);
+			e->motion.y = SvNV(*s);
 		else
 			croak("event must contain y ordinate");
+		if (s=hv_fetch(h, "pressure", 8, 0))
+			e->button.button = SvNV(*s);
+		else
+			e->button.pressure = 0;
+		if (s=hv_fetch(h, "xtilt", 5, 0))
+			e->button.xtilt = SvNV(*s);
+		else
+			e->button.xtilt = 0;
+		if (s=hv_fetch(h, "ytilt", 5, 0))
+			e->button.ytilt = SvNV(*s);
+		else
+			e->button.ytilt = 0;
+		break;
+		if (s=hv_fetch(h, "ytilt", 5, 0))
+			e->button.ytilt = SvNV(*s);
+		else
+			e->button.ytilt = 0;
+		break;
 		if (s=hv_fetch(h, "time", 4, 0))
 			e->motion.time = SvIV(*s);
 		else
@@ -652,18 +798,46 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 		else
 			croak("event must contain is_hint");
 		break;
+		if (s=hv_fetch(h, "source", 6, 0))
+			e->button.source = SvGtkGdkInputSource(*s);
+		else
+			e->button.source = 0;
+		break;
+		if ((s=hv_fetch(h, "deviceid", 8, 0)) && SvOK(*s))
+			e->button.deviceid = SvIV(*s);
+		else
+			e->button.deviceid = GDK_CORE_POINTER;
+		break;
 	case GDK_BUTTON_PRESS:
 	case GDK_2BUTTON_PRESS:
 	case GDK_3BUTTON_PRESS:
 	case GDK_BUTTON_RELEASE:
 		if (s=hv_fetch(h, "x", 1, 0))
-			e->button.x = SvIV(*s);
+			e->button.x = SvNV(*s);
 		else
 			croak("event must contain x ordinate");
 		if (s=hv_fetch(h, "y", 1, 0))
-			e->button.y = SvIV(*s);
+			e->button.y = SvNV(*s);
 		else
 			croak("event must contain y ordinate");
+		if (s=hv_fetch(h, "pressure", 8, 0))
+			e->button.button = SvNV(*s);
+		else
+			e->button.pressure = 0;
+		if (s=hv_fetch(h, "xtilt", 5, 0))
+			e->button.xtilt = SvNV(*s);
+		else
+			e->button.xtilt = 0;
+		if (s=hv_fetch(h, "ytilt", 5, 0))
+			e->button.ytilt = SvNV(*s);
+		else
+			e->button.ytilt = 0;
+		break;
+		if (s=hv_fetch(h, "ytilt", 5, 0))
+			e->button.ytilt = SvNV(*s);
+		else
+			e->button.ytilt = 0;
+		break;
 		if (s=hv_fetch(h, "time", 4, 0))
 			e->button.time = SvIV(*s);
 		else
@@ -676,6 +850,16 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 			e->button.button = SvIV(*s);
 		else
 			croak("event must contain state");
+		break;
+		if (s=hv_fetch(h, "source", 6, 0))
+			e->button.source = SvGtkGdkInputSource(*s);
+		else
+			e->button.source = 0;
+		break;
+		if ((s=hv_fetch(h, "deviceid", 8, 0)) && SvOK(*s))
+			e->button.deviceid = SvIV(*s);
+		else
+			e->button.deviceid = GDK_CORE_POINTER;
 		break;
 	case GDK_KEY_PRESS:
 	case GDK_KEY_RELEASE:
@@ -763,6 +947,17 @@ GdkEvent * SvGtkGdkEvent(SV * data, GdkEvent * e)
 			e->selection.property = SvGtkGdkAtom(*s);
 		else
 			croak("event must contain property");
+		break;
+	case GDK_PROXIMITY_IN:
+	case GDK_PROXIMITY_OUT:
+		if (s=hv_fetch(h, "time", 4, 0))
+			e->proximity.time = SvIV(*s);
+		else
+			croak("event must contain time");
+		if (s=hv_fetch(h, "deviceid", 8, 0))
+			e->proximity.deviceid = SvIV(*s);
+		else
+			croak("event must contain deviceid");
 		break;
 	}
 	

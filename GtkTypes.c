@@ -136,7 +136,11 @@ void init_typecasts()
 	add_typecast(gtk_vseparator_get_type(),		"Gtk::VSeparator");
 	add_typecast(gtk_widget_get_type(),		"Gtk::Widget");
 	add_typecast(gtk_window_get_type(),		"Gtk::Window");
-
+	add_typecast(gtk_gamma_curve_get_type(),	"Gtk::GammaCurve");
+	add_typecast(gtk_paned_get_type(),		"Gtk::Paned");
+	add_typecast(gtk_hpaned_get_type(),		"Gtk::HPaned");
+	add_typecast(gtk_vpaned_get_type(),		"Gtk::VPaned");
+	add_typecast(gtk_input_dialog_get_type(),	"Gtk::InputDialog");
 }
 
 SV * newSVGtkObjectRef(GtkObject * object, char * classname)
@@ -205,6 +209,16 @@ static struct opts submenu_placements[] = {
 
 int SvGtkSubmenuPlacement(SV * value) { return SvOpt(value, "GtkSubmenuPlacement", submenu_placements); }
 SV * newSVGtkSubmenuPlacement(int value) { return newSVOpt(value, "GtkSubmenuPlacement", submenu_placements); }
+
+static struct opts curve_types[] = {
+	{GTK_CURVE_TYPE_LINEAR,	"LINEAR"},
+	{GTK_CURVE_TYPE_SPLINE,	"SPLINE"},
+	{GTK_CURVE_TYPE_FREE,	"FREE"},
+       	{0,0}	
+};
+
+int SvGtkCurveType(SV * value) { return SvOpt(value, "GtkCurveType", curve_types); }
+SV * newSVGtkCurveType(int value) { return newSVOpt(value, "GtkCurveType", curve_types); }
 
 static struct opts position_types[] = {
 	{GTK_POS_LEFT,	"LEFT"},
@@ -312,8 +326,8 @@ static struct opts arrow_types[] = {
        	{0,0}	
 };
 
-int SvGtkArrowType(SV * value) { return SvOptFlags(value, "GtkArrowType", arrow_types); }
-SV * newSVGtkArrowType(int value) { return newSVOptFlags(value, "GtkArrowType", arrow_types, 0); }
+int SvGtkArrowType(SV * value) { return SvOpt(value, "GtkArrowType", arrow_types); }
+SV * newSVGtkArrowType(int value) { return newSVOpt(value, "GtkArrowType", arrow_types); }
 
 static struct opts menu_factory_types[] = {
 	{GTK_MENU_FACTORY_MENU,	"MENU"},
@@ -322,8 +336,8 @@ static struct opts menu_factory_types[] = {
        	{0,0}	
 };
 
-int SvGtkMenuFactoryType(SV * value) { return SvOptFlags(value, "GtkMenuFactoryType", menu_factory_types); }
-SV * newSVGtkMenuFactoryType(int value) { return newSVOptFlags(value, "GtkMenuFactoryType", menu_factory_types, 0); }
+int SvGtkMenuFactoryType(SV * value) { return SvOpt(value, "GtkMenuFactoryType", menu_factory_types); }
+SV * newSVGtkMenuFactoryType(int value) { return newSVOpt(value, "GtkMenuFactoryType", menu_factory_types); }
 
 static struct opts preview_types[] = {
 	{GTK_PREVIEW_COLOR,	"COLOR"},
@@ -331,8 +345,8 @@ static struct opts preview_types[] = {
        	{0,0}	
 };
 
-int SvGtkPreviewType(SV * value) { return SvOptFlags(value, "GtkPreviewType", preview_types); }
-SV * newSVGtkPreviewType(int value) { return newSVOptFlags(value, "GtkPreviewType", preview_types, 0); }
+int SvGtkPreviewType(SV * value) { return SvOpt(value, "GtkPreviewType", preview_types); }
+SV * newSVGtkPreviewType(int value) { return newSVOpt(value, "GtkPreviewType", preview_types); }
 
 GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
 {

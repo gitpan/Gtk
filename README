@@ -28,10 +28,12 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 970606, and there is
+Usage information: this package was designed around gtk 970828, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.
+
+Gtk is available at <ftp://ftp.gimp.org/pub/gtk/>.
 
 The code may very well still have leaks, and a few portions are incomplete
 (such as Gdk colormap manipulation) and much of it is untested. No

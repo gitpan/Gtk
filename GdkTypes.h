@@ -1,6 +1,7 @@
 
 /* Copyright (C) 1997, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
+   
 
 typedef GdkWindow * Gtk__Gdk__Window;
 typedef GdkPixmap * Gtk__Gdk__Pixmap;
@@ -12,6 +13,8 @@ typedef GdkGC * Gtk__Gdk__GC;
 typedef GdkFont * Gtk__Gdk__Font;
 typedef GdkImage * Gtk__Gdk__Image;
 typedef GdkGCValues * Gtk__Gdk__GCValues;
+typedef GdkDeviceInfo * Gtk__Gdk__DeviceInfo;
+typedef GdkDeviceTimeCoord * Gtk__Gdk__DeviceTimeCoord;
 
 typedef GdkEvent * Gtk__Gdk__Event;
 typedef GdkRectangle * Gtk__Gdk__Rectangle;
@@ -26,9 +29,13 @@ typedef GdkFill Gtk__Gdk__Fill;
 typedef GdkAtom Gtk__Gdk__Atom;
 typedef GdkCapStyle Gtk__Gdk__CapStyle;
 typedef GdkEventMask Gtk__Gdk__EventMask;
+typedef GdkInputCondition Gtk__Gdk__InputCondition;
 typedef GdkModifierType Gtk__Gdk__ModifierType;
 typedef GdkGCValuesMask Gtk__Gdk__ValuesMask;
 typedef GdkGCValues Gtk__Gdk__Values;
+typedef GdkInputSource Gtk__Gdk__InputSource;
+typedef GdkInputMode Gtk__Gdk__InputMode;
+typedef GdkAxisUse Gtk__Gdk__AxisUse;
 
 extern int SvGtkGdkEventType(SV * value);
 extern SV * newSVGtkGdkEventType(int value);
@@ -44,6 +51,17 @@ extern int SvGtkGdkNotifyType(SV * value);
 extern SV * newSVGtkGdkNotifyType(int value);
 extern int SvGtkGdkVisualType(SV * value);
 extern SV * newSVGtkGdkVisualType(int value);
+
+extern int SvGtkGdkInputMode(SV * value);
+extern SV * newSVGtkGdkInputMode(int value);
+extern int SvGtkGdkInputSource(SV * value);
+extern SV * newSVGtkGdkInputSource(int value);
+extern int SvGtkGdkAxisUse(SV * value);
+extern SV * newSVGtkGdkAxisUse(int value);
+
+extern SV * newSVGtkGdkDeviceInfo(GdkDeviceInfo * i);
+extern SV * newSVGtkGdkDeviceTimeCoord(GdkDeviceTimeCoord * i);
+
 extern int SvGtkGdkSubwindowMode(SV * value);
 extern SV * newSVGtkGdkSubwindowMode(int value);
 extern int SvGtkGdkLineStyle(SV * value);
@@ -64,6 +82,8 @@ extern int SvGtkGdkCursorType(SV * value);
 extern SV * newSVGtkGdkCursorType(int value);
 extern int SvGtkGdkEventMask(SV * value);
 extern SV * newSVGtkGdkEventMask(int value);
+extern int SvGtkGdkInputCondition(SV * value);
+extern SV * newSVGtkGdkInputCondition(int value);
 extern SV * newSVGtkGdkWindowRef(GdkWindow * w);
 extern GdkWindow * SvGtkGdkWindowRef(SV * data);
 extern SV * newSVGtkGdkPixmapRef(GdkPixmap * w);

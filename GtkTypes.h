@@ -18,6 +18,7 @@ typedef GtkArrowType Gtk__ArrowType;
 typedef GtkMenuFactoryType Gtk__MenuFactoryType;
 typedef GtkMenuEntry Gtk__MenuEntry;
 typedef GtkPreviewType Gtk__PreviewType;
+typedef GtkCurveType Gtk__CurveType;
 
 typedef GtkAcceleratorTable * Gtk__AcceleratorTable;
 typedef GtkStyle * Gtk__Style;
@@ -87,6 +88,11 @@ typedef GtkWindow * Gtk__Window;
 
 typedef GtkWidget * upGtk__Widget;
 
+typedef GtkInputDialog * Gtk__InputDialog;
+typedef GtkPaned * Gtk__Paned;
+typedef GtkHPaned * Gtk__HPaned;
+typedef GtkVPaned * Gtk__VPaned;
+typedef GtkGammaCurve * Gtk__GammaCurve;
 
 #define CastupGtk__Widget GTK_WIDGET
 
@@ -151,6 +157,11 @@ typedef GtkWidget * upGtk__Widget;
 #define CastGtk__Widget GTK_WIDGET
 #define CastGtk__Window GTK_WINDOW
 
+#define CastGtk__InputDialog GTK_INPUT_DIALOG
+#define CastGtk__Paned GTK_PANED
+#define CastGtk__HPaned GTK_HPANED
+#define CastGtk__VPaned GTK_VPANED
+#define CastGtk__GammaCurve GTK_GAMMA_CURVE
 
 extern void UnregisterGtkObject(SV * sv_object, GtkObject * gtk_object);
 extern void RegisterGtkObject(SV * sv_object, GtkObject * gtk_object);
@@ -179,6 +190,9 @@ extern SV * newSVGtkMetricType(int value);
 
 extern int SvGtkPolicyType(SV * value);
 extern SV * newSVGtkPolicyType(int value);
+
+extern int SvGtkCurveType(SV * value);
+extern SV * newSVGtkCurveType(int value);
 
 extern int SvGtkStateType(SV * value);
 extern SV * newSVGtkStateType(int value);

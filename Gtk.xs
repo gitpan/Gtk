@@ -54,7 +54,7 @@ void marshal_signal (GtkObject *object, gpointer data, gint nparams, GtkArg * ar
 	XPUSHs(sv_2mortal(sv_object));
 	for(i=4;i<=av_len(perlargs);i++)
 		XPUSHs(sv_2mortal(newSVsv(*av_fetch(perlargs, i, 0))));
-	XPUSHs(sv_2mortal(newSVpv(signame, 0)));
+	/*XPUSHs(sv_2mortal(newSVpv(signame, 0)));*/
 	if (sv_derived_from(sv_object, "Gtk::List")) {
 		if (strEQ(signame, "select_child")	||
 			strEQ(signame, "unselect_child")) {
@@ -333,6 +333,23 @@ int init_handler(gpointer data) {
 	return 0;
 }
 
+static AV * input_handlers = 0;
+
+void input_handler(gpointer data, gint source, GdkInputCondition condition) {
+	AV * args = (AV*)data;
+	SV * handler = *av_fetch(args, 0, 0);
+	int i;
+	dSP;
+
+	PUSHMARK(sp);
+	for (i=1;i<=av_len(args);i++)
+		XPUSHs(sv_2mortal(newSVsv(*av_fetch(args, i, 0))));
+	XPUSHs(sv_2mortal(newSViv(source)));
+	XPUSHs(sv_2mortal(newSVGtkGdkInputCondition(condition)));
+	PUTBACK;
+
+	perl_call_sv(handler, G_DISCARD);
+}
 
 void menu_pos_func (GtkMenu *menu, int *x, int *y, gpointer user_data)
 {
@@ -1010,7 +1027,7 @@ foreach(self, code, ...)
 		SvREFCNT_dec(args);
 	}
 
-MODULE = Gtk		PACKAGE = Gtk::Curve
+MODULE = Gtk		PACKAGE = Gtk::Curve	PREFIX = gtk_curve_
 
 Gtk::Curve
 new(Class)
@@ -1026,6 +1043,16 @@ reset(self)
 	Gtk::Curve	self
 	CODE:
 	gtk_curve_reset(self);
+
+void
+gtk_curve_set_gamma(curve, gamma)
+	Gtk::Curve	curve
+	double	gamma
+
+void
+gtk_curve_set_curve_type(curve, type)
+	Gtk::Curve	curve
+	Gtk::CurveType	type
 
 void
 set_range(self, min_x, max_x, min_y, max_y)
@@ -1067,6 +1094,129 @@ get_vector(self, points=32)
 			PUSHs(sv_2mortal(newSVnv(vec[i])));
 		free(vec);
 	}
+
+MODULE = Gtk		PACKAGE = Gtk::Paned	PREFIX = gtk_paned_
+
+void
+gtk_paned_add1(paned, child)
+	Gtk::Paned	paned
+	Gtk::Widget	child
+
+void
+gtk_paned_add2(paned, child)
+	Gtk::Paned	paned
+	Gtk::Widget	child
+
+void
+gtk_paned_handle_size(paned, size)
+	Gtk::Paned	paned
+	int	size
+
+void
+gtk_paned_gutter_size(paned, size)
+	Gtk::Paned	paned
+	int	size
+
+MODULE = Gtk		PACKAGE = Gtk::HPaned	PREFIX = gtk_hpaned_
+
+Gtk::HPaned
+new(Class)
+	SV *	Class
+	CODE:
+	GtkInit();
+		RETVAL = GTK_HPANED(gtk_hpaned_new());
+	OUTPUT:
+	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::VPaned	PREFIX = gtk_vpaned_
+
+Gtk::VPaned
+new(Class)
+	SV *	Class
+	CODE:
+	GtkInit();
+		RETVAL = GTK_VPANED(gtk_vpaned_new());
+	OUTPUT:
+	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::InputDialog	PREFIX = gtk_input_dialog_
+
+Gtk::InputDialog
+new(Class)
+	SV *	Class
+	CODE:
+	GtkInit();
+		RETVAL = GTK_INPUT_DIALOG(gtk_input_dialog_new());
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+axis_list(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->axis_list;
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+axis_listbox(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->axis_listbox;
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+mode_optionmenu(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->mode_optionmenu;
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+close_button(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->close_button;
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+save_button(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->save_button;
+	OUTPUT:
+	RETVAL
+
+int
+current_device(dialog)
+	Gtk::InputDialog	dialog
+	CODE:
+	RETVAL = dialog->current_device;
+	OUTPUT:
+	RETVAL
+
+MODULE = Gtk		PACKAGE = Gtk::GammaCurve	PREFIX = gtk_gamma_curve_
+
+Gtk::GammaCurve
+new(Class)
+	SV *	Class
+	CODE:
+	GtkInit();
+		RETVAL = GTK_GAMMA_CURVE(gtk_gamma_curve_new());
+	OUTPUT:
+	RETVAL
+
+upGtk::Widget
+curve(curve)
+	Gtk::GammaCurve	curve
+	CODE:
+	RETVAL = curve->curve;
+	OUTPUT:
+	RETVAL
+
 
 MODULE = Gtk		PACKAGE = Gtk::Dialog
 
@@ -1387,7 +1537,6 @@ insert_items(self, position, ...)
 			list = g_list_prepend(list, SvGtkObjectRef(ST(i),"Gtk::ListItem"));
 		g_list_reverse(list);
 		gtk_list_insert_items(self, list, position);
-		g_list_free(list);
 	}
 
 void
@@ -1403,7 +1552,6 @@ append_items(self, ...)
 			list = g_list_prepend(list, GTK_LIST_ITEM(o));
 		}
 		gtk_list_append_items(self, list);
-		g_list_free(list);
 	}
 
 void
@@ -1417,7 +1565,6 @@ prepend_items(self, ...)
 			list = g_list_prepend(list, SvGtkObjectRef(ST(i),"Gtk::ListItem"));
 		g_list_reverse(list);
 		gtk_list_prepend_items(self, list);
-		g_list_free(list);
 	}
 
 void
@@ -3451,6 +3598,11 @@ gtk_widget_set_events(widget, events)
 	Gtk::Widget	widget
 	Gtk::Gdk::EventMask	events
 
+void
+gtk_widget_set_extension_events(widget, events)
+	Gtk::Widget	widget
+	Gtk::Gdk::EventMask	events
+
 upGtk::Widget
 gtk_widget_get_toplevel(widget)
 	Gtk::Widget	widget
@@ -3481,6 +3633,10 @@ gtk_widget_get_style(widget)
 
 int
 gtk_widget_get_events(widget)
+	Gtk::Widget	widget
+
+int
+gtk_widget_get_extension_events(widget)
 	Gtk::Widget	widget
 
 void
@@ -4206,6 +4362,52 @@ gdk_timer_disable(Class)
 	SV *	Class
 	CODE:
 	gdk_timer_disable();
+
+int
+input_add(Class, source, condition, handler, ...)
+	SV *	Class
+	int	source
+	Gtk::Gdk::InputCondition	condition
+	SV *	handler
+	CODE:
+	{
+		AV * args;
+		SV * arg;
+		int i,j;
+		int type;
+		args = newAV();
+		
+		av_push(args, newSVsv(ST(3)));
+		for (j=4;j<items;j++)
+			av_push(args, newSVsv(ST(j)));
+		
+		if (!input_handlers)
+			input_handlers = newAV();
+
+		RETVAL = gdk_input_add(source, condition, input_handler, (gpointer)args);
+		
+		arg = newRV((SV*)args);
+		
+		av_extend(input_handlers, RETVAL);
+		av_store(input_handlers, RETVAL, arg);
+	}
+	OUTPUT:
+	RETVAL
+
+void
+input_remove(Class, tag)
+	SV *	Class
+	int	tag
+	CODE:
+	{
+		if (!input_handlers)
+			input_handlers = newAV();
+
+		gdk_input_remove(tag);
+		
+		av_extend(input_handlers, tag);
+		av_store(input_handlers, tag, newSVsv(&sv_undef));
+	}
 
 int
 gdk_pointer_grab(Class, window, owner_events, event_mask, confine_to, cursor, time)

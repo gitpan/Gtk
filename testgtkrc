@@ -49,6 +49,11 @@ style "ruler"
   font = "-adobe-helvetica-medium-r-normal--*-80-*-*-*-*-*-*"
 }
 
+style "curve"
+{
+  fg[NORMAL] = { 58000, 0, 0 }			# red
+}
+
 # pixmap_path "~/.pixmaps"
 widget_class "GtkWindow" style "window"
 widget_class "GtkDialog" style "window"
@@ -60,3 +65,4 @@ widget_class "*GtkButton*" style "button"
 widget_class "*Ruler" style "ruler"
 widget_class "*GtkText" style "text"
 widget "main window.*GtkButton*" style "main_button"
+widget "*GtkCurve" style "curve"

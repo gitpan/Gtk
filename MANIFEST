@@ -1,3 +1,4 @@
+Atoms.pm
 Gdk.pm
 GdkTypes.c
 GdkTypes.h
@@ -19,6 +20,7 @@ demo_inherit.pl
 gendefs.pl
 gtk.defs
 marble.xpm
+objects.xsh
 simple.pl
 test.pl
 test.xpm
@@ -26,3 +28,4 @@ testgtkrc
 typemap
 typemap.gtk
 warning.xpm
+widget.pl

@@ -1,3 +1,4 @@
+package Gtk::Types;
 @Gtk::Adjustment::ISA = qw(Gtk::Data);
 @Gtk::Alignment::ISA = qw(Gtk::Bin);
 @Gtk::Arrow::ISA = qw(Gtk::Misc);

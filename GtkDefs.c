@@ -17,12 +17,12 @@ HV * pG_FlagsHash;
 AV * gtk_typecasts = 0;
 static HV * types = 0;
 
-static void add_typecast(int type, char * name)
+void add_typecast(int type, char * perlName)
 {
-	GtkObjectClass * klass = gtk_type_class(type);
-	av_extend(gtk_typecasts, klass->type);
-	av_store(gtk_typecasts, klass->type, newSVpv(name, 0));
-	hv_store(types, name, strlen(name), newSViv(type), 0);
+	/*GtkObjectClass * klass = gtk_type_class(type);*/
+	av_extend(gtk_typecasts, type/* klass->type*/);
+	av_store(gtk_typecasts, type/*klass->type*/, newSVpv(perlName, 0));
+	hv_store(types, perlName, strlen(perlName), newSViv(type), 0);
 }
 
 int type_name(char * name) {
@@ -37,8 +37,8 @@ int type_name(char * name) {
 SV * newSVGdkColormap(GdkColormap * value) {
 	int n = 0;
 	SV * result = newSVMiscRef(value, "Gtk::Gdk::Colormap", &n);
-	/*if (n)
-		gdk_colormap_ref(value);*/
+	if (n)
+		gdk_colormap_ref(value);
 	return result;
 }
 
@@ -455,7 +455,6 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = SvPV(v,na); break;
 		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
 		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
-		case GTK_TYPE_C_CALLBACK: break;
 		case GTK_TYPE_SIGNAL:
 		{
 			AV * args;
@@ -799,7 +798,6 @@ void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_STRING:	*GTK_RETLOC_STRING(*a) = SvPV(v,na); break;
 		case GTK_TYPE_POINTER:	*GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;
 		case GTK_TYPE_OBJECT:	*GTK_RETLOC_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
-		case GTK_TYPE_C_CALLBACK: break;
 		case GTK_TYPE_ENUM:
 #ifdef GTK_TYPE_GDK_AXIS_USE
 			if (a->type == GTK_TYPE_GDK_AXIS_USE)
@@ -1682,76 +1680,77 @@ void initPerlGtkDefs(void) {
 	}*/
 
 	gtk_typecasts = newAV();
+	types = newHV();
 
-	add_typecast(gtk_adjustment_get_type(),		"Gtk::Adjustment");
-	add_typecast(gtk_alignment_get_type(),		"Gtk::Alignment");
-	add_typecast(gtk_arrow_get_type(),		"Gtk::Arrow");
-	add_typecast(gtk_aspect_frame_get_type(),		"Gtk::AspectFrame");
-	add_typecast(gtk_bin_get_type(),		"Gtk::Bin");
-	add_typecast(gtk_box_get_type(),		"Gtk::Box");
-	add_typecast(gtk_button_get_type(),		"Gtk::Button");
-	add_typecast(gtk_button_box_get_type(),		"Gtk::ButtonBox");
-	add_typecast(gtk_check_button_get_type(),		"Gtk::CheckButton");
-	add_typecast(gtk_check_menu_item_get_type(),		"Gtk::CheckMenuItem");
-	add_typecast(gtk_color_selection_get_type(),		"Gtk::ColorSelection");
-	add_typecast(gtk_color_selection_dialog_get_type(),		"Gtk::ColorSelectionDialog");
-	add_typecast(gtk_container_get_type(),		"Gtk::Container");
-	add_typecast(gtk_curve_get_type(),		"Gtk::Curve");
-	add_typecast(gtk_data_get_type(),		"Gtk::Data");
-	add_typecast(gtk_dialog_get_type(),		"Gtk::Dialog");
-	add_typecast(gtk_drawing_area_get_type(),		"Gtk::DrawingArea");
-	add_typecast(gtk_entry_get_type(),		"Gtk::Entry");
-	add_typecast(gtk_event_box_get_type(),		"Gtk::EventBox");
-	add_typecast(gtk_file_selection_get_type(),		"Gtk::FileSelection");
-	add_typecast(gtk_fixed_get_type(),		"Gtk::Fixed");
-	add_typecast(gtk_frame_get_type(),		"Gtk::Frame");
-	add_typecast(gtk_gamma_curve_get_type(),		"Gtk::GammaCurve");
-	add_typecast(gtk_hbox_get_type(),		"Gtk::HBox");
-	add_typecast(gtk_hbutton_box_get_type(),		"Gtk::HButtonBox");
-	add_typecast(gtk_hpaned_get_type(),		"Gtk::HPaned");
-	add_typecast(gtk_hruler_get_type(),		"Gtk::HRuler");
-	add_typecast(gtk_hscale_get_type(),		"Gtk::HScale");
-	add_typecast(gtk_hscrollbar_get_type(),		"Gtk::HScrollbar");
-	add_typecast(gtk_hseparator_get_type(),		"Gtk::HSeparator");
-	add_typecast(gtk_image_get_type(),		"Gtk::Image");
-	add_typecast(gtk_input_dialog_get_type(),		"Gtk::InputDialog");
-	add_typecast(gtk_item_get_type(),		"Gtk::Item");
-	add_typecast(gtk_label_get_type(),		"Gtk::Label");
-	add_typecast(gtk_list_get_type(),		"Gtk::List");
-	add_typecast(gtk_list_item_get_type(),		"Gtk::ListItem");
-	add_typecast(gtk_menu_get_type(),		"Gtk::Menu");
-	add_typecast(gtk_menu_bar_get_type(),		"Gtk::MenuBar");
-	add_typecast(gtk_menu_item_get_type(),		"Gtk::MenuItem");
-	add_typecast(gtk_menu_shell_get_type(),		"Gtk::MenuShell");
-	add_typecast(gtk_misc_get_type(),		"Gtk::Misc");
-	add_typecast(gtk_notebook_get_type(),		"Gtk::Notebook");
-	add_typecast(gtk_object_get_type(),		"Gtk::Object");
-	add_typecast(gtk_option_menu_get_type(),		"Gtk::OptionMenu");
-	add_typecast(gtk_paned_get_type(),		"Gtk::Paned");
-	add_typecast(gtk_pixmap_get_type(),		"Gtk::Pixmap");
-	add_typecast(gtk_preview_get_type(),		"Gtk::Preview");
-	add_typecast(gtk_progress_bar_get_type(),		"Gtk::ProgressBar");
-	add_typecast(gtk_radio_button_get_type(),		"Gtk::RadioButton");
-	add_typecast(gtk_radio_menu_item_get_type(),		"Gtk::RadioMenuItem");
-	add_typecast(gtk_range_get_type(),		"Gtk::Range");
-	add_typecast(gtk_ruler_get_type(),		"Gtk::Ruler");
-	add_typecast(gtk_scale_get_type(),		"Gtk::Scale");
-	add_typecast(gtk_scrollbar_get_type(),		"Gtk::Scrollbar");
-	add_typecast(gtk_scrolled_window_get_type(),		"Gtk::ScrolledWindow");
-	add_typecast(gtk_separator_get_type(),		"Gtk::Separator");
-	add_typecast(gtk_table_get_type(),		"Gtk::Table");
-	add_typecast(gtk_text_get_type(),		"Gtk::Text");
-	add_typecast(gtk_toggle_button_get_type(),		"Gtk::ToggleButton");
-	add_typecast(gtk_tree_get_type(),		"Gtk::Tree");
-	add_typecast(gtk_tree_item_get_type(),		"Gtk::TreeItem");
-	add_typecast(gtk_vbox_get_type(),		"Gtk::VBox");
-	add_typecast(gtk_vbutton_box_get_type(),		"Gtk::VButtonBox");
-	add_typecast(gtk_vpaned_get_type(),		"Gtk::VPaned");
-	add_typecast(gtk_vruler_get_type(),		"Gtk::VRuler");
-	add_typecast(gtk_vscale_get_type(),		"Gtk::VScale");
-	add_typecast(gtk_vscrollbar_get_type(),		"Gtk::VScrollbar");
-	add_typecast(gtk_vseparator_get_type(),		"Gtk::VSeparator");
-	add_typecast(gtk_viewport_get_type(),		"Gtk::Viewport");
-	add_typecast(gtk_widget_get_type(),		"Gtk::Widget");
-	add_typecast(gtk_window_get_type(),		"Gtk::Window");
+	add_typecast(gtk_adjustment_get_type(),	"Gtk::Adjustment");
+	add_typecast(gtk_alignment_get_type(),	"Gtk::Alignment");
+	add_typecast(gtk_arrow_get_type(),	"Gtk::Arrow");
+	add_typecast(gtk_aspect_frame_get_type(),	"Gtk::AspectFrame");
+	add_typecast(gtk_bin_get_type(),	"Gtk::Bin");
+	add_typecast(gtk_box_get_type(),	"Gtk::Box");
+	add_typecast(gtk_button_get_type(),	"Gtk::Button");
+	add_typecast(gtk_button_box_get_type(),	"Gtk::ButtonBox");
+	add_typecast(gtk_check_button_get_type(),	"Gtk::CheckButton");
+	add_typecast(gtk_check_menu_item_get_type(),	"Gtk::CheckMenuItem");
+	add_typecast(gtk_color_selection_get_type(),	"Gtk::ColorSelection");
+	add_typecast(gtk_color_selection_dialog_get_type(),	"Gtk::ColorSelectionDialog");
+	add_typecast(gtk_container_get_type(),	"Gtk::Container");
+	add_typecast(gtk_curve_get_type(),	"Gtk::Curve");
+	add_typecast(gtk_data_get_type(),	"Gtk::Data");
+	add_typecast(gtk_dialog_get_type(),	"Gtk::Dialog");
+	add_typecast(gtk_drawing_area_get_type(),	"Gtk::DrawingArea");
+	add_typecast(gtk_entry_get_type(),	"Gtk::Entry");
+	add_typecast(gtk_event_box_get_type(),	"Gtk::EventBox");
+	add_typecast(gtk_file_selection_get_type(),	"Gtk::FileSelection");
+	add_typecast(gtk_fixed_get_type(),	"Gtk::Fixed");
+	add_typecast(gtk_frame_get_type(),	"Gtk::Frame");
+	add_typecast(gtk_gamma_curve_get_type(),	"Gtk::GammaCurve");
+	add_typecast(gtk_hbox_get_type(),	"Gtk::HBox");
+	add_typecast(gtk_hbutton_box_get_type(),	"Gtk::HButtonBox");
+	add_typecast(gtk_hpaned_get_type(),	"Gtk::HPaned");
+	add_typecast(gtk_hruler_get_type(),	"Gtk::HRuler");
+	add_typecast(gtk_hscale_get_type(),	"Gtk::HScale");
+	add_typecast(gtk_hscrollbar_get_type(),	"Gtk::HScrollbar");
+	add_typecast(gtk_hseparator_get_type(),	"Gtk::HSeparator");
+	add_typecast(gtk_image_get_type(),	"Gtk::Image");
+	add_typecast(gtk_input_dialog_get_type(),	"Gtk::InputDialog");
+	add_typecast(gtk_item_get_type(),	"Gtk::Item");
+	add_typecast(gtk_label_get_type(),	"Gtk::Label");
+	add_typecast(gtk_list_get_type(),	"Gtk::List");
+	add_typecast(gtk_list_item_get_type(),	"Gtk::ListItem");
+	add_typecast(gtk_menu_get_type(),	"Gtk::Menu");
+	add_typecast(gtk_menu_bar_get_type(),	"Gtk::MenuBar");
+	add_typecast(gtk_menu_item_get_type(),	"Gtk::MenuItem");
+	add_typecast(gtk_menu_shell_get_type(),	"Gtk::MenuShell");
+	add_typecast(gtk_misc_get_type(),	"Gtk::Misc");
+	add_typecast(gtk_notebook_get_type(),	"Gtk::Notebook");
+	add_typecast(gtk_object_get_type(),	"Gtk::Object");
+	add_typecast(gtk_option_menu_get_type(),	"Gtk::OptionMenu");
+	add_typecast(gtk_paned_get_type(),	"Gtk::Paned");
+	add_typecast(gtk_pixmap_get_type(),	"Gtk::Pixmap");
+	add_typecast(gtk_preview_get_type(),	"Gtk::Preview");
+	add_typecast(gtk_progress_bar_get_type(),	"Gtk::ProgressBar");
+	add_typecast(gtk_radio_button_get_type(),	"Gtk::RadioButton");
+	add_typecast(gtk_radio_menu_item_get_type(),	"Gtk::RadioMenuItem");
+	add_typecast(gtk_range_get_type(),	"Gtk::Range");
+	add_typecast(gtk_ruler_get_type(),	"Gtk::Ruler");
+	add_typecast(gtk_scale_get_type(),	"Gtk::Scale");
+	add_typecast(gtk_scrollbar_get_type(),	"Gtk::Scrollbar");
+	add_typecast(gtk_scrolled_window_get_type(),	"Gtk::ScrolledWindow");
+	add_typecast(gtk_separator_get_type(),	"Gtk::Separator");
+	add_typecast(gtk_table_get_type(),	"Gtk::Table");
+	add_typecast(gtk_text_get_type(),	"Gtk::Text");
+	add_typecast(gtk_toggle_button_get_type(),	"Gtk::ToggleButton");
+	add_typecast(gtk_tree_get_type(),	"Gtk::Tree");
+	add_typecast(gtk_tree_item_get_type(),	"Gtk::TreeItem");
+	add_typecast(gtk_vbox_get_type(),	"Gtk::VBox");
+	add_typecast(gtk_vbutton_box_get_type(),	"Gtk::VButtonBox");
+	add_typecast(gtk_vpaned_get_type(),	"Gtk::VPaned");
+	add_typecast(gtk_vruler_get_type(),	"Gtk::VRuler");
+	add_typecast(gtk_vscale_get_type(),	"Gtk::VScale");
+	add_typecast(gtk_vscrollbar_get_type(),	"Gtk::VScrollbar");
+	add_typecast(gtk_vseparator_get_type(),	"Gtk::VSeparator");
+	add_typecast(gtk_viewport_get_type(),	"Gtk::Viewport");
+	add_typecast(gtk_widget_get_type(),	"Gtk::Widget");
+	add_typecast(gtk_window_get_type(),	"Gtk::Window");
 }

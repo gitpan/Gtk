@@ -44,6 +44,8 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
+$init = 1;
+
 use Gtk;
 
 # Autoload methods go after __END__, and are processed by the autosplit program.

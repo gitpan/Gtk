@@ -53,6 +53,12 @@ use Gtk::Types;
 @Gtk::Gdk::Bitmap::ISA = qw(Gtk::Gdk::Pixmap);
 @Gtk::Gdk::Window::ISA = qw(Gtk::Gdk::Pixmap);
 
+if (not defined $Gtk::Gdk::init) {
+	init Gtk;
+} else {
+	init Gdk;
+}
+
 # Autoload methods go after __END__, and are processed by the autosplit program.
 
 1;

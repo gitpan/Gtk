@@ -5,6 +5,7 @@ extern HV * pG_FlagsHash;
 extern AV * gtk_typecasts;
 extern int type_name(char * name);
 
+extern void add_typecast(int type, char * perlName);
 extern SV * GtkGetArg(GtkArg * a);
 extern void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
 extern void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);

@@ -21,7 +21,7 @@ void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	
 	/*sv_setiv(sv_object, 0);*/
 	
-	/*printf("Destroying %d from '%s'\n", hv_object, buffer);*/
+	/*printf("Unregistering %d from '%s'\n", hv_object, buffer);*/
 	
 	/*SvREFCNT(sv_object)+=2;*/
 	hv_delete(ObjectCache, buffer, strlen(buffer), G_DISCARD);
@@ -38,7 +38,7 @@ void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	
 	/*printf("Recording %d as '%s'\n", hv_object, buffer);*/
 
-	hv_store(ObjectCache, buffer, strlen(buffer), newSViv((int)hv_object), 0);
+	hv_store(ObjectCache, buffer, strlen(buffer), newRV((SV*)hv_object), 0);
 }
 
 HV * RetrieveGtkObject(GtkObject * gtk_object)
@@ -55,12 +55,21 @@ HV * RetrieveGtkObject(GtkObject * gtk_object)
 	/*printf("Retrieving '%s' as %d\n", buffer, (s ? (int)*s : 0));*/
 
 	if (s)
-		return (HV*)SvIV(*s);
+		return (HV*)SvRV(*s);
 	else
 		return 0;
 }
 
 extern AV * gtk_typecasts;
+
+static void DisconnectGtkObject(GtkObject * object, gpointer data)
+{
+	HV * h = (HV*)data;
+	/*printf("Disconnecting Gtk object %d/%d\n", data, object);*/
+	UnregisterGtkObject(h, object);
+	/*printf("Destroying hv %d, with object %d\n", h, object);*/
+	/*hv_delete(h, "_gtk", 4, G_DISCARD); Busted, sigh */
+}
 
 SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 {
@@ -69,7 +78,7 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 	if (previous) {
 		result = newRV((SV*)previous);
 		/*printf("Returning previous ref %d as %d (%d)\n", object, previous, result);*/
-		//SvREFCNT_dec(SvRV(result));
+		/*SvREFCNT_dec(SvRV(result));*/
 	} else {
 		HV * h;
 		SV * s;
@@ -85,6 +94,8 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 		hv_store(h, "_gtk", 4, s, 0);
 		result = newRV((SV*)h);
 		RegisterGtkObject(h, object);
+		/*printf("Setting hv %d up for destruction on object %d\n", h, object);*/
+		gtk_signal_connect(object, "destroy", (GtkSignalFunc)DisconnectGtkObject, (gpointer)h);
 		sv_bless(result, gv_stashpv(classname, FALSE));
 		SvREFCNT_dec(h);
 		/*gtk_object_ref(object);*/
@@ -109,6 +120,7 @@ GtkObject * SvGtkObjectRef(SV * o, char * name)
 
 void disconnect_GtkObjectRef(SV * o)
 {
+#if 0
 	HV * q;
 	SV ** r;
 	/*printf("Trying to delete GtkObject %d\n", o);*/
@@ -119,6 +131,7 @@ void disconnect_GtkObjectRef(SV * o)
 		return;
 	UnregisterGtkObject(q, (GtkObject*)SvIV(*r));
 	hv_delete(q, "_gtk", 4, G_DISCARD);
+#endif
 }
 
 GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)

@@ -6,7 +6,7 @@ DESTROY(self)
 	Gtk::Gdk::Colormap	self
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
-	/*gdk_colormap_unref(self);*/
+	gdk_colormap_unref(self);
 
 	
 MODULE = Gtk	PACKAGE = Gtk::Gdk::Font

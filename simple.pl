@@ -1,9 +1,12 @@
 use Gtk;
 
-use vars qw($window $button);
+use vars qw($window $button $button2);
 
 sub hello {
 	Gtk->print("hello world\n");
+	print "Destroying $button and $window\n";
+	destroy $button;
+	destroy $window;
 }
 
 init Gtk;

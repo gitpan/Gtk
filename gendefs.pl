@@ -107,6 +107,7 @@ extern HV * pG_FlagsHash;
 extern AV * gtk_typecasts;
 extern int type_name(char * name);
 
+extern void add_typecast(int type, char * perlName);
 extern SV * GtkGetArg(GtkArg * a);
 extern void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
 extern void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
@@ -158,6 +159,7 @@ foreach (sort keys %object) {
 }
 
 open(STDOUT,">GtkTypes.pm");
+print "package Gtk::Types;\n";
 foreach (sort keys %object) {
 	$p = perlize($_);
 	$q = perlize($object{$_}[1]);
@@ -186,12 +188,12 @@ HV * pG_FlagsHash;
 AV * gtk_typecasts = 0;
 static HV * types = 0;
 
-static void add_typecast(int type, char * name)
+void add_typecast(int type, char * perlName)
 {
-	GtkObjectClass * klass = gtk_type_class(type);
-	av_extend(gtk_typecasts, klass->type);
-	av_store(gtk_typecasts, klass->type, newSVpv(name, 0));
-	hv_store(types, name, strlen(name), newSViv(type), 0);
+	/*GtkObjectClass * klass = gtk_type_class(type);*/
+	av_extend(gtk_typecasts, type/* klass->type*/);
+	av_store(gtk_typecasts, type/*klass->type*/, newSVpv(perlName, 0));
+	hv_store(types, perlName, strlen(perlName), newSViv(type), 0);
 }
 
 int type_name(char * name) {
@@ -528,11 +530,12 @@ print <<"EOT";
 	}*/
 
 	gtk_typecasts = newAV();
+	types = newHV();
 
 EOT
 foreach (sort keys %object) {
 	$p = perlize($_);
-	print "\tadd_typecast(", lc $object{$_}[0], "_get_type(),		\"$p\");\n"
+	print "\tadd_typecast(", lc $object{$_}[0], "_get_type(),	\"$p\");\n"
 		;#unless /preview/i;
 }
 
@@ -554,6 +557,43 @@ DESTROY(self)
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
 	$boxed{$_}[1](self);
+
+EOT
+}
+
+open(STDOUT,">objects.xsh");
+
+foreach (sort keys %object) {
+	$p = perlize($_);
+	$c = lc $object{$_}->[0];
+	print <<"EOT";
+	
+MODULE = Gtk	PACKAGE = $p		PREFIX = ${c}_
+
+int
+${c}_get_type(self)
+	$p	self
+	CODE:
+	RETVAL = ${c}_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+${c}_get_size(self)
+	$p	self
+	CODE:
+	RETVAL = sizeof($_);
+	OUTPUT:
+	RETVAL
+
+
+int
+${c}_get_class_size(self)
+	$p	self
+	CODE:
+	RETVAL = sizeof(${_}Class);
+	OUTPUT:
+	RETVAL
 
 EOT
 }

@@ -21,18 +21,18 @@ typedef GdkFont * Gtk__Gdk__Font;*/
 typedef GdkEvent * Gtk__Gdk__Event;
 typedef GdkRectangle * Gtk__Gdk__Rectangle;
 typedef GdkColor * Gtk__Gdk__Color;
-typedef GdkImageType Gtk__Gdk__ImageType;
-typedef GdkWindowType Gtk__Gdk__WindowType;
-typedef GdkSubwindowMode Gtk__Gdk__SubwindowMode;
+/*typedef GdkImageType Gtk__Gdk__ImageType;*/
+/*typedef GdkWindowType Gtk__Gdk__WindowType;*/
+/*typedef GdkSubwindowMode Gtk__Gdk__SubwindowMode;*/
 /*typedef GdkLineStyle Gtk__Gdk__LineStyle;
 typedef GdkFill Gtk__Gdk__Fill;*/
-typedef GdkJoinStyle Gtk__Gdk__JoinStyle;
-typedef GdkFunction Gtk__Gdk__Function;
+/*typedef GdkJoinStyle Gtk__Gdk__JoinStyle;*/
+/*typedef GdkFunction Gtk__Gdk__Function;*/
 typedef GdkAtom Gtk__Gdk__Atom;
-typedef GdkCapStyle Gtk__Gdk__CapStyle;
+/*typedef GdkCapStyle Gtk__Gdk__CapStyle;*/
 /*typedef GdkEventMask Gtk__Gdk__EventMask;*/
-typedef GdkInputCondition Gtk__Gdk__InputCondition;
-typedef GdkModifierType Gtk__Gdk__ModifierType;
+/*typedef GdkInputCondition Gtk__Gdk__InputCondition;*/
+/*typedef GdkModifierType Gtk__Gdk__ModifierType;*/
 typedef GdkGCValuesMask Gtk__Gdk__ValuesMask;
 typedef GdkGCValues Gtk__Gdk__Values;
 /*typedef GdkInputSource Gtk__Gdk__InputSource;*/

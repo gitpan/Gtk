@@ -16,7 +16,7 @@ DESTROY(self)
 	Gtk::Gdk::Font	self
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), (void*)self);
-	gdk_font_free(self);
+	gdk_font_unref(self);
 
 	
 MODULE = Gtk	PACKAGE = Gtk::Gdk::Pixmap

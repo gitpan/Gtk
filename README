@@ -29,7 +29,7 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 971109, and there is
+Usage information: this package was designed around gtk 0.99.2, and there is
 no guarantee it will work with any other distributions, or indeed even that
 one. To build, install Gtk in your system, then run 'perl Makefile.PL', and
 'make test', and then 'make install' if all went well.
@@ -42,6 +42,10 @@ of fact, I know that several parts of object deallocation and tracking are
 broken, and may not be fixed for some time. No documentation currently
 exists, but this code is designed to mimic the C calling sequences as much
 as is reasonable.
+
+A major file reorganization happened with 0.1.13, hopefully making the
+module easier to work with, and add widgets to, but it may turn out to break
+with older Perl installations.
 
 If you have been using Gtk-0.1.8, several changes have been made to the API,
 including the change of enumeration and flag values to lowercase (to match

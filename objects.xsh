@@ -1,6 +1,8 @@
 	
 MODULE = Gtk	PACKAGE = Gtk::Adjustment		PREFIX = gtk_adjustment_
 
+#ifdef GTK_ADJUSTMENT
+
 int
 gtk_adjustment_get_type(self)
 	Gtk::Adjustment	self
@@ -26,8 +28,12 @@ gtk_adjustment_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Alignment		PREFIX = gtk_alignment_
+
+#ifdef GTK_ALIGNMENT
 
 int
 gtk_alignment_get_type(self)
@@ -54,8 +60,12 @@ gtk_alignment_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Arrow		PREFIX = gtk_arrow_
+
+#ifdef GTK_ARROW
 
 int
 gtk_arrow_get_type(self)
@@ -82,8 +92,12 @@ gtk_arrow_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::AspectFrame		PREFIX = gtk_aspect_frame_
+
+#ifdef GTK_ASPECT_FRAME
 
 int
 gtk_aspect_frame_get_type(self)
@@ -110,8 +124,12 @@ gtk_aspect_frame_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Bin		PREFIX = gtk_bin_
+
+#ifdef GTK_BIN
 
 int
 gtk_bin_get_type(self)
@@ -138,8 +156,12 @@ gtk_bin_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Box		PREFIX = gtk_box_
+
+#ifdef GTK_BOX
 
 int
 gtk_box_get_type(self)
@@ -166,8 +188,12 @@ gtk_box_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Button		PREFIX = gtk_button_
+
+#ifdef GTK_BUTTON
 
 int
 gtk_button_get_type(self)
@@ -194,8 +220,12 @@ gtk_button_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ButtonBox		PREFIX = gtk_button_box_
+
+#ifdef GTK_BUTTON_BOX
 
 int
 gtk_button_box_get_type(self)
@@ -222,8 +252,12 @@ gtk_button_box_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::CheckButton		PREFIX = gtk_check_button_
+
+#ifdef GTK_CHECK_BUTTON
 
 int
 gtk_check_button_get_type(self)
@@ -250,8 +284,12 @@ gtk_check_button_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::CheckMenuItem		PREFIX = gtk_check_menu_item_
+
+#ifdef GTK_CHECK_MENU_ITEM
 
 int
 gtk_check_menu_item_get_type(self)
@@ -278,8 +316,12 @@ gtk_check_menu_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ColorSelection		PREFIX = gtk_color_selection_
+
+#ifdef GTK_COLOR_SELECTION
 
 int
 gtk_color_selection_get_type(self)
@@ -306,8 +348,12 @@ gtk_color_selection_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ColorSelectionDialog		PREFIX = gtk_color_selection_dialog_
+
+#ifdef GTK_COLOR_SELECTION_DIALOG
 
 int
 gtk_color_selection_dialog_get_type(self)
@@ -334,8 +380,12 @@ gtk_color_selection_dialog_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Container		PREFIX = gtk_container_
+
+#ifdef GTK_CONTAINER
 
 int
 gtk_container_get_type(self)
@@ -362,8 +412,12 @@ gtk_container_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Curve		PREFIX = gtk_curve_
+
+#ifdef GTK_CURVE
 
 int
 gtk_curve_get_type(self)
@@ -390,8 +444,12 @@ gtk_curve_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Data		PREFIX = gtk_data_
+
+#ifdef GTK_DATA
 
 int
 gtk_data_get_type(self)
@@ -418,8 +476,12 @@ gtk_data_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Dialog		PREFIX = gtk_dialog_
+
+#ifdef GTK_DIALOG
 
 int
 gtk_dialog_get_type(self)
@@ -446,8 +508,12 @@ gtk_dialog_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::DrawingArea		PREFIX = gtk_drawing_area_
+
+#ifdef GTK_DRAWING_AREA
 
 int
 gtk_drawing_area_get_type(self)
@@ -474,8 +540,12 @@ gtk_drawing_area_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Entry		PREFIX = gtk_entry_
+
+#ifdef GTK_ENTRY
 
 int
 gtk_entry_get_type(self)
@@ -502,8 +572,12 @@ gtk_entry_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::EventBox		PREFIX = gtk_event_box_
+
+#ifdef GTK_EVENT_BOX
 
 int
 gtk_event_box_get_type(self)
@@ -530,8 +604,12 @@ gtk_event_box_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::FileSelection		PREFIX = gtk_file_selection_
+
+#ifdef GTK_FILE_SELECTION
 
 int
 gtk_file_selection_get_type(self)
@@ -558,8 +636,12 @@ gtk_file_selection_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Fixed		PREFIX = gtk_fixed_
+
+#ifdef GTK_FIXED
 
 int
 gtk_fixed_get_type(self)
@@ -586,8 +668,12 @@ gtk_fixed_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Frame		PREFIX = gtk_frame_
+
+#ifdef GTK_FRAME
 
 int
 gtk_frame_get_type(self)
@@ -614,8 +700,12 @@ gtk_frame_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::GammaCurve		PREFIX = gtk_gamma_curve_
+
+#ifdef GTK_GAMMA_CURVE
 
 int
 gtk_gamma_curve_get_type(self)
@@ -642,8 +732,12 @@ gtk_gamma_curve_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HBox		PREFIX = gtk_hbox_
+
+#ifdef GTK_HBOX
 
 int
 gtk_hbox_get_type(self)
@@ -670,8 +764,12 @@ gtk_hbox_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HButtonBox		PREFIX = gtk_hbutton_box_
+
+#ifdef GTK_HBUTTON_BOX
 
 int
 gtk_hbutton_box_get_type(self)
@@ -698,8 +796,12 @@ gtk_hbutton_box_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HPaned		PREFIX = gtk_hpaned_
+
+#ifdef GTK_HPANED
 
 int
 gtk_hpaned_get_type(self)
@@ -726,8 +828,12 @@ gtk_hpaned_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HRuler		PREFIX = gtk_hruler_
+
+#ifdef GTK_HRULER
 
 int
 gtk_hruler_get_type(self)
@@ -754,8 +860,12 @@ gtk_hruler_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HScale		PREFIX = gtk_hscale_
+
+#ifdef GTK_HSCALE
 
 int
 gtk_hscale_get_type(self)
@@ -782,8 +892,12 @@ gtk_hscale_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HScrollbar		PREFIX = gtk_hscrollbar_
+
+#ifdef GTK_HSCROLLBAR
 
 int
 gtk_hscrollbar_get_type(self)
@@ -810,8 +924,12 @@ gtk_hscrollbar_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::HSeparator		PREFIX = gtk_hseparator_
+
+#ifdef GTK_HSEPARATOR
 
 int
 gtk_hseparator_get_type(self)
@@ -838,8 +956,44 @@ gtk_hseparator_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
+	
+MODULE = Gtk	PACKAGE = Gtk::HandleBox		PREFIX = gtk_handle_box_
+
+#ifdef GTK_HANDLE_BOX
+
+int
+gtk_handle_box_get_type(self)
+	Gtk::HandleBox	self
+	CODE:
+	RETVAL = gtk_handle_box_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_handle_box_get_size(self)
+	Gtk::HandleBox	self
+	CODE:
+	RETVAL = sizeof(GtkHandleBox);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_handle_box_get_class_size(self)
+	Gtk::HandleBox	self
+	CODE:
+	RETVAL = sizeof(GtkHandleBoxClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Image		PREFIX = gtk_image_
+
+#ifdef GTK_IMAGE
 
 int
 gtk_image_get_type(self)
@@ -866,8 +1020,12 @@ gtk_image_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::InputDialog		PREFIX = gtk_input_dialog_
+
+#ifdef GTK_INPUT_DIALOG
 
 int
 gtk_input_dialog_get_type(self)
@@ -894,8 +1052,12 @@ gtk_input_dialog_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Item		PREFIX = gtk_item_
+
+#ifdef GTK_ITEM
 
 int
 gtk_item_get_type(self)
@@ -922,8 +1084,12 @@ gtk_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Label		PREFIX = gtk_label_
+
+#ifdef GTK_LABEL
 
 int
 gtk_label_get_type(self)
@@ -950,8 +1116,12 @@ gtk_label_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::List		PREFIX = gtk_list_
+
+#ifdef GTK_LIST
 
 int
 gtk_list_get_type(self)
@@ -978,8 +1148,12 @@ gtk_list_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ListItem		PREFIX = gtk_list_item_
+
+#ifdef GTK_LIST_ITEM
 
 int
 gtk_list_item_get_type(self)
@@ -1006,8 +1180,12 @@ gtk_list_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Menu		PREFIX = gtk_menu_
+
+#ifdef GTK_MENU
 
 int
 gtk_menu_get_type(self)
@@ -1034,8 +1212,12 @@ gtk_menu_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::MenuBar		PREFIX = gtk_menu_bar_
+
+#ifdef GTK_MENU_BAR
 
 int
 gtk_menu_bar_get_type(self)
@@ -1062,8 +1244,12 @@ gtk_menu_bar_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::MenuItem		PREFIX = gtk_menu_item_
+
+#ifdef GTK_MENU_ITEM
 
 int
 gtk_menu_item_get_type(self)
@@ -1090,8 +1276,12 @@ gtk_menu_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::MenuShell		PREFIX = gtk_menu_shell_
+
+#ifdef GTK_MENU_SHELL
 
 int
 gtk_menu_shell_get_type(self)
@@ -1118,8 +1308,12 @@ gtk_menu_shell_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Misc		PREFIX = gtk_misc_
+
+#ifdef GTK_MISC
 
 int
 gtk_misc_get_type(self)
@@ -1146,8 +1340,12 @@ gtk_misc_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Notebook		PREFIX = gtk_notebook_
+
+#ifdef GTK_NOTEBOOK
 
 int
 gtk_notebook_get_type(self)
@@ -1174,8 +1372,12 @@ gtk_notebook_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Object		PREFIX = gtk_object_
+
+#ifdef GTK_OBJECT
 
 int
 gtk_object_get_type(self)
@@ -1202,8 +1404,12 @@ gtk_object_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::OptionMenu		PREFIX = gtk_option_menu_
+
+#ifdef GTK_OPTION_MENU
 
 int
 gtk_option_menu_get_type(self)
@@ -1230,8 +1436,12 @@ gtk_option_menu_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Paned		PREFIX = gtk_paned_
+
+#ifdef GTK_PANED
 
 int
 gtk_paned_get_type(self)
@@ -1258,8 +1468,12 @@ gtk_paned_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Pixmap		PREFIX = gtk_pixmap_
+
+#ifdef GTK_PIXMAP
 
 int
 gtk_pixmap_get_type(self)
@@ -1286,8 +1500,12 @@ gtk_pixmap_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Preview		PREFIX = gtk_preview_
+
+#ifdef GTK_PREVIEW
 
 int
 gtk_preview_get_type(self)
@@ -1314,8 +1532,12 @@ gtk_preview_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ProgressBar		PREFIX = gtk_progress_bar_
+
+#ifdef GTK_PROGRESS_BAR
 
 int
 gtk_progress_bar_get_type(self)
@@ -1342,8 +1564,12 @@ gtk_progress_bar_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::RadioButton		PREFIX = gtk_radio_button_
+
+#ifdef GTK_RADIO_BUTTON
 
 int
 gtk_radio_button_get_type(self)
@@ -1370,8 +1596,12 @@ gtk_radio_button_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::RadioMenuItem		PREFIX = gtk_radio_menu_item_
+
+#ifdef GTK_RADIO_MENU_ITEM
 
 int
 gtk_radio_menu_item_get_type(self)
@@ -1398,8 +1628,12 @@ gtk_radio_menu_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Range		PREFIX = gtk_range_
+
+#ifdef GTK_RANGE
 
 int
 gtk_range_get_type(self)
@@ -1426,8 +1660,12 @@ gtk_range_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Ruler		PREFIX = gtk_ruler_
+
+#ifdef GTK_RULER
 
 int
 gtk_ruler_get_type(self)
@@ -1454,8 +1692,12 @@ gtk_ruler_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Scale		PREFIX = gtk_scale_
+
+#ifdef GTK_SCALE
 
 int
 gtk_scale_get_type(self)
@@ -1482,8 +1724,12 @@ gtk_scale_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Scrollbar		PREFIX = gtk_scrollbar_
+
+#ifdef GTK_SCROLLBAR
 
 int
 gtk_scrollbar_get_type(self)
@@ -1510,8 +1756,12 @@ gtk_scrollbar_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ScrolledWindow		PREFIX = gtk_scrolled_window_
+
+#ifdef GTK_SCROLLED_WINDOW
 
 int
 gtk_scrolled_window_get_type(self)
@@ -1538,8 +1788,12 @@ gtk_scrolled_window_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Separator		PREFIX = gtk_separator_
+
+#ifdef GTK_SEPARATOR
 
 int
 gtk_separator_get_type(self)
@@ -1566,8 +1820,12 @@ gtk_separator_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Table		PREFIX = gtk_table_
+
+#ifdef GTK_TABLE
 
 int
 gtk_table_get_type(self)
@@ -1594,8 +1852,12 @@ gtk_table_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Text		PREFIX = gtk_text_
+
+#ifdef GTK_TEXT
 
 int
 gtk_text_get_type(self)
@@ -1622,8 +1884,12 @@ gtk_text_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::ToggleButton		PREFIX = gtk_toggle_button_
+
+#ifdef GTK_TOGGLE_BUTTON
 
 int
 gtk_toggle_button_get_type(self)
@@ -1650,8 +1916,44 @@ gtk_toggle_button_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
+	
+MODULE = Gtk	PACKAGE = Gtk::Toolbar		PREFIX = gtk_toolbar_
+
+#ifdef GTK_TOOLBAR
+
+int
+gtk_toolbar_get_type(self)
+	Gtk::Toolbar	self
+	CODE:
+	RETVAL = gtk_toolbar_get_type();
+	OUTPUT:
+	RETVAL
+
+int
+gtk_toolbar_get_size(self)
+	Gtk::Toolbar	self
+	CODE:
+	RETVAL = sizeof(GtkToolbar);
+	OUTPUT:
+	RETVAL
+
+
+int
+gtk_toolbar_get_class_size(self)
+	Gtk::Toolbar	self
+	CODE:
+	RETVAL = sizeof(GtkToolbarClass);
+	OUTPUT:
+	RETVAL
+
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Tree		PREFIX = gtk_tree_
+
+#ifdef GTK_TREE
 
 int
 gtk_tree_get_type(self)
@@ -1678,8 +1980,12 @@ gtk_tree_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::TreeItem		PREFIX = gtk_tree_item_
+
+#ifdef GTK_TREE_ITEM
 
 int
 gtk_tree_item_get_type(self)
@@ -1706,8 +2012,12 @@ gtk_tree_item_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VBox		PREFIX = gtk_vbox_
+
+#ifdef GTK_VBOX
 
 int
 gtk_vbox_get_type(self)
@@ -1734,8 +2044,12 @@ gtk_vbox_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VButtonBox		PREFIX = gtk_vbutton_box_
+
+#ifdef GTK_VBUTTON_BOX
 
 int
 gtk_vbutton_box_get_type(self)
@@ -1762,8 +2076,12 @@ gtk_vbutton_box_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VPaned		PREFIX = gtk_vpaned_
+
+#ifdef GTK_VPANED
 
 int
 gtk_vpaned_get_type(self)
@@ -1790,8 +2108,12 @@ gtk_vpaned_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VRuler		PREFIX = gtk_vruler_
+
+#ifdef GTK_VRULER
 
 int
 gtk_vruler_get_type(self)
@@ -1818,8 +2140,12 @@ gtk_vruler_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VScale		PREFIX = gtk_vscale_
+
+#ifdef GTK_VSCALE
 
 int
 gtk_vscale_get_type(self)
@@ -1846,8 +2172,12 @@ gtk_vscale_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VScrollbar		PREFIX = gtk_vscrollbar_
+
+#ifdef GTK_VSCROLLBAR
 
 int
 gtk_vscrollbar_get_type(self)
@@ -1874,8 +2204,12 @@ gtk_vscrollbar_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::VSeparator		PREFIX = gtk_vseparator_
+
+#ifdef GTK_VSEPARATOR
 
 int
 gtk_vseparator_get_type(self)
@@ -1902,8 +2236,12 @@ gtk_vseparator_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Viewport		PREFIX = gtk_viewport_
+
+#ifdef GTK_VIEWPORT
 
 int
 gtk_viewport_get_type(self)
@@ -1930,8 +2268,12 @@ gtk_viewport_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Widget		PREFIX = gtk_widget_
+
+#ifdef GTK_WIDGET
 
 int
 gtk_widget_get_type(self)
@@ -1958,8 +2300,12 @@ gtk_widget_get_class_size(self)
 	OUTPUT:
 	RETVAL
 
+#endif
+
 	
 MODULE = Gtk	PACKAGE = Gtk::Window		PREFIX = gtk_window_
+
+#ifdef GTK_WINDOW
 
 int
 gtk_window_get_type(self)
@@ -1985,4 +2331,517 @@ gtk_window_get_class_size(self)
 	RETVAL = sizeof(GtkWindowClass);
 	OUTPUT:
 	RETVAL
+
+#endif
+
+BOOT:
+{
+	#ifdef GTK_ADJUSTMENT
+		boot_Gtk__Adjustment(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_ALIGNMENT
+		boot_Gtk__Alignment(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_ARROW
+		boot_Gtk__Arrow(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_ASPECT_FRAME
+		boot_Gtk__AspectFrame(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_BIN
+		boot_Gtk__Bin(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_BOX
+		boot_Gtk__Box(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_BUTTON
+		boot_Gtk__Button(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_BUTTON_BOX
+		boot_Gtk__ButtonBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_CHECK_BUTTON
+		boot_Gtk__CheckButton(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_CHECK_MENU_ITEM
+		boot_Gtk__CheckMenuItem(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_COLOR_SELECTION
+		boot_Gtk__ColorSelection(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_COLOR_SELECTION_DIALOG
+		boot_Gtk__ColorSelectionDialog(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_CONTAINER
+		boot_Gtk__Container(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_CURVE
+		boot_Gtk__Curve(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_DATA
+		boot_Gtk__Data(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_DIALOG
+		boot_Gtk__Dialog(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_DRAWING_AREA
+		boot_Gtk__DrawingArea(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_ENTRY
+		boot_Gtk__Entry(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_EVENT_BOX
+		boot_Gtk__EventBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_FILE_SELECTION
+		boot_Gtk__FileSelection(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_FIXED
+		boot_Gtk__Fixed(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_FRAME
+		boot_Gtk__Frame(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_GAMMA_CURVE
+		boot_Gtk__GammaCurve(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HBOX
+		boot_Gtk__HBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HBUTTON_BOX
+		boot_Gtk__HButtonBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HPANED
+		boot_Gtk__HPaned(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HRULER
+		boot_Gtk__HRuler(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HSCALE
+		boot_Gtk__HScale(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HSCROLLBAR
+		boot_Gtk__HScrollbar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HSEPARATOR
+		boot_Gtk__HSeparator(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_HANDLE_BOX
+		boot_Gtk__HandleBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_IMAGE
+		boot_Gtk__Image(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_INPUT_DIALOG
+		boot_Gtk__InputDialog(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_ITEM
+		boot_Gtk__Item(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_LABEL
+		boot_Gtk__Label(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_LIST
+		boot_Gtk__List(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_LIST_ITEM
+		boot_Gtk__ListItem(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_MENU
+		boot_Gtk__Menu(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_MENU_BAR
+		boot_Gtk__MenuBar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_MENU_ITEM
+		boot_Gtk__MenuItem(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_MENU_SHELL
+		boot_Gtk__MenuShell(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_MISC
+		boot_Gtk__Misc(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_NOTEBOOK
+		boot_Gtk__Notebook(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_OBJECT
+		boot_Gtk__Object(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_OPTION_MENU
+		boot_Gtk__OptionMenu(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_PANED
+		boot_Gtk__Paned(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_PIXMAP
+		boot_Gtk__Pixmap(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_PREVIEW
+		boot_Gtk__Preview(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_PROGRESS_BAR
+		boot_Gtk__ProgressBar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_RADIO_BUTTON
+		boot_Gtk__RadioButton(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_RADIO_MENU_ITEM
+		boot_Gtk__RadioMenuItem(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_RANGE
+		boot_Gtk__Range(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_RULER
+		boot_Gtk__Ruler(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_SCALE
+		boot_Gtk__Scale(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_SCROLLBAR
+		boot_Gtk__Scrollbar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_SCROLLED_WINDOW
+		boot_Gtk__ScrolledWindow(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_SEPARATOR
+		boot_Gtk__Separator(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TABLE
+		boot_Gtk__Table(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TEXT
+		boot_Gtk__Text(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TOGGLE_BUTTON
+		boot_Gtk__ToggleButton(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TOOLBAR
+		boot_Gtk__Toolbar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TREE
+		boot_Gtk__Tree(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_TREE_ITEM
+		boot_Gtk__TreeItem(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VBOX
+		boot_Gtk__VBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VBUTTON_BOX
+		boot_Gtk__VButtonBox(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VPANED
+		boot_Gtk__VPaned(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VRULER
+		boot_Gtk__VRuler(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VSCALE
+		boot_Gtk__VScale(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VSCROLLBAR
+		boot_Gtk__VScrollbar(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VSEPARATOR
+		boot_Gtk__VSeparator(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_VIEWPORT
+		boot_Gtk__Viewport(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_WIDGET
+		boot_Gtk__Widget(cv);
+	#endif
+}
+
+BOOT:
+{
+	#ifdef GTK_WINDOW
+		boot_Gtk__Window(cv);
+	#endif
+}
 

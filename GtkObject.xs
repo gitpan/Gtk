@@ -25,42 +25,6 @@ static void generic_perl_gtk_signal_marshaller(GtkObject * object, GtkSignalFunc
 	croak("Unable to marshal C signals from Gtk class defined in Perl");
 }
 
-static void generic_perl_gtk_class_init(GtkObjectClass * klass)
-{
-	dSP;
-	SV * perlClass;
-	SV ** s = av_fetch(gtk_typecasts, klass->type, 0);
-
-	if (s)
-		perlClass = *s;
-	else {
-		fprintf(stderr, "Class is not registered\n");
-		return;
-	}
-	PUSHMARK(sp);
-	XPUSHs(sv_2mortal(newSVsv(perlClass)));
-	PUTBACK;
-	perl_call_method("CLASS_INIT", G_DISCARD);
-
-}
-
-static void generic_perl_gtk_object_init(GtkObject * object)
-{
-	SV * s = newSVGtkObjectRef(object, 0);
-	dSP;
-
-	if (!s) {
-		fprintf(stderr, "Object is not of registered type\n");
-		return;
-	}
-
-	PUSHMARK(sp);
-	XPUSHs(sv_2mortal(s));
-	PUTBACK;
-	perl_call_method("INIT", G_DISCARD);
-	
-}
-
 static void generic_perl_gtk_arg_get_func(GtkObject * object, GtkArg * arg, guint arg_id)
 {
 	SV * s = newSVGtkObjectRef(object, 0);
@@ -80,7 +44,7 @@ static void generic_perl_gtk_arg_get_func(GtkObject * object, GtkArg * arg, guin
 	XPUSHs(sv_2mortal(newSVpv(arg->name,0)));
 	XPUSHs(sv_2mortal(newSViv(arg_id)));
 	PUTBACK;
-	count = perl_call_method("GET_ARG", G_SCALAR); 
+	count = perl_call_method("GTK_OBJECT_GET_ARG", G_SCALAR); 
 	SPAGAIN;
 	if (count != 1)
 		croak("Big trouble\n");
@@ -109,10 +73,54 @@ static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guin
 	XPUSHs(sv_2mortal(newSViv(arg_id)));
 	XPUSHs(sv_2mortal(GtkGetArg(arg)));
 	PUTBACK;
-	perl_call_method("SET_ARG", G_DISCARD); 
+	perl_call_method("GTK_OBJECT_SET_ARG", G_DISCARD); 
 	/* Errors are OK ! */
 	
 }
+
+static void generic_perl_gtk_class_init(GtkObjectClass * klass)
+{
+	dSP;
+	SV * perlClass;
+	SV ** s = av_fetch(gtk_typecasts, klass->type, 0);
+
+	if (s)
+		perlClass = *s;
+	else {
+		fprintf(stderr, "Class is not registered\n");
+		return;
+	}
+
+#ifdef GTK_1_1
+	klass->set_arg = (GtkArgGetFunc)generic_perl_gtk_arg_set_func;
+	klass->get_arg = (GtkArgSetFunc)generic_perl_gtk_arg_get_func;
+#endif
+
+
+	PUSHMARK(sp);
+	XPUSHs(sv_2mortal(newSVsv(perlClass)));
+	PUTBACK;
+	perl_call_method("GTK_CLASS_INIT", G_DISCARD);
+
+}
+
+static void generic_perl_gtk_object_init(GtkObject * object)
+{
+	SV * s = newSVGtkObjectRef(object, 0);
+	dSP;
+
+	if (!s) {
+		fprintf(stderr, "Object is not of registered type\n");
+		return;
+	}
+
+	PUSHMARK(sp);
+	XPUSHs(sv_2mortal(s));
+	PUTBACK;
+	perl_call_method("GTK_OBJECT_INIT", G_DISCARD);
+	
+}
+
 
 void destroy_data(gpointer data)
 {
@@ -362,7 +370,9 @@ add_arg_type(Class, name, type, flags, num=1)
 		if (!(typeval = type_name(type))) {
 			typeval = gtk_type_from_name(type);
 		}
-		gtk_object_add_arg_type(SvPV(name2,na), typeval, flags, num);
+		if (!typeval)
+			croak("Unknown type %s", type);
+		gtk_object_add_arg_type(strdup(SvPV(name2,na)), typeval, flags, num);
 	}
 
 #ifndef GTK_HAVE_SIGNAL_EMIT
@@ -448,7 +458,34 @@ signal_emit_stop(self, name)
 	{
 		gtk_signal_emit_stop_by_name(self, SvPV(name,na));
 	}
-	
+
+void
+signal_handler_block(self, handler_id)
+		Gtk::Object     self
+		unsigned int    handler_id
+		CODE:
+		{
+				gtk_signal_handler_block(self, handler_id);
+		}
+
+void
+signal_handler_unblock(self, handler_id)
+		Gtk::Object     self
+		unsigned int    handler_id
+		CODE:
+		{
+				gtk_signal_handler_block(self, handler_id);
+		}
+
+unsigned int
+signal_handler_pending(self, handler_id, may_be_blocked)
+		Gtk::Object     self
+		unsigned int    handler_id
+		bool    may_be_blocked
+		CODE:
+		RETVAL= gtk_signal_handler_pending(self, handler_id, may_be_blocked);
+		OUTPUT:
+		RETVAL
 
 int
 register_type(perlClass, ...)
@@ -568,8 +605,12 @@ register_type(perlClass, ...)
 		
 		info.class_init_func = (GtkClassInitFunc)generic_perl_gtk_class_init;
 		info.object_init_func = (GtkObjectInitFunc)generic_perl_gtk_object_init;
+#ifdef GTK_1_0
 		info.arg_set_func = (GtkArgSetFunc)generic_perl_gtk_arg_set_func;
 		info.arg_get_func = (GtkArgSetFunc)generic_perl_gtk_arg_get_func;
+#else
+		info.base_class_init_func = 0;
+#endif
 
 		RETVAL = gtk_type_unique(parent_type, &info);
 		
@@ -585,7 +626,11 @@ register_type(perlClass, ...)
 			int j;
 			
 			for(j=1;j<=params;j++) {
-				types[j-1] = gtk_type_from_name(SvPV(*av_fetch(args, j, 0), na));
+				char * type = SvPV(*av_fetch(args, j, 0), na);
+				if (!(types[j-1] = gtk_type_from_name(type))) {
+					croak("Unknown type %s", type);
+				}
+				
 			}
 			
 			/*printf("new signal '%s' has a return type of %s, and takes %d arguments\n",

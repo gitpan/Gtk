@@ -156,20 +156,6 @@ void
 gtk_widget_draw_children(widget)
 	Gtk::Widget	widget
 
-void
-gtk_widget_install_accelerator(widget, table, signal_name, key, modifiers)
-	Gtk::Widget	widget
-	Gtk::AcceleratorTable	table
-	char *	signal_name
-	int	key
-	int	modifiers
-
-void
-gtk_widget_remove_accelerator(widget, table, signal_name)
-	Gtk::Widget	widget
-	Gtk::AcceleratorTable	table
-	char *	signal_name
-
 int
 gtk_widget_event(widget, event)
 	Gtk::Widget	widget

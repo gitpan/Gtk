@@ -2,6 +2,12 @@
 
 ;;; Gtk enums
 
+
+(define-enum GdkFillRule
+  (even-odd-rule GDK_EVEN_ODD_RULE)
+  (winding-rule GDK_WINDING_RULE))
+
+
 (define-enum GtkWindowType
   (toplevel GTK_WINDOW_TOPLEVEL)
   (dialog GTK_WINDOW_DIALOG)
@@ -190,10 +196,10 @@
   (center GTK_JUSTIFY_CENTER)
   (fill GTK_JUSTIFY_FILL))
 
-(define-flags GtkSpinButtonUpdatePolicy
-  (always GTK_UPDATE_ALWAYS)
-  (if-valid GTK_UPDATE_IF_VALID)
-  (snap-to-ticks GTK_UPDATE_SNAP_TO_TICKS))
+;(define-flags GtkSpinButtonUpdatePolicy
+;  (always GTK_UPDATE_ALWAYS)
+;  (if-valid GTK_UPDATE_IF_VALID)
+;  (snap-to-ticks GTK_UPDATE_SNAP_TO_TICKS))
 
 (define-enum GtkCellType
   (empty GTK_CELL_EMPTY)
@@ -252,10 +258,6 @@
   (tiled GDK_TILED)
   (stippled GDK_STIPPLED)
   (opaque-stippled GDK_OPAQUE_STIPPLED))
-
-(define-enum GdkFillRule
-  (even-odd-rule GDK_EVEN_ODD_RULE)
-  (winding-rule GDK_WINDING_RULE))
 
 (define-enum GdkLineStyle
   (solid GDK_LINE_SOLID)
@@ -418,9 +420,10 @@
 
 ;;; Gtk boxed types
 
-(define-boxed GtkAcceleratorTable
-  gtk_accelerator_table_ref
-  gtk_accelerator_table_unref)
+; 1.0 only
+;(define-boxed GtkAcceleratorTable
+;  gtk_accelerator_table_ref
+;  gtk_accelerator_table_unref)
 
 (define-boxed GtkStyle
   gtk_style_ref
@@ -1921,9 +1924,9 @@
 
 ;; Progress Bar
 
-(define-object GtkProgressBar (GtkWidget)
-  (fields
-   (float percentage)))
+;(define-object GtkProgressBar (GtkWidget)
+;  (fields
+;   (float percentage)))
 
 (define-func gtk_progress_bar_new
   GtkWidget

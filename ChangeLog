@@ -1,4 +1,20 @@
 
+0.3			Sun Aug 16, 1998	Kenneth Albanowski
+
+	Uses gtk+-1.0.5 or gtk+-1.1.1 (with glib-1.1.2).
+	
+	Duplication of Rasterman's gnome-perl work for Gtk-1.1.1 support.  This
+	was not done by directly merging his code, so I may have left some
+	things out, and I've not tested the result with every possible package.
+	
+	Integrated some of PMC's patches.
+	
+	Configuration mechanism cleaned up quite a bit, so that separate
+	packages are quite modular, to the point that gtk-1.0 and gtk-1.1 are
+	treated as separate packages on top of the base "gtk" package.
+	
+	Version number sequence changed, yet again. Sigh.
+	
 0.2_04		Sat Aug  1, 1998	Kenneth Albanowski
 
 	Uses gtk+-1.0.5.

@@ -1,0 +1,5 @@
+(define-object GtkGLArea (GtkWidget))
+(define-boxed GdkGLContext
+	gdk_gl_context_ref
+	gdk_gl_context_unref)
+;(define-enum )

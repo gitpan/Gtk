@@ -54,7 +54,7 @@ style "toggle_button" = "button"
 
 style "text"
 {
-  bg_pixmap[NORMAL] = "marble.xpm"
+  bg_pixmap[NORMAL] = "xpm/marble.xpm"
   text[NORMAL] = { 1.0, 1.0, 1.0 }
   fg[NORMAL] = { 1.0, 1.0, 1.0 }
   base[NORMAL] = { 0.0, 0.0, 0.0 }

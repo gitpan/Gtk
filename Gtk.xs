@@ -409,6 +409,7 @@ void GdkInit_internal() {
 				
 		gtk_signal_set_funcs(marshal_signal, destroy_signal);
 		
+		gtk_type_init();
 		initPerlGdkDefs();
 }
 
@@ -422,6 +423,7 @@ void GtkInit_internal() {
 		
 		gtk_signal_set_funcs(marshal_signal, destroy_signal);
 		
+		gtk_type_init();
 		initPerlGdkDefs();
 		initPerlGtkDefs();
 		
@@ -724,50 +726,6 @@ get_event_widget(Class=0, event)
 	OUTPUT:
 	RETVAL
 
-
-MODULE = Gtk		PACKAGE = Gtk::AcceleratorTable		PREFIX = gtk_accelerator_table_
-
-Gtk::AcceleratorTable
-new(Class)
-	SV *	Class
-	CODE:
-	RETVAL = gtk_accelerator_table_new();
-	OUTPUT:
-	RETVAL
-
-Gtk::AcceleratorTable
-gtk_accelerator_table_find(object, signal_name, key, mods)
-	Gtk::Object	object
-	char *	signal_name
-	char	key
-	int	mods
-
-void
-gtk_accelerator_table_install(self, object, signal_name, accelerator_key, accelerator_mods)
-	Gtk::AcceleratorTable	self
-	Gtk::Object	object
-	char *	signal_name
-	char	accelerator_key
-	int	accelerator_mods
-
-void
-gtk_accelerator_table_remove(self, object, signal_name)
-	Gtk::AcceleratorTable	self
-	Gtk::Object	object
-	char *	signal_name
-
-int
-gtk_accelerator_table_check(self, accelerator_key, accelerator_mods)
-	Gtk::AcceleratorTable	self
-	char	accelerator_key
-	int	accelerator_mods
-
-void
-gtk_accelerator_table_set_mod_mask(table, modifier_mask)
-	Gtk::AcceleratorTable	table
-	int	modifier_mask
-
-
 MODULE = Gtk	PACKAGE = Gtk::MenuFactory	PREFIX = gtk_menu_factory_
 
 Gtk::MenuFactory
@@ -872,15 +830,6 @@ widget(factory)
 	RETVAL = factory->widget;
 	OUTPUT:
 	RETVAL
-
-Gtk::AcceleratorTable
-table(factory)
-	Gtk::MenuFactory	factory
-	CODE:
-	RETVAL = factory->table;
-	OUTPUT:
-	RETVAL
-
 
 MODULE = Gtk		PACKAGE = Gtk::Rc	PREFIX = gtk_rc_
 
@@ -2226,6 +2175,13 @@ void
 gdk_color_alloc(colormap, color)
 	Gtk::Gdk::Colormap	colormap
 	Gtk::Gdk::Color	color
+	PPCODE:
+	{
+		GdkColor col = *color;
+		int result = gdk_color_alloc(colormap, &col);
+		if (result)
+			PUSHs(sv_2mortal(newSVGdkColor(&col)));
+	}
 
 void
 gdk_color_change(colormap, color)
@@ -2264,6 +2220,7 @@ red(color, new_value=0)
 	RETVAL=color->red;
 	if (items>1)	color->red = new_value;
 	OUTPUT:
+	color
 	RETVAL
 		
 int
@@ -2274,6 +2231,7 @@ green(color, new_value=0)
 	RETVAL=color->green;
 	if (items>1)	color->green = new_value;
 	OUTPUT:
+	color
 	RETVAL
 
 int
@@ -2284,6 +2242,7 @@ blue(color, new_value=0)
 	RETVAL=color->blue;
 	if (items>1)	color->blue = new_value;
 	OUTPUT:
+	color
 	RETVAL
 
 int
@@ -2294,6 +2253,7 @@ pixel(color, new_value=0)
 	RETVAL=color->pixel;
 	if (items>1)	color->pixel = new_value;
 	OUTPUT:
+	color
 	RETVAL
 
 void

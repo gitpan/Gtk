@@ -17,6 +17,18 @@
 (define-object GtkClock (GtkLabel))
 (define-object GtkTed (GtkTable))
 
+(define-object GtkSocket (GtkContainer))
+(define-object GtkPlug (GtkWindow))
+(define-object GnomeCanvas (GtkLayout))
+(define-object GnomeCanvasItem (GtkObject))
+(define-object GnomeCanvasGroup (GnomeCanvasItem))
+(define-object GnomeCanvasText (GnomeCanvasItem))
+(define-object GnomeCanvasImage (GnomeCanvasItem))
+(define-object GnomeCanvasLine (GnomeCanvasItem))
+(define-object GnomeCanvasRE (GnomeCanvasItem))
+(define-object GnomeCanvasRect (GnomeCanvasRE))
+(define-object GnomeCanvasEllipse (GnomeCanvasRE))
+
 ;; post 0.13 widgets
 (define-object GnomeDialog (GtkWindow))
 (define-object GnomeDateEdit (GtkHBox))
@@ -27,6 +39,8 @@
 (define-object GnomeLess (GtkVBox))
 (define-object GnomePropertyBox (GnomeDialog))
 (define-object GnomeRootWin (GtkWindow) (cast GNOME_ROOTWIN))
+
+(define-object GtkLayout (GtkContainer))
 
 
 (define-enum GnomeAppWidgetPositionType ; Can say "Gnome::AppWidgetPositionType" here 

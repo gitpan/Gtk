@@ -1,8 +1,26 @@
-\
+
 /* Copyright (C) 1997,1998, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
 
 #include "inc.h"
+
+#ifndef GTK_MAJOR_VERSION
+#define GTK_MAJOR_VERSION 0
+#endif
+
+#ifndef GTK_MINOR_VERSION
+#define GTK_MINOR_VERSION 0
+#endif
+
+#ifndef GTK_MICRO_VERSION
+#define GTK_MICRO_VERSION 0
+#endif
+
+#if (GTK_MAJOR_VERSION < 1) || ((GTK_MAJOR_VERSION == 1) && (GTK_MINOR_VERSION < 1))
+# define GTK_1_0
+#else
+# define GTK_1_1
+#endif
 
 /*extern HV * signal_fixups;*/
 
@@ -48,7 +66,7 @@ extern GtkSelectionData * SvGtkSelectionDataRef(SV * data);
 #define SvGtkBoxChild(data) ((GtkBoxChild*)SvMiscRef(data, "Gtk::BoxChild"))
 */
 
-extern void GCGtkObjects(void);
+extern int GCGtkObjects(void);
 
 extern void FreeHVObject(HV * hv_object);
 

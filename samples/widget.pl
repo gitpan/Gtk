@@ -11,33 +11,33 @@ use Gtk;
 
 @ISA = qw(Gtk::Button);
 
-register_type Foo bloop => ['first', 'none'];
+register_type Foo bloop => ['first', 'void'];
 
-add_arg_type Foo "blorp", "string", 3;
+add_arg_type Foo "blorp", "GtkString", 3;
 
-add_arg_type Foo "Foo::bletch", "int", 3;
+add_arg_type Foo "Foo::bletch", "gint", 3;
 
 sub new {
 	return Gtk::Object::new(@_);
 }
 
-sub INIT {
+sub GTK_OBJECT_INIT {
 	print "init: ";
 	print Dumper([@_]);
 }
 
-sub SET_ARG {
+sub GTK_OBJECT_SET_ARG {
 	print "set_arg: ";
 	print Dumper([@_]);
 }
 
-sub GET_ARG {
+sub GTK_OBJECT_GET_ARG {
 	print "get_arg: ";
 	print Dumper([@_]);
 	return "$_[1]-result";
 }
 
-sub CLASS_INIT {
+sub GTK_CLASS_INIT {
 	print "class_init: ";
 	print Dumper([@_]);
 }

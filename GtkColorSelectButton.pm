@@ -42,7 +42,7 @@ use strict;
 use vars qw($VERSION @ISA);
 use Gtk;
 
-$VERSION = "0.20";
+$VERSION = "0.21";
 @ISA = qw(Gtk::Button);
 
 # Class defaults data
@@ -50,13 +50,17 @@ my @class_def_color = (255,175,0);
 
 register_type Gtk::ColorSelectButton;
 
-sub CLASS_INIT {
+sub GTK_CLASS_INIT {
 	my($class) = shift;
 	
-	add_arg_type $class "color", "string", 3; #R/W
+	if (Gtk->major_version < 1 or (Gtk->major_version == 1 and Gtk->minor_version < 1)) {
+		add_arg_type $class "color", "string", 3; #R/W
+	} else {
+		add_arg_type $class "color", "GtkString", 3; #R/W
+	}
 }
 
-sub INIT {
+sub GTK_OBJECT_INIT {
     my (@color) = @class_def_color;
     
     my($color_button) = @_;
@@ -84,13 +88,13 @@ sub INIT {
     $preview->show;
 }
 
-sub SET_ARG {
+sub GTK_OBJECT_SET_ARG {
 	my($self,$arg,$id, $value) = @_;
 	$self->{_color} = [split(' ',$value)];
 	$self->update_color;
 }
 
-sub GET_ARG {
+sub GTK_OBJECT_GET_ARG {
 	my($self,$arg,$id) = @_;
 	return join(' ',@{$self->{_color}});
 }

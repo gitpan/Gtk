@@ -332,8 +332,8 @@ gtk_clist_get_row_data(self, row)
 	int		row
 	CODE:
 	{
-		SV * sv = gtk_clist_get_row_data(self, row);
-		RETVAL = sv ? newRV(sv) : newSV(&sv_undef);
+		SV * sv = (SV*)gtk_clist_get_row_data(self, row);
+		RETVAL = sv ? newRV(sv) : newSVsv(&sv_undef);
 	}
 	OUTPUT:
 	RETVAL

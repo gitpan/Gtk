@@ -53,6 +53,8 @@ gtk_menu_item_set_placement(self, placement)
 	Gtk::MenuItem	self
 	Gtk::SubmenuPlacement	placement
 
+#ifdef GTK_1_0
+
 void
 gtk_menu_item_accelerator_size(self)
 	Gtk::MenuItem	self
@@ -61,6 +63,8 @@ void
 gtk_menu_item_accelerator_text(self, buffer)
 	Gtk::MenuItem	self
 	char *	buffer
+
+#endif
 
 void
 gtk_menu_item_configure(self, show_toggle, show_submenu)

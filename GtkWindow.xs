@@ -60,16 +60,6 @@ gtk_window_set_policy(window, allow_shrink, allow_grow, auto_shrink)
 	int	auto_shrink
 
 void
-gtk_window_add_accelerator_table(window, table)
-	Gtk::Window	window
-	Gtk::AcceleratorTable	table
-
-void
-gtk_window_remove_accelerator_table(window, table)
-	Gtk::Window	window
-	Gtk::AcceleratorTable	table
-
-void
 gtk_window_position(window, position)
 	Gtk::Window	window
 	Gtk::WindowPosition	position

@@ -82,8 +82,8 @@ gtk_menu_insert(self, child, position)
 void
 gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, button, activate_time, func, ...)
 	Gtk::Menu	menu
-	Gtk::Widget	parent_menu_shell
-	Gtk::Widget	parent_menu_item
+	Gtk::Widget_OrNULL	parent_menu_shell
+	Gtk::Widget_OrNULL	parent_menu_item
 	int	button
 	int	activate_time
 	SV *	func
@@ -91,9 +91,14 @@ gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, button, activate_time,
 	{
 		AV * args = newAV();
 		int i;
-		PackCallbackST(args, 5);
-		gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, menu_pos_func,
-			 (void*)args, button, activate_time);
+		if (func && SvOK(func)) {
+			PackCallbackST(args, 5);
+			gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, menu_pos_func,
+				 (void*)args, button, activate_time);
+		} else {
+			gtk_menu_popup(menu, parent_menu_shell, parent_menu_item, NULL,
+				 NULL, button, activate_time);
+		}
 	}
 
 void
@@ -109,10 +114,6 @@ gtk_menu_set_active(self, index)
 	Gtk::Menu	self
 	int	index
 
-void
-gtk_menu_set_accelerator_table(self, table)
-	Gtk::Menu	self
-	Gtk::AcceleratorTable	table
 
 #if 0
 

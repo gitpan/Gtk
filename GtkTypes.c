@@ -6,6 +6,7 @@
    This code may be distributed under the same terms as Perl itself. */
    
 #include <gtk/gtk.h>
+#include "GtkTypes.h"
 #include "GdkTypes.h"
 #include "MiscTypes.h"
 
@@ -13,7 +14,7 @@ static HV * ObjectCache = 0;
 
 #define TRY_MM
 
-void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
+void UnregisterGtkObject(SV * sv_object, GtkObject * gtk_object)
 {
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
@@ -26,7 +27,7 @@ void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	hv_delete(ObjectCache, buffer, strlen(buffer), G_DISCARD);
 }
 
-void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
+void RegisterGtkObject(SV * sv_object, GtkObject * gtk_object)
 {
 	char buffer[40];
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
@@ -36,14 +37,14 @@ void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	
 	/*printf("Registering PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
 
-	hv_store(ObjectCache, buffer, strlen(buffer), newRV((SV*)hv_object), 0);
+	hv_store(ObjectCache, buffer, strlen(buffer), newRV((SV*)sv_object), 0);
 }
 
-HV * RetrieveGtkObject(GtkObject * gtk_object)
+SV * RetrieveGtkObject(GtkObject * gtk_object)
 {
 	char buffer[40];
 	SV ** s;
-	HV * hv_object;
+	SV * sv_object;
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 
 	if (!ObjectCache)
@@ -52,9 +53,9 @@ HV * RetrieveGtkObject(GtkObject * gtk_object)
 	s = hv_fetch(ObjectCache, buffer, strlen(buffer), 0);
 	
 	if (s) {
-		hv_object = (HV*)SvRV(*s);
+		sv_object = (SV*)SvRV(*s);
 		/*printf("Retrieving PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
-		return hv_object;
+		return sv_object;
 	} else
 		return 0;
 
@@ -72,7 +73,7 @@ int GCHVObject(HV * hv_object) {
 	/*printf("Checking PO %x/%d vs GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
 	if ((gtk_object->ref_count == 1) && (SvREFCNT(hv_object) == 1)) {
 		/*printf("Derefing PO in GC\n");*/
-		UnregisterGtkObject(hv_object, gtk_object);
+		UnregisterGtkObject((SV*)hv_object, gtk_object);
 		return 1;
 	}
 	return 0;
@@ -202,7 +203,7 @@ static void FreeGtkObject(gpointer data)
 		if (gtk_object_get_data(gtk_object,"_perl")) {
 			/*printf("Unrefing PO %p/%d\n", hv_object, SvREFCNT(hv_object));*/
 			gtk_object_remove_data(gtk_object, "_perl");
-			UnregisterGtkObject(hv_object, gtk_object);
+			UnregisterGtkObject((SV*)hv_object, gtk_object);
 		} /*else
 			printf("PO already unlinked\n");*/
 		
@@ -242,7 +243,7 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 	SV * result;
 	if (!object)
 		return newSVsv(&sv_undef);
-	previous = RetrieveGtkObject(object);
+	previous = (HV*)RetrieveGtkObject(object);
 	if (previous) {
 		result = newRV((SV*)previous);
 		/*printf("Returning previous PO %p, referencing GO %p\n", previous, object);*/
@@ -293,7 +294,7 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 		s = newSViv((int)object);
 		hv_store(h, "_gtk", 4, s, 0);
 		result = newRV((SV*)h);
-		RegisterGtkObject(h, object);
+		RegisterGtkObject((SV*)h, object);
 		gtk_object_ref(object);
 		gtk_signal_connect(object, "destroy", (GtkSignalFunc)DestroyGtkObject, (gpointer)h);
 		gtk_object_set_data_full(object, "_perl", h, FreeGtkObject);
@@ -448,8 +449,8 @@ SV * newSVGtkRequisition(GtkRequisition * e)
 	return r;
 }*/
 
-SV * newSVGtkSelectionDataRef(GdkWindow * w) { return newSVMiscRef(w, "Gtk::SelectionData",0); }
-GdkWindow * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::SelectionData"); }
+SV * newSVGtkSelectionDataRef(GtkSelectionData * w) { return newSVMiscRef(w, "Gtk::SelectionData",0); }
+GtkSelectionData * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::SelectionData"); }
 
 
 /*SV * newSVGtkMenuPath(GtkMenuPath * e)
@@ -506,6 +507,7 @@ GtkType FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
 	   
 	   foo => GtkSomeType::foo 
 	 */
+#ifdef GTK_1_0
 	if (!strchr(argname, ':') || ((t = gtk_object_get_arg_type(argname)) == GTK_TYPE_INVALID)) {
 		SV * work = sv_2mortal(newSVsv(&sv_undef)); 
 		GtkType pt;
@@ -531,6 +533,26 @@ GtkType FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
 		
 		t = gtk_object_get_arg_type(argname); /* Useless, always succeeds */
 	}
+#else
+        {       
+                GtkArgInfo *info=NULL;
+                char* error;
+                error = gtk_object_arg_get_info(object->klass->type, argname, &info);
+                if ( error ) {
+                        SV * work = sv_2mortal(newSVpv("GtkObject::signal::", 0));
+                        sv_catpv(work, argname);
+                        argname = SvPV(work, na);
+                        g_free(gtk_object_arg_get_info(object->klass->type, argname, &info));
+
+                }
+                if ( info )
+                        t = info->type;
+                else {
+                        g_warning("%s", error);
+                        g_free(error);
+                }
+        }
+#endif
 
 	if (t == GTK_TYPE_SIGNAL) {
 	

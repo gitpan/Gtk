@@ -1,0 +1,12 @@
+(define-boxed GtkAcceleratorTable
+  gtk_accelerator_table_ref
+  gtk_accelerator_table_unref)
+
+(define-flags GtkSpinButtonUpdatePolicy
+  (always GTK_UPDATE_ALWAYS)
+  (if-valid GTK_UPDATE_IF_VALID)
+  (snap-to-ticks GTK_UPDATE_SNAP_TO_TICKS))
+
+(define-object GtkProgressBar (GtkWidget)
+  (fields
+   (float percentage)))

@@ -42,6 +42,11 @@ gtk_text_set_adjustments(text, hadjustment, vadjustment)
 	Gtk::Adjustment	vadjustment
 
 void
+gtk_text_set_word_wrap(text, word_wrap)
+	Gtk::Text	text
+	int	word_wrap
+
+void
 gtk_text_set_point(text, index)
 	Gtk::Text	text
 	int	index

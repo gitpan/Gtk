@@ -22,11 +22,14 @@ MODULE = Gtk::Frame		PACKAGE = Gtk::Frame		PREFIX = gtk_frame_
 #ifdef GTK_FRAME
 
 Gtk::Frame_Sink
-new(Class, label=0)
+new(Class, label=&sv_undef)
 	SV *	Class
-	char *	label
+	SV *	label
 	CODE:
-	RETVAL = GTK_FRAME(gtk_frame_new(label));
+	{
+		char * l = SvOK(label) ? SvPV(label, na) : 0;
+		RETVAL = GTK_FRAME(gtk_frame_new(l));
+	}
 	OUTPUT:
 	RETVAL
 

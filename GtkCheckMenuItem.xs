@@ -56,4 +56,16 @@ gtk_check_menu_item_set_show_toggle(check_menu_item, always)
 	Gtk::CheckMenuItem	check_menu_item
 	bool	always
 
+int
+active(self, new_value=0)
+	Gtk::CheckMenuItem	self
+	int	new_value
+	CODE:
+		RETVAL = self->active;
+		if (items>1)
+			self->active = new_value;
+	OUTPUT:
+	RETVAL
+
+
 #endif

@@ -1,5 +1,5 @@
 
-$Gtk::_init_package = "none;
+$Gtk::_init_package = "none";
 
 use Gtk;
 

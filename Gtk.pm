@@ -59,6 +59,23 @@ if ((defined $Gtk::_init_package) && ($Gtk::_init_package ne "none")) {
 	$Gtk::_init_package->init;
 }
 
+package Gtk::Object;
+
+sub AUTOLOAD {
+    # This AUTOLOAD is used to automatically perform settor/gettor functions
+    # for Gtk object data members, in lieu of defined functions.
+    
+    if (@_ == 2) {
+    	$_[0]->set($AUTOLOAD, $_[1]);
+    } elsif (@_ == 1) {
+    	$_[0]->get($AUTOLOAD);
+    } else {
+    	die;
+    }
+}
+
+package Gtk;
+
 # Autoload methods go after __END__, and are processed by the autosplit program.
 
 1;

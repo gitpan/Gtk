@@ -249,13 +249,46 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 	} else {
 		HV * h;
 		SV * s;
+
+#ifdef AUTOLOAD_GTK_CLASSES
+
+		{
+			SV ** k;
+			k = av_fetch(gtk_typecasts, object->klass->type, 0);
+			if (!k) {
+				if (k = av_fetch(gtk_unloaded_typecasts, object->klass->type, 0)) {
+					dSP;
+					
+					/* Load the module */
+					perl_require_pv(SvPV(*k, na));
+
+				        PUSHMARK(sp);
+		                        XPUSHs(sv_2mortal(newSVsv(*k)));
+                                        PUTBACK;
+                                        
+                                        /* import it */
+                                        perl_call_method("import", G_DISCARD);
+
+					/* Don't do this again */
+					av_store(gtk_typecasts, object->klass->type, newSVsv(*k));
+				} else
+				croak("unable to convert GtkObject 0x%x of type %d (%s) into a Perl/Gtk type",
+					object, object->klass->type, gtk_type_name(object->klass->type));
+			}
+			classname = SvPV(*k, na);
+		}
+#else
 		if (!classname) {
 			SV ** k;
 			k = av_fetch(gtk_typecasts, object->klass->type, 0);
 			if (!k)
-				croak("unknown Gtk type");
+				croak("unable to convert GtkObject 0x%x of type %d (%s) into a Perl/Gtk type",
+					object, object->klass->type, gtk_type_name(object->klass->type));
 			classname = SvPV(*k, na);
 		}
+#endif
+
+
 		h = newHV();
 		s = newSViv((int)object);
 		hv_store(h, "_gtk", 4, s, 0);
@@ -409,8 +442,8 @@ SV * newSVGtkRequisition(GtkRequisition * e)
 	r = newRV((SV*)h);
 	SvREFCNT_dec(h);
 	
-	hv_store(h, "width", 5, e->width, 0);
-	hv_store(h, "height", 6, e->height, 0);
+	hv_store(h, "width", 5, newSViv(e->width), 0);
+	hv_store(h, "height", 6, newSViv(e->height), 0);
 	
 	return r;
 }

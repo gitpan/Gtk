@@ -4,8 +4,8 @@ use Gtk;
 
 init Gtk;
 
-$factory = new Gtk::MenuFactory('menu-bar');
-$subfactory = new Gtk::MenuFactory('menu-bar');
+$factory = new Gtk::MenuFactory('menu_bar');
+$subfactory = new Gtk::MenuFactory('menu_bar');
 $factory->add_subfactory($subfactory, '<Main>');
 $entry1 = { path  =>  '<Main>/File/Hello',
            accelerator     =>  '<alt>H',

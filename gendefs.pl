@@ -83,6 +83,7 @@ foreach $node (parse_lisp($_)) {
 				$perl = $_;
 				next;
 			}
+			$_->[0] =~ tr/-/_/;
 			push @enum, {simple => $_->[0], constant => $_->[1]};
 		}
 		if ( exists $enum{$node[1]} ) {
@@ -116,6 +117,7 @@ foreach $node (parse_lisp($_)) {
 				$perl = $_;
 				next;
 			}
+			$_->[0] =~ tr/-/_/;
 			push @flag, {simple => $_->[0], constant => $_->[1]};
 		}
 		if ( exists $flags{$node[1]} ) {
@@ -364,6 +366,7 @@ extern int type_name(char * name);
 extern void add_typecast(int type, char * perlName);
 extern SV * GtkGetArg(GtkArg * a);
 extern void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
+extern SV * GtkGetRetArg(GtkArg * a);
 extern void GtkSetRetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object);
 
 /*extern SV * newSVOptsHash(long value, char * name, HV * hash);
@@ -859,6 +862,85 @@ print <<"EOT";
 	}
 }
 
+SV * GtkGetRetArg(GtkArg * a)
+{
+	SV * result;
+	switch (GTK_FUNDAMENTAL_TYPE(a->type)) {
+		case GTK_TYPE_NONE:		result = newSVsv(&sv_undef); break;
+		case GTK_TYPE_CHAR:		result = newSViv(*GTK_RETLOC_CHAR(*a)); break;
+		case GTK_TYPE_BOOL:		result = newSViv(*GTK_RETLOC_BOOL(*a)); break;
+		case GTK_TYPE_INT:		result = newSViv(*GTK_RETLOC_INT(*a)); break;
+		case GTK_TYPE_UINT:		result = newSViv(*GTK_RETLOC_UINT(*a)); break;
+		case GTK_TYPE_LONG:		result = newSViv(*GTK_RETLOC_LONG(*a)); break;
+		case GTK_TYPE_ULONG:	result = newSViv(*GTK_RETLOC_ULONG(*a)); break;
+		case GTK_TYPE_FLOAT:	result = newSVnv(*GTK_RETLOC_FLOAT(*a)); break;	
+		case GTK_TYPE_DOUBLE:	result = newSVnv(*GTK_RETLOC_DOUBLE(*a)); break;	
+		case GTK_TYPE_STRING:	result = newSVpv(*GTK_RETLOC_STRING(*a),0); break;
+		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
+		case GTK_TYPE_ENUM:
+EOT
+
+foreach (sort keys %enum) {
+	print "#ifdef $enum{$_}->{typename}\n";
+	print "			if (a->type == $enum{$_}->{typename})\n";
+	print "				result = newSV$_(*GTK_RETLOC_ENUM(*a));\n";
+	print "			else\n";
+	print "#endif\n";
+}
+print <<"EOT";
+				goto d_fault;
+			break;
+		case GTK_TYPE_FLAGS:
+EOT
+foreach (sort keys %flags) {
+	print "#ifdef $flags{$_}->{typename}\n";
+	print "			if (a->type == $flags{$_}->{typename})\n";
+	print "				result = newSV$_(*GTK_RETLOC_FLAGS(*a));\n";
+	print "			else\n";
+	print "#endif\n";
+}
+
+print <<"EOT";
+				goto d_fault;
+			break;
+		case GTK_TYPE_POINTER:
+EOT
+
+foreach (sort keys %struct) {
+	print "#ifdef $struct{$_}->{typename}\n";
+	print "			if (a->type == $struct{$_}->{typename})\n";
+	print "				result = newSV$_(GTK_VALUE_POINTER(*a));\n";
+	print "			else\n";
+	print "#endif\n";
+}
+
+print <<"EOT";
+				goto d_fault;
+				/* *GTK_RETLOC_POINTER(*a) = SvPV(v,na); break;*/
+			break;
+		case GTK_TYPE_BOXED:
+			if (a->type == GTK_TYPE_GDK_EVENT)
+				result = newSVGdkEvent(*GTK_RETLOC_BOXED(*a));
+			else
+EOT
+foreach (sort keys %boxed) {
+	print "#ifdef $boxed{$_}->{typename}\n";
+	print "			if (a->type == $boxed{$_}->{typename})\n";
+	print "				result = newSV$_(GTK_VALUE_BOXED(*a));\n";
+	print "			else\n";
+	print "#endif\n";
+}
+
+print <<"EOT";
+				goto d_fault;
+			break;
+		d_fault:
+		default:
+			croak("Cannot get return argument of type %s (fundamental type %s)", gtk_type_name(a->type), gtk_type_name(GTK_FUNDAMENTAL_TYPE(a->type)));
+	}
+	return result;
+}
+
 void initPerlGdkDefs(void) {
 	int i;
 	HV * h;
@@ -976,6 +1058,9 @@ open(STDOUT,">objects.xsh") or die "Unable to write to objects.xsh: $!";
 
 foreach (sort keys %object) {
 	next if not length $object{$_}->{prefix};
+
+#	$object{$_}->{perlname}	self
+
 	print <<"EOT";
 	
 MODULE = Gtk	PACKAGE = $object{$_}->{perlname}		PREFIX = $object{$_}->{prefix}_
@@ -984,7 +1069,6 @@ MODULE = Gtk	PACKAGE = $object{$_}->{perlname}		PREFIX = $object{$_}->{prefix}_
 
 int
 $object{$_}->{prefix}_get_object_type(self)
-	$object{$_}->{perlname}	self
 	CODE:
 	RETVAL = $object{$_}->{prefix}_get_type();
 	OUTPUT:
@@ -992,7 +1076,6 @@ $object{$_}->{prefix}_get_object_type(self)
 
 int
 $object{$_}->{prefix}_get_object_size(self)
-	$object{$_}->{perlname}	self
 	CODE:
 	RETVAL = sizeof($_);
 	OUTPUT:
@@ -1001,7 +1084,6 @@ $object{$_}->{prefix}_get_object_size(self)
 
 int
 $object{$_}->{prefix}_get_class_size(self)
-	$object{$_}->{perlname}	self
 	CODE:
 	RETVAL = sizeof(${_}Class);
 	OUTPUT:

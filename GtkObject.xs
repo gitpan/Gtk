@@ -20,12 +20,17 @@ void generic_handler(GtkObject * object, gpointer data, guint n_args, GtkArg * a
 void generic_handler_wo(GtkObject * object, gpointer data, guint n_args, GtkArg * args);
 
 
+static void generic_perl_gtk_signal_marshaller(GtkObject * object, GtkSignalFunc func, gpointer func_data, GtkArg * args)
+{
+	croak("Unable to marshal C signals from Gtk class defined in Perl");
+}
+
 static void generic_perl_gtk_class_init(GtkObjectClass * klass)
 {
 	dSP;
 	SV * perlClass;
 	SV ** s = av_fetch(gtk_typecasts, klass->type, 0);
-	
+
 	if (s)
 		perlClass = *s;
 	else {
@@ -109,6 +114,9 @@ static void generic_perl_gtk_arg_set_func(GtkObject * object, GtkArg * arg, guin
 	
 }
 
+
+/* Define if Gtk has gtk_signal_emitv... */
+#undef emitv
 
 MODULE = Gtk::Object		PACKAGE = Gtk::Object		PREFIX = gtk_object_
 
@@ -363,55 +371,7 @@ add_arg_type(Class, name, type, flags, num=1)
 		gtk_object_add_arg_type(SvPV(name2,na), typeval, flags, num);
 	}
 
-void
-signal_new(Class, name, run_type)
-	SV *	Class
-	SV *	name
-	Gtk::SignalRunType	run_type
-	CODE:
-	{
-		SV * temp;
-		SV * s;
-		int sig, signals, type, sigtype;
-		
-		temp = newSVsv(Class);
-		sv_catpv(temp, "::_signal");
-		
-		s = perl_get_sv(SvPV(temp, na), TRUE);
-		sig = SvIV(s);
-
-		sv_setsv(temp, Class);
-		sv_catpv(temp, "::_signals");
-		
-		s = perl_get_sv(SvPV(temp, na), TRUE);
-		signals = SvIV(s);
-		
-		
-		if ((sig < 0) || (sig >= signals))
-			croak("Cannot set signals (ran out of signals, or damaged $%s::_signal(s).", SvPV(Class, na));
-			
-		type = type_name(SvPV(Class,na));
-
-		gtk_signal_new(SvPV(newSVsv(Class),na), run_type, type, sig * sizeof(GtkSignalFunc), gtk_signal_default_marshaller, GTK_TYPE_NONE, 0);
-
-		printf("Installing signal %d, called %s, as run type %d\n", sig, SvPV(name,na), run_type);
-		/*sigtype = gtk_signal_new(SvPV(newSVsv(name),na), run_type, type, gtk_type_class(type) + sig * sizeof(GtkSignalFunc), gtk_signal_default_marshaller, GTK_TYPE_NONE, 0);
-		
-		gtk_object_class_add_signals(gtk_type_class(type), &sigtype, 1);*/
-		
-		
-		
-		sig++;
-		
-		sv_setsv(temp, Class);
-		sv_catpv(temp, "::_signal");
-		
-		s = perl_get_sv(SvPV(temp, na), TRUE);
-		sv_setiv(s, sig);
-
-		SvREFCNT_dec(temp);
-
-	}
+#ifndef emitv
 
 void
 signal_emit(self, name)
@@ -423,6 +383,57 @@ signal_emit(self, name)
 	{
 		gtk_signal_emit_by_name(self, SvPV(name,na), NULL);
 	}
+
+#else
+
+void
+signal_emit(self, name, ...)
+	Gtk::Object	self
+	char *	name
+	ALIAS:
+		signal_emit_by_name = 0
+	PPCODE:
+	{
+		GtkArg * args;
+		guint sig = gtk_signal_lookup(name, self->klass->type);
+		GtkSignalQuery * q;
+		unsigned long retval;
+		int params;
+		int i,j;
+		
+		if (sig<1) {
+			croak("Unknown signal %s in %s widget", name, gtk_type_name(self->klass->type));
+		}
+		
+		q = gtk_signal_query(sig);
+		
+		if ((items-2) != q->nparams) {
+			croak("Incorrect number of arguments for emission of signal %s in class %s, needed %d but got %d",
+				name, gtk_type_name(self->klass->type), q->nparams, items-2);
+		}
+		
+		params = q->nparams;
+		
+		args = calloc(params+1, sizeof(GtkArg));
+		
+		for(i=0,j=2;(i<params) && (j<items);i++,j++) {
+			args[i].type = q->params[i];
+			GtkSetArg(args+i, ST(j), 0, self);
+		}
+		args[params].type = q->return_val;
+		GTK_VALUE_POINTER(args[params]) = &retval;
+		
+		g_free(q);
+		
+		gtk_signal_emitv(self, sig, args);
+		
+		EXTEND(sp,1);
+		PUSHs(sv_2mortal(GtkGetRetArg(args + params)));
+		
+		free(args);
+	}
+
+#endif
 
 void
 signal_emit_stop(self, name)
@@ -437,19 +448,21 @@ signal_emit_stop(self, name)
 	
 
 int
-register_type(perlClass, signals=0, gtkName=0, parentClass=0)
+register_type(perlClass, ...)
 	SV *	perlClass
-	int	signals
-	SV *	gtkName
-	SV *	parentClass
 	CODE:
 	{
 		dSP;
 		int count;
+		int signals;
 		int parent_type;
+		int i;
+		long offset;
 		GtkTypeInfo info;
 		SV * temp;
 		SV * s;
+		SV *	gtkName = 0;
+		SV *	parentClass = 0;
 		
 		if (!gtkName) {
 			int i;
@@ -459,8 +472,8 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 			do {
 				if (*s == ':')
 					continue;
-				*d++ = *s++;
-			} while(*s);
+				*d++ = *s;
+			} while(*s++);
 		}
 		
 		if (!parentClass) {
@@ -485,7 +498,7 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		PUTBACK;
 		FREETMPS;
 		LEAVE;
-		
+
 		
 		ENTER;
 		SAVETMPS;
@@ -499,7 +512,7 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 			croak("Big trouble\n");
 		
 		info.object_size = POPi+sizeof(SV*);
-		
+
 		PUTBACK;
 		FREETMPS;
 		LEAVE;
@@ -521,6 +534,9 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		FREETMPS;
 		LEAVE;
 
+
+
+
 		temp = newSVsv(perlClass);
 		sv_catpv(temp, "::_signals");
 		
@@ -541,16 +557,42 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		
 		SvREFCNT_dec(temp);
 
+		signals = (items - 1) / 2;
+
+		offset = info.class_size;
+
 		info.class_size += sizeof(GtkSignalFunc) * signals;
 		
 		info.class_init_func = (GtkClassInitFunc)generic_perl_gtk_class_init;
 		info.object_init_func = (GtkObjectInitFunc)generic_perl_gtk_object_init;
 		info.arg_set_func = (GtkArgSetFunc)generic_perl_gtk_arg_set_func;
 		info.arg_get_func = (GtkArgSetFunc)generic_perl_gtk_arg_get_func;
-		
+
 		RETVAL = gtk_type_unique(parent_type, &info);
 		
 		add_typecast(RETVAL, SvPV(perlClass,na));
+		
+		
+		for (i=1;i<items-1;i+=2) {
+			char * name = SvPV(ST(i), na);
+			AV * args = (AV*)SvRV(ST(i+1));
+			GtkSignalRunType run_type = SvGtkSignalRunType(*av_fetch(args, 0, 0));
+			int params = av_len(args);
+			GtkType * types = (GtkType*)malloc(params * sizeof(GtkType));
+			int j;
+			
+			for(j=1;j<=params;j++) {
+				types[j-1] = gtk_type_from_name(SvPV(*av_fetch(args, j, 0), na));
+			}
+			
+			/*printf("new signal '%s' has a return type of %s, and takes %d arguments\n",
+				name, gtk_type_name(types[0]), params-1);*/
+			
+			gtk_signal_newv(name, run_type, RETVAL, offset, generic_perl_gtk_signal_marshaller, types[0], params - 1, (params>1) ? types+1 : 0);
+			/*gtk_signal_newv("bloop", GTK_RUN_FIRST, RETVAL, offset, generic_perl_gtk_signal_marshaller, GTK_TYPE_INT, 0, 0);*/
+			
+			offset += sizeof(GtkSignalFunc);
+		}
 		
 	}
 	OUTPUT:

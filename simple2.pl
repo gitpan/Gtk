@@ -15,7 +15,6 @@ Gtk->timeout_add(1000, sub {
 Gtk->gc;
                  
 $window = new Gtk::Widget	"GtkWindow",
-		GtkObject::user_data		=>	undef,
 		GtkWindow::type			=>	-toplevel,
 		GtkWindow::title		=>	"hello world",
 		GtkWindow::allow_grow		=>	0,

@@ -11,7 +11,6 @@ init Gtk;
 	my($window,$button);
 
 $window = new Gtk::Widget	"GtkWindow",
-		user_data		=>	undef,
 		type			=>	-toplevel,
 		title		=>	"hello world",
 		allow_grow		=>	0,

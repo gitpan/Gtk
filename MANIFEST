@@ -31,6 +31,7 @@ GtkCList.xs
 GtkCheckButton.xs
 GtkCheckMenuItem.xs
 GtkClock.xs
+GtkColorSelectButton.pm
 GtkColorSelection.xs
 GtkColorSelectionDialog.xs
 GtkCombo.xs
@@ -136,8 +137,11 @@ simple6.pl
 simple7.pl
 test.pl
 test.xpm
+testcsb.pl
+testgdk.pl
 testgtkrc
 testhtml.pl
+testinput.pl
 testmf.pl
 testselection.pl
 tree_minus.xpm

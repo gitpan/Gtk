@@ -11,15 +11,11 @@ use Gtk;
 
 @ISA = qw(Gtk::Button);
 
-register_type Foo 0; # 0 means zero signals
+register_type Foo bloop => ['first', 'none'];
 
-#signal_new Foo "bloop", 'first';
+add_arg_type Foo "blorp", "string", 3;
 
-add_arg_type Foo "blorp", "string";
-
-add_arg_type Foo "Foo::bletch", "int";
-
-#signals_add Foo;
+add_arg_type Foo "Foo::bletch", "int", 3;
 
 sub new {
 	return Gtk::Object::new(@_);
@@ -56,8 +52,20 @@ $b = new Foo GtkButton::label => "Foo button";
 
 $b->{bibble} = 12;
 
-$b->signal_connect("clicked", sub { destroy $w });
+#$b->signal_connect("clicked", sub { destroy $w });
 #$b->signal_connect("clicked", sub { $b->signal_emit("bloop")});
+
+
+# Demonstration of emit
+#use Data::Dumper;
+#$b->signal_connect("install_accelerator", sub { 
+#	print Dumper(\@_);
+#	return 3;
+#});
+#$b->signal_connect("clicked", sub { print "ia: ",$b->signal_emit("install_accelerator", "signal", 64, 129),"\n";});
+
+
+# This line breaks, and I'm not sure why
 #$b->signal_connect("bloop", sub {print "Bloop!\n"});
 
 $b->set("Foo::blorp", 'fibble');

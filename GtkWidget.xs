@@ -100,6 +100,10 @@ gtk_widget_show(widget)
 	Gtk::Widget	widget
 
 void
+gtk_widget_show_now(widget)
+	Gtk::Widget	widget
+
+void
 gtk_widget_show_all(widget)
 	Gtk::Widget	widget
 
@@ -131,6 +135,14 @@ void
 gtk_widget_draw(widget, area)
 	Gtk::Widget	widget
 	Gtk::Gdk::Rectangle	area
+
+void
+gtk_widget_queue_draw(widget)
+	Gtk::Widget	widget
+
+void
+gtk_widget_queue_resize(widget)
+	Gtk::Widget	widget
 
 void
 gtk_widget_draw_focus(widget)

@@ -176,7 +176,6 @@ long SvFlagsHash(SV * name, char * optname, HV * o)
 SV * newSVFlagsHash(long value, char * optname, HV * o, int hash) 
 {
 	SV * target, *result;
-	HV * h = newHV();
 	int i;
 	HE * he;
 	SV * s;

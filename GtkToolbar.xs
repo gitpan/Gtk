@@ -28,80 +28,80 @@ new(Class, orientation, style)
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_append_item(toolbar, text, tooltip_text, tooltip_private_text, icon)
 	Gtk::Toolbar toolbar
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	CODE:
 	RETVAL = gtk_toolbar_append_item(toolbar, text, tooltip_text, tooltip_private_text, icon, NULL, NULL);
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_prepend_item(toolbar, text, tooltip_text, tooltip_private_text, icon)
 	Gtk::Toolbar toolbar
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	CODE:
 	RETVAL = gtk_toolbar_prepend_item(toolbar, text, tooltip_text, tooltip_private_text, icon, NULL, NULL);
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_insert_item(toolbar, text, tooltip_text, tooltip_private_text, icon, position)
 	Gtk::Toolbar toolbar
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	int position
 	CODE:
 	RETVAL = gtk_toolbar_insert_item(toolbar, text, tooltip_text, tooltip_private_text, icon, NULL, NULL, position);
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_append_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon)
 	Gtk::Toolbar toolbar
 	Gtk::ToolbarChildType type
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	CODE:
 	RETVAL = gtk_toolbar_append_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon, NULL, NULL);
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_prepend_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon)
 	Gtk::Toolbar toolbar
 	Gtk::ToolbarChildType type
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	CODE:
 	RETVAL = gtk_toolbar_prepend_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon, NULL, NULL);
 	OUTPUT:
 	RETVAL
 
-Gtk::Widget
+Gtk::Widget_Up
 gtk_toolbar_insert_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon, position)
 	Gtk::Toolbar toolbar
 	Gtk::ToolbarChildType type
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* text
 	char* tooltip_text
 	char* tooltip_private_text
-	Gtk::Widget icon
+	Gtk::Widget_OrNULL icon
 	int position
 	CODE:
 	RETVAL = gtk_toolbar_insert_element(toolbar, type, widget, text, tooltip_text, tooltip_private_text, icon, NULL, NULL, position);
@@ -111,21 +111,21 @@ gtk_toolbar_insert_element(toolbar, type, widget, text, tooltip_text, tooltip_pr
 void
 gtk_toolbar_append_widget(toolbar, widget, tooltip_text, tooltip_private_text)
 	Gtk::Toolbar toolbar
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* tooltip_text
 	char* tooltip_private_text
 
 void
 gtk_toolbar_prepend_widget(toolbar, widget, tooltip_text, tooltip_private_text)
 	Gtk::Toolbar toolbar
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* tooltip_text
 	char* tooltip_private_text
 
 void
 gtk_toolbar_insert_widget(toolbar, widget, tooltip_text, tooltip_private_text, position)
 	Gtk::Toolbar toolbar
-	Gtk::Widget widget
+	Gtk::Widget_OrNULL widget
 	char* tooltip_text
 	char* tooltip_private_text
 	int position

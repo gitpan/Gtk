@@ -14,7 +14,7 @@
 # define boolSV(b) ((b) ? &sv_yes : &sv_no)
 #endif
 
-MODULE = Gtk::Adjustment		PACKAGE = Gtk::Adjustment
+MODULE = Gtk::Adjustment		PACKAGE = Gtk::Adjustment		PREFIX = gtk_adjustment_
 
 #ifdef GTK_ADJUSTMENT
 
@@ -36,5 +36,13 @@ void
 gtk_adjustment_set_value (self, value)
 	Gtk::Adjustment self
 	double value
+
+gfloat
+gtk_adjustment_get_value (self)
+	Gtk::Adjustment self
+	CODE:
+	RETVAL = self->value;
+	OUTPUT:
+	RETVAL
 
 #endif

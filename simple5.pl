@@ -11,7 +11,6 @@ Gtk->timeout_add(1000, sub { Gtk->gc; return 1; });
 	my($window,$button);
 
 $window = new Gtk::Widget	"GtkWindow",
-		user_data		=>	undef,
 		type			=>	-toplevel,
 		title		=>	"hello world",
 		allow_grow		=>	0,

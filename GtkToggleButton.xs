@@ -56,10 +56,13 @@ gtk_toggle_button_toggled(self)
 	Gtk::ToggleButton	self
 
 int
-active(self)
+active(self, new_value=0)
 	Gtk::ToggleButton	self
+	int	new_value
 	CODE:
 		RETVAL = self->active;
+		if (items>1)
+			self->active = new_value;
 	OUTPUT:
 	RETVAL
 

@@ -269,7 +269,7 @@ sub toggle_snap {
 	my($widget, $spin) = @_;
 	
 	if ($widget->active) {
-		$spin->set_update_policy(['always', 'snap-to-ticks']);
+		$spin->set_update_policy(['always', 'snap_to_ticks']);
 	} else {
 		$spin->set_update_policy('always');
 	}
@@ -449,7 +449,7 @@ sub create_spins {
 sub shape_pressed {
 	my($widget, $event) = @_;
 	
-	return if $event->{type} ne 'button-press';
+	return if $event->{type} ne 'button_press';
 	
 	$widget->{save_x} = $event->{x};
 	$widget->{save_y} = $event->{y};
@@ -457,7 +457,7 @@ sub shape_pressed {
 	$widget->grab_add;
 	$w = $widget->window;
 	Gtk::Gdk->pointer_grab($w, 1, 
-		['button-release-mask', 'button-motion-mask', 'pointer-motion-hint-mask'], 
+		['button_release_mask', 'button_motion_mask', 'pointer_motion_hint_mask'], 
 		undef, undef ,0);
 }
 
@@ -489,7 +489,7 @@ sub shape_create_icon {
 	$window->add($fixed);
 	show $fixed;
 	
-	$window->set_events( [@{$window->get_events}, 'button-motion-mask', 'pointer-motion-hint-mask', 'button-press-mask']);
+	$window->set_events( [@{$window->get_events}, 'button_motion_mask', 'pointer_motion_hint_mask', 'button_press_mask']);
 	
 	realize $window;
 	
@@ -1807,7 +1807,7 @@ sub create_rulers {
 		$ruler_window->signal_connect("delete_event", \&destroy_window, \$ruler_window);
 		$ruler_window->set_title("rulers");
 		$ruler_window->set_usize(300, 300);
-		$ruler_window->set_events(["pointer-motion-mask", "pointer-motion-hint-mask"]);
+		$ruler_window->set_events(["pointer_motion_mask", "pointer_motion_hint_mask"]);
 		$ruler_window->border_width(0);
 		
 		$table = new Gtk::Table(2,2,0);

@@ -26,14 +26,16 @@ gtk_editable_select_region (editable, start, end)
 	int           end
 
 int
-gtk_editable_insert_text (editable, new_text)
+gtk_editable_insert_text (editable, new_text, position)
 	Gtk::Editable editable
 	SV*           new_text
+	int           position
 	CODE:
 	{
 		STRLEN len;
 		char * c = SvPV(new_text, len);
-		gtk_editable_insert_text (editable, c, len, &RETVAL);
+		gtk_editable_insert_text (editable, c, len, &position);
+		RETVAL = position;
 	}
 
 void

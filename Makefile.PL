@@ -11,6 +11,8 @@ use ExtUtils::MakeMaker;
 #	--with-gnome  
 #
 
+$AUTOLOAD_GTK_CLASSES = 0; # Experimental stuff
+
 @defs = ();
 @headers = ();
 $libs = `gtk-config --libs`;
@@ -24,7 +26,8 @@ $typemap = ["typemap.gtk"];
 $pm = {'Gdk.pm' => '$(INST_LIBDIR)/Gtk/Gdk.pm',
 	'Gtk.pm' => '$(INST_LIBDIR)/Gtk.pm',
 	'GtkTypes.pm' => '$(INST_LIBDIR)/Gtk/Types.pm',
-	'Atoms.pm' => '$(INST_LIBDIR)/Gtk/Atoms.pm'
+	'Atoms.pm' => '$(INST_LIBDIR)/Gtk/Atoms.pm',
+	'GtkColorSelectButton.pm' => '$(INST_LIBDIR)/Gtk/ColorSelectButton.pm',
 };
 
 $xfiles = {};
@@ -132,14 +135,14 @@ if (defined $inc) {
 
 WriteMakefile(
     'NAME'	=> 'Gtk',
-    'VERSION'	=> '0.2.0',
+    'VERSION'	=> '0.2.1',
     'PM' => $pm,
     'TYPEMAPS' => $typemap,
     'XS' => $xfiles,
     'XSOPT' => '-noversioncheck',
-    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
+    'DEFINE'	=> $AUTOLOAD_GTK_CLASSES ? '-DAUTOLOAD_GTK_CLASSES' : '',
     'OBJECT' => $object,
 	'XSPROTOARG' => '-noprototypes',
 	@I,
-	@L
+	@L,
 );

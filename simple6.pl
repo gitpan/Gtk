@@ -8,7 +8,6 @@ init Gtk;
 	my($window,$vbox,$hbox,$tty,$nled,$cled,$sled);
 
 $window = new Gtk::Widget	"GtkWindow",
-		user_data		=>	undef,
 		type			=>	-toplevel,
 		title		=>	"hello world",
 		allow_grow		=>	0,
@@ -45,9 +44,9 @@ $sled = new Gtk::Led;
 $hbox->pack_start($sled, 1, 1, 1);
 show $sled;
 
-add_update_led $tty $nled, 'num-lock';
-add_update_led $tty $cled, 'caps-lock';
-add_update_led $tty $sled, 'scroll-lock';
+add_update_led $tty $nled, -num_lock;
+add_update_led $tty $cled, -caps_lock;
+add_update_led $tty $sled, -scroll_lock;
 
 show $window;
 }

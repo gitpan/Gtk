@@ -307,17 +307,26 @@ gtk_clist_set_row_data(self, row, data)
 	int		row
 	SV *	data
 	CODE:
+	SvREFCNT_inc(data);
 	gtk_clist_set_row_data_full(self, row, data, svrefcnt_dec);
 
 SV*
 gtk_clist_get_row_data(self, row)
 	Gtk::CList  self
 	int		row
+	CODE:
+	RETVAL = newSVsv(gtk_clist_get_row_data(self, row));
+	OUTPUT:
+	RETVAL
+
+#if 0
 
 int
 gtk_clist_find_row_from_data (self, data)
 	Gtk::CList  self
 	SV *    data
+	
+#endif
 
 void
 gtk_clist_select_row(self, row, column)
@@ -334,6 +343,22 @@ gtk_clist_unselect_row(self, row, column)
 void
 gtk_clist_clear(self)
 	Gtk::CList  self
+
+int
+rows(self)
+	Gtk::CList	self
+	CODE:
+	RETVAL=self->rows;
+	OUTPUT:
+	RETVAL
+
+int
+columns(self)
+	Gtk::CList	self
+	CODE:
+	RETVAL=self->columns;
+	OUTPUT:
+	RETVAL
 
 #if 0
 

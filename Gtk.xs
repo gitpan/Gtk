@@ -91,6 +91,22 @@ void marshal_signal (GtkObject *object, gpointer data, guint nparams, GtkArg * a
 
 	/*printf("Handling signal %s\n", signame);*/
 	/*XPUSHs(sv_2mortal(newSVpv(signame, 0)));*/
+	if (sv_derived_from(sv_object, "Gtk::CList")) {
+		if (strEQ(signame, "select_row")) {
+			encoding=20;
+			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[0]))));
+			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
+			XPUSHs(sv_2mortal(newSVGdkEvent(GTK_VALUE_POINTER(args[2]))));
+			goto unpacked;
+		} else
+		if (strEQ(signame, "unselect_row")) {
+			encoding=21;
+			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[0]))));
+			XPUSHs(sv_2mortal(newSViv(GTK_VALUE_INT(args[1]))));
+			XPUSHs(sv_2mortal(newSVGdkEvent(GTK_VALUE_POINTER(args[2]))));
+			goto unpacked;
+		}
+	}
 	/*if (sv_derived_from(sv_object, "Gtk::List")) {
 		if (strEQ(signame, "select_child")	||
 			strEQ(signame, "unselect_child")) {
@@ -238,7 +254,7 @@ unpacked:
 
 	result = POPs;
 	if (return_type != GTK_TYPE_NONE) {
-		/*printf("return type is %s, value is #%d\n", gtk_type_name(args[nparams].type), SvIV(result));*/
+		/*printf("signal: return type is %s/%s, value is #%d\n", gtk_type_name(args[nparams].type), gtk_type_name(return_type), SvIV(result));*/
 		GtkSetRetArg(&args[nparams], result, 0, 0);
 	}
 
@@ -319,7 +335,12 @@ void input_handler(gpointer data, gint source, GdkInputCondition condition) {
 	AV * args = (AV*)data;
 	SV * handler = *av_fetch(args, 0, 0);
 	int i;
+	SV * s;
 	dSP;
+	
+	ENTER;
+	SAVETMPS;
+	
 
 	PUSHMARK(sp);
 	for (i=1;i<=av_len(args);i++)
@@ -329,6 +350,9 @@ void input_handler(gpointer data, gint source, GdkInputCondition condition) {
 	PUTBACK;
 
 	perl_call_sv(handler, G_DISCARD);
+	
+	FREETMPS;
+	LEAVE;
 }
 
 void menu_callback (GtkWidget *widget, gpointer user_data)
@@ -337,11 +361,17 @@ void menu_callback (GtkWidget *widget, gpointer user_data)
 	int i;
 	dSP;
 
+	ENTER;
+	SAVETMPS;
+
 	PUSHMARK(sp);
 	XPUSHs(sv_2mortal(newSVGtkObjectRef(GTK_OBJECT(widget), 0)));
 	PUTBACK;
 
 	i = perl_call_sv(handler, G_DISCARD);
+
+	FREETMPS;
+	LEAVE;
 }
 
 void     callXS (void (*subaddr)(CV* cv), CV *cv, SV **mark) 
@@ -385,6 +415,8 @@ void GdkInit_internal() {
 
 
 void GtkInit_internal() {
+
+		/*static GtkTypeInfo PerlType = { "perl" };*/
 		
 		char buf[20];
 		
@@ -392,6 +424,8 @@ void GtkInit_internal() {
 		
 		initPerlGdkDefs();
 		initPerlGtkDefs();
+		
+		/*gtk_type_unique(GTK_TYPE_BOXED, &PerlType);*/
 		
 /*		signal_fixups = newHV();
 
@@ -440,8 +474,6 @@ init(Class)
 	if (did_we_init_gtk)
 		return;
 		
-		printf("In Gtk::init\n");
-			
 			g_set_error_handler(g_error_handler);
 			g_set_warning_handler(g_warning_handler);
 			

@@ -1,4 +1,32 @@
 
+0.2.1		Thu May  7, 1998	Kenneth Albanowski
+
+	Included a variation of a module contributed by Dov Grobgeld
+	<dov@Orbotech.Co.IL>, GtkColorSelectButton.pm, which demonstrates a
+	functional Gtk widget created in Perl.
+	
+	Some fixes to widget creation were needed to get that running.
+	
+	Fixed some memory leaks, affecting, among other things, input handlers.
+	
+	Added AUTOLOAD facility to Gtk::Object, allowing Gtk variables to be
+	reffered to via gettor/settor methods. Thus:
+	
+		$object = new Gtk::Widget "Button", -width => 30;
+		print $object->get('width'); # 30
+		print $object->width; # 30, same as above
+		$object->set('width' => 40);
+		$object->width(40); # same as above
+
+	One incompatible change: constants for enums and flags now use
+	underscores instead of hyphens. (This looks a bit more ugly, but is more
+	flexible, as an underscore is a legal character in a Perl symbol.)
+
+0.2.0		Thu May  7, 1998	Kenneth Albanowski
+
+	Uses gtk-1.0.1
+
+
 0.1.16		Fri Apr 10, 1998	Kenneth Albanowski
 
 	Uses gtk-0.99.10:

@@ -1,4 +1,10 @@
 
+0.1.16		Fri Apr  3, 1998	Kenneth Albanowski
+
+	Uses gtk-0.99.8:
+
+		Primarily fixes substantial bug with boot_ invocation.
+
 0.1.14		Sun Feb 22, 1998	Kenneth Albanowski
 
 	Uses gtk-0.99.3:

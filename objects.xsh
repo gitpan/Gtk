@@ -2561,560 +2561,640 @@ gtk_window_get_class_size(self)
 BOOT:
 {
 	#ifdef GTK_ADJUSTMENT
-		boot_Gtk__Adjustment(cv);
+                extern void boot_Gtk__Adjustment(CV *cv);
+		callXS (boot_Gtk__Adjustment, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_ALIGNMENT
-		boot_Gtk__Alignment(cv);
+                extern void boot_Gtk__Alignment(CV *cv);
+		callXS (boot_Gtk__Alignment, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_ARROW
-		boot_Gtk__Arrow(cv);
+                extern void boot_Gtk__Arrow(CV *cv);
+		callXS (boot_Gtk__Arrow, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_ASPECT_FRAME
-		boot_Gtk__AspectFrame(cv);
+                extern void boot_Gtk__AspectFrame(CV *cv);
+		callXS (boot_Gtk__AspectFrame, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_BIN
-		boot_Gtk__Bin(cv);
+                extern void boot_Gtk__Bin(CV *cv);
+		callXS (boot_Gtk__Bin, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_BOX
-		boot_Gtk__Box(cv);
+                extern void boot_Gtk__Box(CV *cv);
+		callXS (boot_Gtk__Box, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_BUTTON
-		boot_Gtk__Button(cv);
+                extern void boot_Gtk__Button(CV *cv);
+		callXS (boot_Gtk__Button, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_BUTTON_BOX
-		boot_Gtk__ButtonBox(cv);
+                extern void boot_Gtk__ButtonBox(CV *cv);
+		callXS (boot_Gtk__ButtonBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_CLIST
-		boot_Gtk__CList(cv);
+                extern void boot_Gtk__CList(CV *cv);
+		callXS (boot_Gtk__CList, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_CHECK_BUTTON
-		boot_Gtk__CheckButton(cv);
+                extern void boot_Gtk__CheckButton(CV *cv);
+		callXS (boot_Gtk__CheckButton, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_CHECK_MENU_ITEM
-		boot_Gtk__CheckMenuItem(cv);
+                extern void boot_Gtk__CheckMenuItem(CV *cv);
+		callXS (boot_Gtk__CheckMenuItem, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_COLOR_SELECTION
-		boot_Gtk__ColorSelection(cv);
+                extern void boot_Gtk__ColorSelection(CV *cv);
+		callXS (boot_Gtk__ColorSelection, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_COLOR_SELECTION_DIALOG
-		boot_Gtk__ColorSelectionDialog(cv);
+                extern void boot_Gtk__ColorSelectionDialog(CV *cv);
+		callXS (boot_Gtk__ColorSelectionDialog, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_COMBO
-		boot_Gtk__Combo(cv);
+                extern void boot_Gtk__Combo(CV *cv);
+		callXS (boot_Gtk__Combo, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_CONTAINER
-		boot_Gtk__Container(cv);
+                extern void boot_Gtk__Container(CV *cv);
+		callXS (boot_Gtk__Container, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_CURVE
-		boot_Gtk__Curve(cv);
+                extern void boot_Gtk__Curve(CV *cv);
+		callXS (boot_Gtk__Curve, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_DATA
-		boot_Gtk__Data(cv);
+                extern void boot_Gtk__Data(CV *cv);
+		callXS (boot_Gtk__Data, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_DIALOG
-		boot_Gtk__Dialog(cv);
+                extern void boot_Gtk__Dialog(CV *cv);
+		callXS (boot_Gtk__Dialog, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_DRAWING_AREA
-		boot_Gtk__DrawingArea(cv);
+                extern void boot_Gtk__DrawingArea(CV *cv);
+		callXS (boot_Gtk__DrawingArea, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_EDITABLE
-		boot_Gtk__Editable(cv);
+                extern void boot_Gtk__Editable(CV *cv);
+		callXS (boot_Gtk__Editable, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_ENTRY
-		boot_Gtk__Entry(cv);
+                extern void boot_Gtk__Entry(CV *cv);
+		callXS (boot_Gtk__Entry, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_EVENT_BOX
-		boot_Gtk__EventBox(cv);
+                extern void boot_Gtk__EventBox(CV *cv);
+		callXS (boot_Gtk__EventBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_FILE_SELECTION
-		boot_Gtk__FileSelection(cv);
+                extern void boot_Gtk__FileSelection(CV *cv);
+		callXS (boot_Gtk__FileSelection, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_FIXED
-		boot_Gtk__Fixed(cv);
+                extern void boot_Gtk__Fixed(CV *cv);
+		callXS (boot_Gtk__Fixed, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_FRAME
-		boot_Gtk__Frame(cv);
+                extern void boot_Gtk__Frame(CV *cv);
+		callXS (boot_Gtk__Frame, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_GAMMA_CURVE
-		boot_Gtk__GammaCurve(cv);
+                extern void boot_Gtk__GammaCurve(CV *cv);
+		callXS (boot_Gtk__GammaCurve, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HBOX
-		boot_Gtk__HBox(cv);
+                extern void boot_Gtk__HBox(CV *cv);
+		callXS (boot_Gtk__HBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HBUTTON_BOX
-		boot_Gtk__HButtonBox(cv);
+                extern void boot_Gtk__HButtonBox(CV *cv);
+		callXS (boot_Gtk__HButtonBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HPANED
-		boot_Gtk__HPaned(cv);
+                extern void boot_Gtk__HPaned(CV *cv);
+		callXS (boot_Gtk__HPaned, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HRULER
-		boot_Gtk__HRuler(cv);
+                extern void boot_Gtk__HRuler(CV *cv);
+		callXS (boot_Gtk__HRuler, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HSCALE
-		boot_Gtk__HScale(cv);
+                extern void boot_Gtk__HScale(CV *cv);
+		callXS (boot_Gtk__HScale, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HSCROLLBAR
-		boot_Gtk__HScrollbar(cv);
+                extern void boot_Gtk__HScrollbar(CV *cv);
+		callXS (boot_Gtk__HScrollbar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HSEPARATOR
-		boot_Gtk__HSeparator(cv);
+                extern void boot_Gtk__HSeparator(CV *cv);
+		callXS (boot_Gtk__HSeparator, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_HANDLE_BOX
-		boot_Gtk__HandleBox(cv);
+                extern void boot_Gtk__HandleBox(CV *cv);
+		callXS (boot_Gtk__HandleBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_IMAGE
-		boot_Gtk__Image(cv);
+                extern void boot_Gtk__Image(CV *cv);
+		callXS (boot_Gtk__Image, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_INPUT_DIALOG
-		boot_Gtk__InputDialog(cv);
+                extern void boot_Gtk__InputDialog(CV *cv);
+		callXS (boot_Gtk__InputDialog, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_ITEM
-		boot_Gtk__Item(cv);
+                extern void boot_Gtk__Item(CV *cv);
+		callXS (boot_Gtk__Item, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_LABEL
-		boot_Gtk__Label(cv);
+                extern void boot_Gtk__Label(CV *cv);
+		callXS (boot_Gtk__Label, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_LIST
-		boot_Gtk__List(cv);
+                extern void boot_Gtk__List(CV *cv);
+		callXS (boot_Gtk__List, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_LIST_ITEM
-		boot_Gtk__ListItem(cv);
+                extern void boot_Gtk__ListItem(CV *cv);
+		callXS (boot_Gtk__ListItem, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_MENU
-		boot_Gtk__Menu(cv);
+                extern void boot_Gtk__Menu(CV *cv);
+		callXS (boot_Gtk__Menu, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_MENU_BAR
-		boot_Gtk__MenuBar(cv);
+                extern void boot_Gtk__MenuBar(CV *cv);
+		callXS (boot_Gtk__MenuBar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_MENU_ITEM
-		boot_Gtk__MenuItem(cv);
+                extern void boot_Gtk__MenuItem(CV *cv);
+		callXS (boot_Gtk__MenuItem, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_MENU_SHELL
-		boot_Gtk__MenuShell(cv);
+                extern void boot_Gtk__MenuShell(CV *cv);
+		callXS (boot_Gtk__MenuShell, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_MISC
-		boot_Gtk__Misc(cv);
+                extern void boot_Gtk__Misc(CV *cv);
+		callXS (boot_Gtk__Misc, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_NOTEBOOK
-		boot_Gtk__Notebook(cv);
+                extern void boot_Gtk__Notebook(CV *cv);
+		callXS (boot_Gtk__Notebook, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_OBJECT
-		boot_Gtk__Object(cv);
+                extern void boot_Gtk__Object(CV *cv);
+		callXS (boot_Gtk__Object, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_OPTION_MENU
-		boot_Gtk__OptionMenu(cv);
+                extern void boot_Gtk__OptionMenu(CV *cv);
+		callXS (boot_Gtk__OptionMenu, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_PANED
-		boot_Gtk__Paned(cv);
+                extern void boot_Gtk__Paned(CV *cv);
+		callXS (boot_Gtk__Paned, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_PIXMAP
-		boot_Gtk__Pixmap(cv);
+                extern void boot_Gtk__Pixmap(CV *cv);
+		callXS (boot_Gtk__Pixmap, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_PREVIEW
-		boot_Gtk__Preview(cv);
+                extern void boot_Gtk__Preview(CV *cv);
+		callXS (boot_Gtk__Preview, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_PROGRESS_BAR
-		boot_Gtk__ProgressBar(cv);
+                extern void boot_Gtk__ProgressBar(CV *cv);
+		callXS (boot_Gtk__ProgressBar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_RADIO_BUTTON
-		boot_Gtk__RadioButton(cv);
+                extern void boot_Gtk__RadioButton(CV *cv);
+		callXS (boot_Gtk__RadioButton, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_RADIO_MENU_ITEM
-		boot_Gtk__RadioMenuItem(cv);
+                extern void boot_Gtk__RadioMenuItem(CV *cv);
+		callXS (boot_Gtk__RadioMenuItem, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_RANGE
-		boot_Gtk__Range(cv);
+                extern void boot_Gtk__Range(CV *cv);
+		callXS (boot_Gtk__Range, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_RULER
-		boot_Gtk__Ruler(cv);
+                extern void boot_Gtk__Ruler(CV *cv);
+		callXS (boot_Gtk__Ruler, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_SCALE
-		boot_Gtk__Scale(cv);
+                extern void boot_Gtk__Scale(CV *cv);
+		callXS (boot_Gtk__Scale, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_SCROLLBAR
-		boot_Gtk__Scrollbar(cv);
+                extern void boot_Gtk__Scrollbar(CV *cv);
+		callXS (boot_Gtk__Scrollbar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_SCROLLED_WINDOW
-		boot_Gtk__ScrolledWindow(cv);
+                extern void boot_Gtk__ScrolledWindow(CV *cv);
+		callXS (boot_Gtk__ScrolledWindow, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_SEPARATOR
-		boot_Gtk__Separator(cv);
+                extern void boot_Gtk__Separator(CV *cv);
+		callXS (boot_Gtk__Separator, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_SPIN_BUTTON
-		boot_Gtk__SpinButton(cv);
+                extern void boot_Gtk__SpinButton(CV *cv);
+		callXS (boot_Gtk__SpinButton, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_STATUSBAR
-		boot_Gtk__Statusbar(cv);
+                extern void boot_Gtk__Statusbar(CV *cv);
+		callXS (boot_Gtk__Statusbar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TABLE
-		boot_Gtk__Table(cv);
+                extern void boot_Gtk__Table(CV *cv);
+		callXS (boot_Gtk__Table, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TEXT
-		boot_Gtk__Text(cv);
+                extern void boot_Gtk__Text(CV *cv);
+		callXS (boot_Gtk__Text, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TIPS_QUERY
-		boot_Gtk__TipsQuery(cv);
+                extern void boot_Gtk__TipsQuery(CV *cv);
+		callXS (boot_Gtk__TipsQuery, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TOGGLE_BUTTON
-		boot_Gtk__ToggleButton(cv);
+                extern void boot_Gtk__ToggleButton(CV *cv);
+		callXS (boot_Gtk__ToggleButton, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TOOLBAR
-		boot_Gtk__Toolbar(cv);
+                extern void boot_Gtk__Toolbar(CV *cv);
+		callXS (boot_Gtk__Toolbar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TOOLTIPS
-		boot_Gtk__Tooltips(cv);
+                extern void boot_Gtk__Tooltips(CV *cv);
+		callXS (boot_Gtk__Tooltips, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TREE
-		boot_Gtk__Tree(cv);
+                extern void boot_Gtk__Tree(CV *cv);
+		callXS (boot_Gtk__Tree, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_TREE_ITEM
-		boot_Gtk__TreeItem(cv);
+                extern void boot_Gtk__TreeItem(CV *cv);
+		callXS (boot_Gtk__TreeItem, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VBOX
-		boot_Gtk__VBox(cv);
+                extern void boot_Gtk__VBox(CV *cv);
+		callXS (boot_Gtk__VBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VBUTTON_BOX
-		boot_Gtk__VButtonBox(cv);
+                extern void boot_Gtk__VButtonBox(CV *cv);
+		callXS (boot_Gtk__VButtonBox, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VPANED
-		boot_Gtk__VPaned(cv);
+                extern void boot_Gtk__VPaned(CV *cv);
+		callXS (boot_Gtk__VPaned, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VRULER
-		boot_Gtk__VRuler(cv);
+                extern void boot_Gtk__VRuler(CV *cv);
+		callXS (boot_Gtk__VRuler, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VSCALE
-		boot_Gtk__VScale(cv);
+                extern void boot_Gtk__VScale(CV *cv);
+		callXS (boot_Gtk__VScale, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VSCROLLBAR
-		boot_Gtk__VScrollbar(cv);
+                extern void boot_Gtk__VScrollbar(CV *cv);
+		callXS (boot_Gtk__VScrollbar, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VSEPARATOR
-		boot_Gtk__VSeparator(cv);
+                extern void boot_Gtk__VSeparator(CV *cv);
+		callXS (boot_Gtk__VSeparator, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_VIEWPORT
-		boot_Gtk__Viewport(cv);
+                extern void boot_Gtk__Viewport(CV *cv);
+		callXS (boot_Gtk__Viewport, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_WIDGET
-		boot_Gtk__Widget(cv);
+                extern void boot_Gtk__Widget(CV *cv);
+		callXS (boot_Gtk__Widget, cv, mark);
 	#endif
 }
 
 BOOT:
 {
 	#ifdef GTK_WINDOW
-		boot_Gtk__Window(cv);
+                extern void boot_Gtk__Window(CV *cv);
+		callXS (boot_Gtk__Window, cv, mark);
 	#endif
 }
 

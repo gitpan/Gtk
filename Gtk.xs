@@ -296,6 +296,15 @@ void menu_callback (GtkWidget *widget, gpointer user_data)
 	i = perl_call_sv(handler, G_DISCARD);
 }
 
+void     callXS (void (*subaddr)(CV* cv), CV *cv, SV **mark) 
+{
+	int items;
+	dSP;
+	PUSHMARK (mark);
+	(*subaddr)(cv);
+
+	PUTBACK;  /* Forget the return values */
+}
 
 static int init_gtk = 0;
 static int init_gdk = 0;
@@ -361,6 +370,12 @@ double
 constant(name,arg)
 	char *		name
 	int		arg
+
+void
+gc(Class)
+	SV *	Class
+	CODE:
+	GCGtkObjects();
 
 void
 init(Class)

@@ -772,7 +772,8 @@ foreach (sort keys %object) {
 BOOT:
 {
 	#ifdef $object{$_}->{cast}
-		boot_$object{$_}->{xsname}(cv);
+                extern void boot_$object{$_}->{xsname}(CV *cv);
+		callXS (boot_$object{$_}->{xsname}, cv, mark);
 	#endif
 }
 

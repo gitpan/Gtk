@@ -23,4 +23,6 @@ extern GtkMenuEntry * SvGtkMenuEntry(SV * o, GtkMenuEntry * e);
 extern SV * newSVGtkSelectionDataRef(GtkSelectionData * o);
 extern GtkSelectionData * SvGtkSelectionDataRef(SV * data);
 
+extern void GCGtkObjects(void);
+
 int type_name(char * name);

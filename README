@@ -57,8 +57,10 @@ the constants defined in gtk.defs), and the requirement for Gtk->init() to
 be invoked before any other Gtk functions.
 
 Please bring information regarding bugs and other issues to
-<gtk-list@redhat.com> or the author, at <kjahds@kjahds.com>. I cannot
-guarantee, at the moment, that any particular problem will be fixed.
+<gtk-list@redhat.com> (before posting, you will need to subscribe to the
+list by sending 'subscribe' to gtk-list-request@redhat.com) or the author,
+at <kjahds@kjahds.com>. I cannot guarantee, at the moment, that any
+particular problem will be fixed.
 
 Good Luck,
 Ken

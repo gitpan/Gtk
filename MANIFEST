@@ -95,6 +95,7 @@ GtkWidget.xs
 GtkWindow.xs
 MANIFEST
 Makefile.PL
+MemoryPosits
 MiscTypes.c
 MiscTypes.h
 Objects.xpl

@@ -7,7 +7,7 @@ $libs = "-L/usr/X11R6/lib -lgtk -lgdk -lglib -lX11 -lXext" if not defined $libs;
 @L = (LIBS => [$libs]);
 
 $inc = `gtk-config --cflags`;
-if (defined $incs) {
+if (defined $inc) {
 	@I = (INC => $inc);
 } else {
 	@I = (); #e.g, INC => -I/usr/other/include
@@ -32,7 +32,7 @@ if (grep {/--with-gdkimlib/} @ARGV) {
 		# gdk_imlib lib we are going to link to....
 		s/-l/-lgdk_imlib -lgif -ltiff -lpng -ljpeg -lz -l/; # hack hack
 	}
-	print EXT "boot_Gtk__Gdk__ImlibImage(cv);\n";
+	print EXT "callXS (boot_Gtk__Gdk__ImlibImage, cv, mark);\n";
 }
 
 if (grep {/--with-gnome/} @ARGV) {
@@ -50,7 +50,7 @@ close(EXT);
 
 WriteMakefile(
     'NAME'	=> 'Gtk',
-    'VERSION'	=> '0.1.15',
+    'VERSION'	=> '0.1.16',
     'PM' => $pm,
     'TYPEMAPS' => $typemap,
     'XSOPT' => '-noversioncheck',

@@ -1,0 +1,3 @@
+TYPEMAP
+Gnome::ColorSelector	T_PTROBJ
+Gnome::DesktopEntry	T_PTROBJ

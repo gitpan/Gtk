@@ -1,11 +1,11 @@
 
 	The source files in this distribution are 
-	Copyright (C) 1997-1998, Kenneth Albanowski, and are licensed for
+	Copyright (C) 1997-1999, Kenneth Albanowski, and are licensed for
 	use under the same terms as Perl itself.
 
-The graphics files, testgtkrc file, config/pkg-gtk.defs (originally
-gtk.defs) file, and the origination for test.pl and simple.pl are from the
-gtk distribution, and are under this copyright:
+The graphics files, testgtkrc file, */*.defs (originally gtk.defs) file,
+and the origination for test.pl and simple.pl are from the gtk distribution,
+and are under this copyright:
 
 /* GTK - The GIMP Toolkit
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -29,15 +29,15 @@ The GNU public license is included with Perl, and with this distribution in
 the file "COPYING".
 
 
-Usage information: this package was designed around gtk 1.0.5, and 1.1.1,
-and there is no guarantee it will work with any other distributions, or
-indeed even those ones. To build, fully build and install Gtk in your system
-(and glib too, if necessary), then run 'perl Makefile.PL', and 'make test',
-and then 'make install' if all went well.
+Usage information: this package was designed to work Gtk+ versions 0.99.10
+through 1.1.11, though there is no guarantee it will work with any other
+distributions, or indeed even those ones. To build, fully build and install
+Gtk in your system (and glib too, if necessary), then run 'perl
+Makefile.PL', and 'make test', and then 'make install' if all went well.
 
-You may optionally run Makefile.PL with the --with-gdkimlib, --with-gtktty,
---with-gnome, --with-gtkglarea and/or --with-gtkxmhtml switches to enable
-use of some Gtk widgets and Gdk functions available in those packages.
+You may optionally run Makefile.PL with several different switches to enable
+use of some Gtk widgets and Gdk functions available in those packages. These
+switches are listed when you run Makefile.PL.
 
 Gtk is available at <ftp://ftp.gimp.org/pub/gtk/>.
 

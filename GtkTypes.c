@@ -2,7 +2,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-/* Copyright (C) 1997, Kenneth Albanowski.
+/* Copyright (C) 1997,1998, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
    
 #include <gtk/gtk.h>
@@ -10,6 +10,8 @@
 #include "MiscTypes.h"
 
 static HV * ObjectCache = 0;
+
+#define TRY_MM
 
 void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 {
@@ -19,13 +21,9 @@ void UnregisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	if (!ObjectCache)
 		ObjectCache = newHV();
 	
-	/*sv_setiv(sv_object, 0);*/
+	/*printf("Unregistering PO %x/%d from GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
 	
-	/*printf("Unregistering %d from '%s'\n", hv_object, buffer);*/
-	
-	/*SvREFCNT(sv_object)+=2;*/
 	hv_delete(ObjectCache, buffer, strlen(buffer), G_DISCARD);
-	/*SvREFCNT(sv_object)--;*/
 }
 
 void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
@@ -36,19 +34,16 @@ void RegisterGtkObject(HV * hv_object, GtkObject * gtk_object)
 	if (!ObjectCache)
 		ObjectCache = newHV();
 	
-	/*printf("Recording %d as '%s'\n", hv_object, buffer);*/
-
-
+	/*printf("Registering PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
 
 	hv_store(ObjectCache, buffer, strlen(buffer), newRV((SV*)hv_object), 0);
-
-	/*hv_store(ObjectCache, buffer, strlen(buffer), newSViv((int)hv_object), 0);*/
 }
 
 HV * RetrieveGtkObject(GtkObject * gtk_object)
 {
 	char buffer[40];
 	SV ** s;
+	HV * hv_object;
 	sprintf(buffer, "%lu", (unsigned long)gtk_object);
 
 	if (!ObjectCache)
@@ -56,52 +51,188 @@ HV * RetrieveGtkObject(GtkObject * gtk_object)
 
 	s = hv_fetch(ObjectCache, buffer, strlen(buffer), 0);
 	
-	/*printf("Looking for PO to match GO %p\n", gtk_object);*/
-
-	/*printf("Retrieving '%s' as %d\n", buffer, (s ? (int)*s : 0));*/
-
-	if (s)
-		return (HV*)SvRV(*s);
-	else
+	if (s) {
+		hv_object = (HV*)SvRV(*s);
+		/*printf("Retrieving PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
+		return hv_object;
+	} else
 		return 0;
+
 }
 
-void GCGtkObjects(void) {
+/* Check a single PO to see whether it should be garbage collected */
+int GCHVObject(HV * hv_object) {
+	SV ** found;
+	GtkObject * gtk_object;
+	found = hv_fetch(hv_object, "_gtk", 4, 0);
+	if (!found || !SvOK(*found))
+		return 0;
+	gtk_object = (GtkObject*)SvIV(*found);
+
+	/*printf("Checking PO %x/%d vs GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
+	if ((gtk_object->ref_count == 1) && (SvREFCNT(hv_object) == 1)) {
+		/*printf("Derefing PO in GC\n");*/
+		UnregisterGtkObject(hv_object, gtk_object);
+		return 1;
+	}
+	return 0;
+
+} 
+
+/* Check all objects to see whether they should be collected */
+int GCGtkObjects(void) {
   if (ObjectCache)
     {
       int count = 0;
       int dead = 0;
       HE *iter;
+      /*printf("Starting GC\n");*/
       hv_iterinit (ObjectCache);
       while ((iter = hv_iternext (ObjectCache)))
         {
-          HV *hv_obj = (HV *)SvRV(HeVAL(iter));
-          GtkObject *obj = (GtkObject *)SvIV (*hv_fetch (hv_obj, "_gtk", 4, 0));
-          if ((obj->ref_count == 1) && (SvREFCNT(hv_obj) == 1)) {
-            dead++;
-            SvREFCNT_dec(hv_obj);
-          }
+          SV * o = HeVAL(iter);
+          HV * hv_object;
+          SV ** found;
+          GtkObject * gtk_object;
+          
+	if (!o || !SvOK(o) || !(hv_object=(HV*)SvRV(o)) || (SvTYPE(hv_object) != SVt_PVHV))
+		continue;
+	if (GCHVObject(hv_object))
+		dead++;
+
           count++;
         }
-      /*      fprintf(stderr, "Count: %d; Dead %d\n", count, dead); */
+            /*fprintf(stderr, "GC done, Count: %d; Dead %d\n", count, dead); */
+	    return dead;
     }
+    return 0;
 }
 
 extern AV * gtk_typecasts;
 
-static void DisconnectGtkObject(GtkObject * object, gpointer data)
-{
-	HV * h = (HV*)data;
-	/*printf("DisconnectGtkObject called on GO %p, PO %p\n", object, h);*/
+int gc_during_idle = 0;
+
+static void GCDuringIdle(void);
+
+static int IdleGC(gpointer data) {
+	HV * hv_object = data;
 	
-	/*printf("Disconnecting Gtk object %d/%d\n", data, object);*/
-	UnregisterGtkObject(h, object);
-	/*if (GTK_OBJECT_FLOATING(object)) {
-		printf("GO %p is floating, sinking.\n", object);
-		gtk_object_sink(object);
-	}*/
-	/*printf("Destroying hv %d, with object %d\n", h, object);*/
-	/*hv_delete(h, "_gtk", 4, G_DISCARD); Busted, sigh */
+	/*printf("IdleGC PO %p\n", hv_object);*/
+	
+	if (data) {
+	
+		/* If we are GCing a specific object, stop all GC if we
+		   can't clean it up, so we don't loop forever. */
+		   
+		if (GCHVObject(hv_object))
+			gc_during_idle = gtk_idle_add(IdleGC, 0);
+		else
+			gc_during_idle = 0;
+		return 0;
+	}
+	
+	/* If we can free up some objects, this will return non-zero,
+	   causing the idle function to be repeated. This will cause the GC
+	   to be repeated until no more objects can be freed */
+	   
+	if (GCGtkObjects())
+		return 1;
+
+	gc_during_idle = 0;
+	return 0;
+}
+
+static int TimeoutGC(gpointer data) {
+
+	/* GC, and if we collected anything, loop during idle to unravel
+	   everything */
+	
+	if (GCGtkObjects())
+		GCDuringIdle();
+	
+	return 1;
+}
+
+
+static void GCDuringIdle(void) {
+#ifdef TRY_MM
+	if (!gc_during_idle)
+		gc_during_idle = gtk_idle_add(IdleGC, 0);
+#endif
+}
+
+static void GCAfterTimeout(void) {
+	static int gc_after_timeout=0;
+#ifdef TRY_MM
+	if (!gc_after_timeout)
+		gc_after_timeout = gtk_timeout_add(9237, TimeoutGC, 0);
+#endif
+}
+
+static void DestroyGtkObject(GtkObject * gtk_object, gpointer data)
+{
+#ifdef TRY_MM
+	HV * hv_object = (HV*)data;
+	
+	/*printf("DestroyGtkObject (1) called on PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
+	
+	GCHVObject(hv_object);
+	
+	GCDuringIdle();
+
+	/*printf("DestroyGtkObject (2) called on PO %x/%d for GO %x/%d\n", hv_object, SvREFCNT(hv_object), gtk_object, gtk_object->ref_count);*/
+#endif	
+}
+
+/* Called when a GTK object is being free'd. Free up its Perl object, if it
+   hasn't been already. */
+
+static void FreeGtkObject(gpointer data)
+{
+#ifdef TRY_MM
+	HV * hv_object = (HV*)data;
+	SV ** r;
+	GCDuringIdle();
+	/*printf("FreeGtkObject of (PO %p/%d) ", hv_object, SvREFCNT(hv_object));*/
+	r = hv_fetch(hv_object, "_gtk", 4, 0);
+	if (r && SvIV(*r)) {
+		GtkObject * gtk_object = (GtkObject*)SvIV(*r);
+		/*printf("GO %p/%d\n", gtk_object, gtk_object->ref_count);*/
+		
+		if (gtk_object_get_data(gtk_object,"_perl")) {
+			/*printf("Unrefing PO %p/%d\n", hv_object, SvREFCNT(hv_object));*/
+			gtk_object_remove_data(gtk_object, "_perl");
+			UnregisterGtkObject(hv_object, gtk_object);
+		} /*else
+			printf("PO already unlinked\n");*/
+		
+	}/* else
+		printf("No GO\n");*/
+#endif
+}
+
+/* Called when a Perl object is being free'd. Free up its GTK object, if it
+   hasn't been already. */
+
+void FreeHVObject(HV * hv_object)
+{
+#ifdef TRY_MM
+	SV ** r;
+	r = hv_fetch(hv_object, "_gtk", 4, 0);
+	GCDuringIdle();
+	/*printf("FreeHVObject of PO %p/%d\n", hv_object, SvREFCNT(hv_object));*/
+	if (r && SvIV(*r)) {
+		GtkObject * gtk_object = (GtkObject*)SvIV(*r);
+		hv_delete(hv_object, "_gtk", 4, G_DISCARD);
+		
+		if (gtk_object_get_data(gtk_object, "_perl")) {
+			/*printf("Unrefing GO %p/%d\n", gtk_object, gtk_object->ref_count);*/
+			gtk_object_unref(gtk_object);
+			return;
+		}
+	}
+	/*printf("Skipping FreeHVObject, as Gtk object is already free'd\n");*/
+#endif
 }
 
 
@@ -112,8 +243,6 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 	if (previous) {
 		result = newRV((SV*)previous);
 		/*printf("Returning previous PO %p, referencing GO %p\n", previous, object);*/
-		/*printf("Returning previous ref %d as %d (%d)\n", object, previous, result);*/
-		/*SvREFCNT_dec(SvRV(result));*/
 	} else {
 		HV * h;
 		SV * s;
@@ -129,13 +258,13 @@ SV * newSVGtkObjectRef(GtkObject * object, char * classname)
 		hv_store(h, "_gtk", 4, s, 0);
 		result = newRV((SV*)h);
 		RegisterGtkObject(h, object);
-		/*printf("Setting hv %d up for destruction on object %d\n", h, object);*/
-		gtk_signal_connect(object, "destroy", (GtkSignalFunc)DisconnectGtkObject, (gpointer)h);
-		/*gtk_object_weakref(object, (GtkDestroyNotify)DisconnectGtkObject, (gpointer)h);*/
+		gtk_object_ref(object);
+		gtk_signal_connect(object, "destroy", (GtkSignalFunc)DestroyGtkObject, (gpointer)h);
+		gtk_object_set_data_full(object, "_perl", h, FreeGtkObject);
 		sv_bless(result, gv_stashpv(classname, FALSE));
 		SvREFCNT_dec(h);
-		/*gtk_object_ref(object);*/
-		/*printf("Creating new PO %p referencing GO %p\n", h, object);*/
+		GCAfterTimeout();
+		/*printf("Creating new PO %p/%d referencing GO %p/%d\n", h, SvREFCNT(h), object, object->ref_count);*/
 	}
 	return result;
 }
@@ -152,36 +281,6 @@ GtkObject * SvGtkObjectRef(SV * o, char * name)
 	if (!r || !SvIV(*r))
 		croak("variable is damaged %s", name);
 	return (GtkObject*)SvIV(*r);
-}
-
-void disconnect_GtkObjectRef(SV * o)
-{
-#if 0
-	HV * q;
-	SV ** r;
-	GtkObject * object;
-	printf("DESTROY PO %p\n", o);
-	/*printf("Trying to delete GtkObject %d\n", o);*/
-	if (!o || !SvOK(o) || !(q=(HV*)SvRV(o)) || (SvTYPE(q) != SVt_PVHV))
-		return;
-	r = hv_fetch(q, "_gtk", 4, 0);
-	if (!r || !SvIV(*r))
-		return;
-	object = (GtkObject*)SvIV(*r);
-	printf("(And thus GO %p)\n", object);
-#endif
-#if 0
-	HV * q;
-	SV ** r;
-	/*printf("Trying to delete GtkObject %d\n", o);*/
-	if (!o || !SvOK(o) || !(q=(HV*)SvRV(o)) || (SvTYPE(q) != SVt_PVHV))
-		return;
-	r = hv_fetch(q, "_gtk", 4, 0);
-	if (!r || !SvIV(*r))
-		return;
-	UnregisterGtkObject(q, (GtkObject*)SvIV(*r));
-	hv_delete(q, "_gtk", 4, G_DISCARD);
-#endif
 }
 
 GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
@@ -206,7 +305,7 @@ GtkMenuEntry * SvGtkMenuEntry(SV * data, GtkMenuEntry * e)
 	else
 		croak("menu entry must contain accelerator");
 	if (s=hv_fetch(h, "widget", 6, 0))
-		e->widget = GTK_WIDGET(SvGtkObjectRef(*s, "Gtk::Widget"));
+		e->widget =  (s && SvOK(*s)) ? GTK_WIDGET(SvGtkObjectRef(*s, "Gtk::Widget")) : NULL;
 	else
 		croak("menu entry must contain widget");
 	if (s=hv_fetch(h, "callback", 8, 0))
@@ -257,3 +356,57 @@ GdkWindow * SvGtkSelectionDataRef(SV * data) { return SvMiscRef(data, "Gtk::Sele
 	return r;
 }
 */
+
+void FindArgumentType(GtkObject * object, SV * name, GtkArg * result) {
+	char * argname = SvPV(name, na);
+	GtkType t;
+
+	/* Strip the ticklish dash */
+	if (argname[0] == '-')
+		argname++;
+
+	/* Convert Perl naming convention to Gtk style */
+	if (strncmp(argname, "Gtk::", 5) == 0) {
+		SV * work = sv_2mortal(newSVpv("Gtk", 3)); 
+		sv_catpv(work, argname+5);
+		argname = SvPV(work, na);
+	}
+	
+	/* Fix something that's hard to deal with, otherwise */
+	if (strncmp(argname, "signal::", 8) ==0) {
+		SV * work = sv_2mortal(newSVpv("GtkObject::", 11)); 
+		sv_catpv(work, argname);
+		argname = SvPV(work, na);
+	}
+	
+	if (!strchr(argname, ':') || ((t = gtk_object_get_arg_type(argname)) == GTK_TYPE_INVALID)) {
+		SV * work = sv_2mortal(newSVsv(&sv_undef)); 
+		GtkType pt;
+		/* Try appending the arg name to the class name */
+		for(pt = object->klass->type;pt;pt = gtk_type_parent(pt)) {
+			sv_setpv(work, gtk_type_name(pt));
+			sv_catpv(work, "::");
+			sv_catpv(work, argname);
+			if ((t = gtk_object_get_arg_type(SvPV(work, na))) != GTK_TYPE_INVALID) {
+				argname = SvPV(work, na);
+				break;
+			}
+			/* And if that didn't work, try the parent class */
+		}
+	}
+	
+	
+	if (t == GTK_TYPE_INVALID) {
+		SV * work = sv_2mortal(newSVpv("GtkObject::signal::", 0));
+		/* Last resort, try it as a signal name */
+		sv_catpv(work, argname);
+		argname = SvPV(work, na);
+		t = gtk_object_get_arg_type(argname);
+	}
+	
+	if (t == GTK_TYPE_INVALID)
+		croak("Unknown argument %s", argname);
+	
+	result->name = argname;
+	result->type = t;
+}

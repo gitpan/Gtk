@@ -15,13 +15,16 @@
 # define boolSV(b) ((b) ? &sv_yes : &sv_no)
 #endif
 
-MODULE = Gtk::Statusbar		PACKAGE = Gtk::Statusbar		PREFIX = gtk_status_bar_
+MODULE = Gtk::Statusbar		PACKAGE = Gtk::Statusbar		PREFIX = gtk_statusbar_
 
-#ifdef GTK_STATUS_BAR
+#ifdef GTK_STATUSBAR
 
-Gtk::Statusbar
+Gtk::Statusbar_Sink
 new(Class)
-	SV * Class
+	CODE:
+	RETVAL = GTK_STATUSBAR(gtk_statusbar_new());
+	OUTPUT:
+	RETVAL
 
 int
 gtk_statusbar_get_context_id(self, context_description)
@@ -45,7 +48,7 @@ gtk_statusbar_remove(self, context_id, message_id)
 	int context_id
 	int message_id
 
-upGtk::Widget
+Gtk::Widget_Up
 frame(self)
 	Gtk::Statusbar self
 	CODE:
@@ -53,7 +56,7 @@ frame(self)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 label(self)
 	Gtk::Statusbar self
 	CODE:

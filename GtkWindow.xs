@@ -20,7 +20,7 @@ MODULE = Gtk::Window		PACKAGE = Gtk::Window		PREFIX = gtk_window_
 
 #ifdef GTK_WINDOW
 
-Gtk::Window
+Gtk::Window_Sink
 new(Class, type=0)
 	SV *	Class
 	Gtk::WindowType	type

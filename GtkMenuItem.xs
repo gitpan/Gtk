@@ -18,7 +18,7 @@ MODULE = Gtk::MenuItem		PACKAGE = Gtk::MenuItem		PREFIX = gtk_menu_item_
 
 #ifdef GTK_MENU_ITEM
 
-Gtk::MenuItem
+Gtk::MenuItem_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -30,7 +30,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::MenuItem
+Gtk::MenuItem_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

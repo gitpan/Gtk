@@ -19,7 +19,7 @@ MODULE = Gtk::Curve		PACKAGE = Gtk::Curve	PREFIX = gtk_curve_
 
 #ifdef GTK_CURVE
 
-Gtk::Curve
+Gtk::Curve_Sink
 new(Class)
 	SV *	Class
 	CODE:

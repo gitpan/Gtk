@@ -20,7 +20,7 @@ MODULE = Gtk::HButtonBox		PACKAGE = Gtk::HButtonBox		PREFIX = gtk_hbutton_box_
 
 #ifdef GTK_HBUTTON_BOX
 
-Gtk::HButtonBox
+Gtk::HButtonBox_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -20,7 +20,7 @@ MODULE = Gtk::HScale		PACKAGE = Gtk::HScale
 
 #ifdef GTK_HSCALE
 
-Gtk::HScale
+Gtk::HScale_Sink
 new(Class, adjustment)
 	SV *	Class
 	Gtk::Adjustment	adjustment

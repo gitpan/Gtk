@@ -20,7 +20,7 @@ MODULE = Gtk::HSeparator		PACKAGE = Gtk::HSeparator
 
 #ifdef GTK_HSEPARATOR
 
-Gtk::HSeparator
+Gtk::HSeparator_Sink
 new(Class)
 	SV *	Class
 	CODE:

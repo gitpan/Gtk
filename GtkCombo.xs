@@ -19,7 +19,7 @@ MODULE = Gtk::Combo		PACKAGE = Gtk::Combo		PREFIX = gtk_combo_
 
 #ifdef GTK_COMBO
 
-Gtk::Combo
+Gtk::Combo_Sink
 new(Class)
 	SV *	Class
 	CODE:
@@ -66,7 +66,7 @@ gtk_combo_set_popdown_strings(combo, ...)
         gtk_combo_set_popdown_strings(combo, g_list_first(list));
 	}
 
-upGtk::Widget
+Gtk::Widget_Up
 list (combo)
 	Gtk::Combo	combo
 	CODE:
@@ -74,7 +74,7 @@ list (combo)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 entry (combo)
 	Gtk::Combo	combo
 	CODE:

@@ -26,6 +26,9 @@ sub parse_lisp
 
 sub perlize {
 	local($_) = $_[0];
+	if (!/^(Gtk|Gdk)/) {
+		s/^([A-Z][a-z]*)/Gtk$1::/;
+	}
 	s/^Gtk/Gtk::/;
 	s/^Gtk::Gdk/Gtk::Gdk::/;
 	s/^Gdk/Gtk::Gdk::/;
@@ -33,7 +36,7 @@ sub perlize {
 }
 
 sub xsize {
-	local($_) = perlize($_[0]);
+	local($_) = @_;
 	s/::/__/g;
 	$_;
 }
@@ -54,6 +57,12 @@ foreach $file (<*.defs>) {
 	close(F);
 }
 
+foreach $file (@ARGV) {
+	open(F,"<$file") || next;
+	$_ .= join("",<F>);
+	close(F);
+}
+
 $_ .= join("",<DATA>);
 
 $_ =~ s/;.*$//gm;
@@ -68,15 +77,20 @@ foreach $node (parse_lisp($_)) {
 	}
 	if ($node[0] eq "define-enum") {
 		@enum = ();
+		my($perl) = perlize($node[1]);
 		foreach (@node[2..$#node]) {
+			if (not ref $_) {
+				$perl = $_;
+				next;
+			}
 			push @enum, {simple => $_->[0], constant => $_->[1]};
 		}
 		if ( exists $enum{$node[1]} ) {
 			warn "Overriding enum `$node[1]'\n";
 		}
 		$enum{$node[1]}->{'values'} = [@enum];
-		$enum{$node[1]}->{perlname} = perlize($node[1]);
-		$enum{$node[1]}->{xsname} = xsize($node[1]);
+		$enum{$node[1]}->{perlname} = $perl;
+		$enum{$node[1]}->{xsname} = xsize($perl);
 		$enum{$node[1]}->{typename} = typeize($node[1]);
 		
 	} elsif ($node[0] eq "define-boxed") {
@@ -89,25 +103,36 @@ foreach $node (parse_lisp($_)) {
 			$boxed{$node[1]}->{size} = $node[4];
 		}
 
-		$boxed{$node[1]}->{perlname} = perlize($node[1]);
-		$boxed{$node[1]}->{xsname} = xsize($node[1]);
+		my($perl) = perlize($node[1]);
+		$boxed{$node[1]}->{perlname} = $perl;
+		$boxed{$node[1]}->{xsname} = xsize($perl);
 		$boxed{$node[1]}->{typename} = typeize($node[1]);
 		
 	} elsif ($node[0] eq "define-flags") {
 		@flag = ();
+		my($perl) = perlize($node[1]);
 		foreach (@node[2..$#node]) {
+			if (not ref $_) {
+				$perl = $_;
+				next;
+			}
 			push @flag, {simple => $_->[0], constant => $_->[1]};
 		}
 		if ( exists $flags{$node[1]} ) {
 			warn "Overriding flags `$node[1]'\n";
 		}
 		$flags{$node[1]}->{'values'} = [@flag];
-		$flags{$node[1]}->{perlname} = perlize($node[1]);
-		$flags{$node[1]}->{xsname} = xsize($node[1]);
+		$flags{$node[1]}->{perlname} = $perl;
+		$flags{$node[1]}->{xsname} = xsize($perl);
 		$flags{$node[1]}->{typename} = typeize($node[1]);
 		
 	} elsif ($node[0] eq "define-object") {
 		my($object) = {parent => $node[2]->[0]};
+
+		my ($cast) = $node[1];
+		$cast =~ s/([a-z])([A-Z])/${1}_$2/g;
+		my($perl) = perlize($node[1]);
+		
 		foreach $node (@node[3..$#node]) {
 			my (@node) = @$node;
 			if ($node[0] eq "fields") {
@@ -117,18 +142,22 @@ foreach $node (parse_lisp($_)) {
 				}
 				$object->{fields} = [@fields];
 			}
+			elsif ($node[0] eq "cast") {
+				$cast = $node[1];
+			}
+			elsif ($node[0] eq "perl") {
+				$perl = $node[1];
+			}
 		}
 		if ( exists $object{$node[1]} ) {
 			warn "Overriding object `$node[1]'\n";
 		}
+
 		$object{$node[1]} = $object;
-		$object{$node[1]}->{perlname} = perlize($node[1]);
-		$object{$node[1]}->{xsname} = xsize($node[1]);
+		$object{$node[1]}->{perlname} = $perl;
+		$object{$node[1]}->{xsname} = xsize($perl);
 		
-		my ($cast) = $node[1];
-		$cast =~ s/([a-z])([A-Z])/${1}_$2/g;
 		$object{$node[1]}->{cast} = uc $cast;
-		
 		$object{$node[1]}->{prefix} = lc $cast;
 		$objectlc{lc $cast} = $node[1];
 		
@@ -156,15 +185,16 @@ foreach $node (parse_lisp($_)) {
 		}
 		$func->{args} = \@args;
 		
-		$func->{perlname} = perlize($node[1]);
-		$func->{xsname} = xsize($node[1]);
+		my($perl) = perlize($node[1]);
+		$func->{perlname} = $perl;
+		$func->{xsname} = xsize($perl);
 		
 		if ( exists $func{$node[1]} ) {
 			warn "Overriding func `$node[1]'\n";
 		}
 		$func{$node[1]} = $func;
 
-	} 	
+	}
 }
 
 #use Data::Dumper;
@@ -175,29 +205,15 @@ foreach $node (parse_lisp($_)) {
 #print Dumper(\%object);
 #print Dumper(\%func);
 
-$boxed{GdkPixmap} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
-						perlname => "Gtk::Gdk::Pixmap", xsname => "Gtk__Gdk__Pixmap",
-						 typename => "GTK_TYPE_GDK_WINDOW"};
-
-$boxed{GdkWindow} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
-                                               perlname => "Gtk::Gdk::Window", xsname => "Gtk__Gdk__Window",
-                                                typename => "GTK_TYPE_GDK_WINDOW"};
-
-$boxed{GdkBitmap} = { 'ref' => "gdk_window_ref", unref => "gdk_window_unref", 
-                                               perlname => "Gtk::Gdk::Bitmap", xsname => "Gtk__Gdk__Bitmap",
-                                                typename => "GTK_TYPE_GDK_WINDOW"};
-
-#delete $boxed{GdkWindow};
-delete $boxed{GdkEvent};
-delete $boxed{GdkColor};
-delete $flags{GtkWidgetFlags};
-
-$object{GtkObject} = {perlname => "Gtk::Object", cast => "GTK_OBJECT", xsname => "Gtk__Object", prefix => "gtk_object"};
+do 'overrides.pl';
 
 delete $object{""};
 delete $func{""};
 delete $boxed{""};
 delete $flags{""};
+
+delete $objectlc{""}; # Shut up warning
+delete $overrideboxed{""}; # Shut up warning
 
 #
 #foreach (keys %func) {
@@ -301,7 +317,8 @@ foreach (sort keys %flags) {
 }
 foreach (sort keys %object) {
 	print $object{$_}->{perlname},"\tT_GtkPTROBJ\n";
-	print $object{$_}->{perlname},"OrNULL\tT_GtkPTROBJOrNULL\n";
+	print $object{$_}->{perlname},"_Sink\tT_GtkPTROBJSink\n";
+	print $object{$_}->{perlname},"_OrNULL\tT_GtkPTROBJOrNULL\n";
 	#print perlize($_),"\tT_GtkPTROBJ\n";
 }
 foreach (sort keys %boxed) {
@@ -337,6 +354,10 @@ foreach (sort keys %enum) {
 	print "#define newSV$_(v) newSVOptsHash(v, pGEName_$_, pGE_$_)\n";
 	print "#define Sv$_(v) SvOptsHash(v, pGEName_$_, pGE_$_)\n";
 	print "typedef $_ $enum{$_}->{xsname};\n";
+	if ($_ !~ /^Gtk/) {
+		print "#define newSVGtk$_(v) newSVOptsHash(v, pGEName_$_, pGE_$_)\n";
+		print "#define SvGtk$_(v) SvOptsHash(v, pGEName_$_, pGE_$_)\n";
+	}
 	$i++;
 }
 foreach (sort keys %flags) {
@@ -345,19 +366,29 @@ foreach (sort keys %flags) {
 	print "#define newSV$_(v) newSVFlagsHash(v, pGFName_$_, pGF_$_, 1)\n";
 	print "#define Sv$_(v) SvFlagsHash(v, pGFName_$_, pGF_$_)\n";
 	print "typedef $_ $flags{$_}->{xsname};\n";
+	if ($_ !~ /^Gtk/) {
+		print "#define newSVGtk$_(v) newSVFlagsHash(v, pGFName_$_, pGF_$_, 1)\n";
+		print "#define SvGtk$_(v) SvFlagsHash(v, pGFName_$_, pGF_$_)\n";
+	}
 	$i++;
 }
 foreach (sort keys %boxed) {
 	print "extern SV * newSV$_($_ * value);\n";
 	print "extern $_ * Sv$_(SV * value);\n";
 	print "typedef $_ * $boxed{$_}->{xsname};\n";
+	if ($_ !~ /^Gtk/) {
+		print "#define newSVGtk$_ newSV$_\n";
+		print "#define SvGtk$_ Sv$_\n";
+	}
 }
 foreach (sort keys %object) {
 	print "#ifdef $object{$_}->{cast}\n";
 	print "typedef $_ * $object{$_}->{xsname};\n";
-	print "typedef $_ * $object{$_}->{xsname}OrNULL;\n";
+	print "typedef $_ * $object{$_}->{xsname}_OrNULL;\n";
+	print "typedef $_ * $object{$_}->{xsname}_Sink;\n";
 	print "#define Cast$object{$_}->{xsname} $object{$_}->{cast}\n";
-	print "#define Cast$object{$_}->{xsname}OrNULL $object{$_}->{cast}\n";
+	print "#define Cast$object{$_}->{xsname}_OrNULL $object{$_}->{cast}\n";
+	print "#define Cast$object{$_}->{xsname}_Sink $object{$_}->{cast}\n";
 	print "#endif\n";
 }
 
@@ -414,6 +445,7 @@ int type_name(char * name) {
 EOT
 
 foreach (sort keys %boxed) {
+	next if $overrideboxed{$_};
 	print <<"EOT";
 
 SV * newSV$_($_ * value) {
@@ -442,7 +474,10 @@ SV * GtkGetArg(GtkArg * a)
 		case GTK_TYPE_ULONG:	result = newSViv(GTK_VALUE_ULONG(*a)); break;
 		case GTK_TYPE_FLOAT:	result = newSVnv(GTK_VALUE_FLOAT(*a)); break;	
 		case GTK_TYPE_STRING:	result = newSVpv(GTK_VALUE_STRING(*a),0); break;
-		case GTK_TYPE_POINTER:	result = newSVpv(GTK_VALUE_POINTER(*a),0); break;
+		case GTK_TYPE_POINTER:	result = GTK_VALUE_POINTER(*a) ?
+									 newSVpv(GTK_VALUE_POINTER(*a),0) :
+									 newSVsv(&sv_undef); 
+									 break;
 		case GTK_TYPE_OBJECT:	result = newSVGtkObjectRef(GTK_VALUE_OBJECT(*a), 0); break;
 		case GTK_TYPE_SIGNAL:
 		{
@@ -522,7 +557,7 @@ void GtkSetArg(GtkArg * a, SV * v, SV * Class, GtkObject * Object)
 		case GTK_TYPE_ULONG:	GTK_VALUE_ULONG(*a) = SvIV(v); break;
 		case GTK_TYPE_FLOAT:	GTK_VALUE_FLOAT(*a) = SvNV(v); break;	
 		case GTK_TYPE_STRING:	GTK_VALUE_STRING(*a) = g_strdup(SvPV(v,na)); break;
-		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = SvPV(v,na); break;
+		case GTK_TYPE_POINTER:	GTK_VALUE_POINTER(*a) = (v && SvOK(v)) ? SvPV(v,na) : 0; break;
 		case GTK_TYPE_OBJECT:	GTK_VALUE_OBJECT(*a) = SvGtkObjectRef(v, "Gtk::Object"); break;
 		case GTK_TYPE_SIGNAL:
 		{
@@ -737,7 +772,7 @@ MODULE = Gtk	PACKAGE = $object{$_}->{perlname}		PREFIX = $object{$_}->{prefix}_
 #ifdef $object{$_}->{cast}
 
 int
-$object{$_}->{prefix}_get_type(self)
+$object{$_}->{prefix}_get_object_type(self)
 	$object{$_}->{perlname}	self
 	CODE:
 	RETVAL = $object{$_}->{prefix}_get_type();
@@ -745,7 +780,7 @@ $object{$_}->{prefix}_get_type(self)
 	RETVAL
 
 int
-$object{$_}->{prefix}_get_size(self)
+$object{$_}->{prefix}_get_object_size(self)
 	$object{$_}->{perlname}	self
 	CODE:
 	RETVAL = sizeof($_);
@@ -1351,7 +1386,7 @@ foreach (sort keys %object) {
 MODULE = Gtk	PACKAGE = $p		PREFIX = ${c}_
 
 int
-${c}_get_type(self)
+${c}_get_object_type(self)
 	$p	self
 	CODE:
 	RETVAL = ${c}_get_type();
@@ -1359,7 +1394,7 @@ ${c}_get_type(self)
 	RETVAL
 
 int
-${c}_get_size(self)
+${c}_get_object_size(self)
 	$p	self
 	CODE:
 	RETVAL = sizeof($_);

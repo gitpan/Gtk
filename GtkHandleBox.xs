@@ -20,7 +20,7 @@ MODULE = Gtk::HandleBox		PACKAGE = Gtk::HandleBox	PREFIX = gtk_handle_box_
 
 #ifdef GTK_HANDLE_BOX
 
-Gtk::HandleBox
+Gtk::HandleBox_Sink
 new(Class)
 	SV *	Class
 	CODE:

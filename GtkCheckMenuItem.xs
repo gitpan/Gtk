@@ -21,7 +21,7 @@ MODULE = Gtk::CheckMenuItem		PACKAGE = Gtk::CheckMenuItem	PREFIX = gtk_check_men
 
 #ifdef GTK_CHECK_MENU_ITEM
 
-Gtk::CheckMenuItem
+Gtk::CheckMenuItem_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -33,7 +33,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::CheckMenuItem
+Gtk::CheckMenuItem_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

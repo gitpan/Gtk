@@ -20,7 +20,7 @@ MODULE = Gtk::ListItem		PACKAGE = Gtk::ListItem		PREFIX = gtk_list_item_
 
 #ifdef GTK_LIST_ITEM
 
-Gtk::ListItem
+Gtk::ListItem_Sink
 new(Class, string=0)
 	SV *	Class
 	char *	string
@@ -32,7 +32,7 @@ new(Class, string=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::ListItem
+Gtk::ListItem_Sink
 new_with_label(Class, string)
 	SV *	Class
 	char *	string

@@ -19,7 +19,7 @@ MODULE = Gtk::SpinButton		PACKAGE = Gtk::SpinButton		PREFIX = gtk_spin_button_
 
 #ifdef GTK_SPIN_BUTTON
 
-Gtk::SpinButton
+Gtk::SpinButton_Sink
 new(Class, adjustment, climb_rate, digits)
 	SV * Class
 	Gtk::Adjustment adjustment

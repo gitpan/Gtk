@@ -7,6 +7,8 @@ sub hello {
 	print "Destroying $button and $window\n";
 	destroy $button;
 	destroy $window;
+	$button = undef;
+	$window = undef;
 }
 
 init Gtk;

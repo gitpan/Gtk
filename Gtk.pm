@@ -48,7 +48,7 @@ bootstrap Gtk;
 
 # Preloaded methods go here.
 
-use Gtk::Types;
+require Gtk::Types;
 
 @Gtk::Gdk::Bitmap::ISA = qw(Gtk::Gdk::Pixmap);
 @Gtk::Gdk::Window::ISA = qw(Gtk::Gdk::Pixmap);

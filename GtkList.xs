@@ -20,7 +20,7 @@ MODULE = Gtk::List		PACKAGE = Gtk::List		PREFIX = gtk_list_
 
 #ifdef GTK_LIST
 
-Gtk::List
+Gtk::List_Sink
 new(Class)
 	SV *	Class
 	CODE:

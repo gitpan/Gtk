@@ -254,47 +254,47 @@ sub make_toolbar {
 	$color = $toplevel->style->bg('normal');
 	
 	$toolbar = new Gtk::Toolbar('horizontal', 'both');
-	$button = $toolbar->append_item ( "Horizontal", "Horizontal toolbar layout", 
+	$button = $toolbar->append_item ( "Horizontal", "Horizontal toolbar layout",
 		"Toolbar/Horizontal", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_orientation('horizontal')});
-	$button = $toolbar->append_item( "Vertical","Verticaltoolbarlayout",
+	$button = $toolbar->append_item( "Vertical","Vertical toolbar layout",
 		"Toolbar/Vertical", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_orientation('vertical')});
 
 	$toolbar->append_space();
 
-	$button = $toolbar->append_item( "Icons","Onlyshowtoolbaricons", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Icons","Only show toolbar icons",
+		"Toolbar/IconsOnly", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_style('icons')});
-	$button = $toolbar->append_item( "Text","Onlyshowtoolbartext", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Text","Only show toolbar text",
+		"Toolbar/TextOnly", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_style('text')});
-	$button = $toolbar->append_item( "Both","Showtoolbariconsandtext", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Both","Show toolbar icons and text",
+		"Toolbar/Both", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_style('both')});
 
 	$toolbar->append_space;
-	
+
 	$entry = new Gtk::Entry;
 	$entry->set_text("Abracadabra");
 	$entry->set_max_length(3);
 	$entry->show;
 	$toolbar->append_widget($entry, "This is an unusable GtkEntry ;)", "Hey d on't click me!!!");
 
-	$button = $toolbar->append_item( "Small","Usesmallspaces", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Small","Use small spaces",
+		"Toolbar/Small",, new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_space_size(5)});
-	$button = $toolbar->append_item( "Big","Usebigspaces", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Big","Use big spaces",
+		"Toolbar/Big", new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_space_size(10)});
 
 	$toolbar->append_space();
 
-	$button = $toolbar->append_item( "Enable","Enabletooltips", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Enable","Enable tooltips",
+		undef, new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_tooltips(1)});
-	$button = $toolbar->append_item( "Disable","Disabletooltips", undef,
-		new_pixmap("test.xpm",$window, $color));
+	$button = $toolbar->append_item( "Disable","Disable tooltips",
+		undef, new_pixmap("test.xpm",$window, $color));
 	$button->signal_connect('clicked', sub {$toolbar->set_tooltips(0)});
 
 	$toolbar;
@@ -504,13 +504,13 @@ sub create_tooltips {
 		$box2->pack_start($button, 1, 1, 0);
 		show $button;
 		
-		set_tip $tooltips $button => "This is button 2";
+		set_tip $tooltips $button => "This is button 2. This is button 2. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "ContextHelp/buttons/2_long";
 		
 		$button = new Gtk::ToggleButton("button3");
 		$box2->pack_start($button, 1, 1, 0);
 		show $button;
 		
-		$tooltips->set_tip($button, "This is button 3. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.");
+		$tooltips->set_tip($button, "This is button 3. This is also a really long tooltip which probably won't fit on a single line and will therefore need to be wrapped. Hopefully the wrapping will work correctly.", "");
 		
 		$separator = new Gtk::HSeparator;
 		$box1->pack_start($separator, 0, 1, 0);
@@ -528,7 +528,7 @@ sub create_tooltips {
 		$button->grab_default;
 		$button->show;
 		
-		$tooltips->set_tip($button,"Push this button to close window");
+		$tooltips->set_tip($button,"Push this button to close window", "ContextHelp/buttons/Close");
     }
 	if (!visible $tt_window) {
 		show $tt_window;
@@ -775,7 +775,7 @@ sub create_clist {
 		$box1->pack_start($box2, 0, 0, 0);
 		$box2->show;
 
-		$clist = new Gtk::CList(@titles);
+		$clist = new Gtk::CList($#titles);
 		
 		$button = new Gtk::Button('Add 1,000 Rows');
 		$button->show;
@@ -907,14 +907,14 @@ sub create_menus {
 		show $menuitem;
 
 		$menu = create_menu(3);
-
+		
 		$menuitem = new Gtk::MenuItem("foo");
 		$menuitem->set_submenu($menu);
 		$menubar->append($menuitem);
 		show $menuitem;
 
 		$menu = create_menu(4);
-
+		
 		$menuitem = new Gtk::MenuItem("bar");
 		$menuitem->set_submenu($menu);
 		$menubar->append($menuitem);
@@ -1453,7 +1453,9 @@ sub color_idle_func {
 
 sub color_preview_destroy {
 	my($widget,$windowref) = @_;
-	Gtk->idle_remove($color_idle);
+	if ($color_idle) {
+		Gtk->idle_remove($color_idle);
+	}
 	$color_idle=0;
 	
 	destroy_window($window, $windowref);
@@ -1526,7 +1528,9 @@ sub gray_idle_func {
 
 sub gray_preview_destroy {
 	my($widget,$windowref) = @_;
-	Gtk->idle_remove($gray_idle);
+	if ($gray_idle) {
+		Gtk->idle_remove($gray_idle);
+	}
 	$gray_idle=0;
 	
 	destroy_window($window, $windowref);
@@ -1945,7 +1949,7 @@ sub create_main_window {
 	$window->set_usize(200, 400);
 	
 	$window->signal_connect("destroy" => \&destroy_window, \$window);
-	$window->signal_connect("delete_event" => \&destro_window, \$window);
+	$window->signal_connect("delete_event" => \&destroy_window, \$window);
 
 	$box1 = new Gtk::VBox(0, 0);
 	$window->add($box1);

@@ -20,7 +20,7 @@ MODULE = Gtk::Table		PACKAGE = Gtk::Table	PREFIX = gtk_table_
 
 #ifdef GTK_TABLE
 
-Gtk::Table
+Gtk::Table_Sink
 new(Class, rows, cols, homogeneous)
 	SV *	Class
 	int	rows

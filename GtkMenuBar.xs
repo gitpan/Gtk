@@ -20,7 +20,7 @@ MODULE = Gtk::MenuBar		PACKAGE = Gtk::MenuBar		PREFIX = gtk_menu_bar_
 
 #ifdef GTK_MENU_BAR
 
-Gtk::MenuBar
+Gtk::MenuBar_Sink
 new(Class)
 	SV *	Class
 	CODE:

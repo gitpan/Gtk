@@ -20,7 +20,7 @@ MODULE = Gtk::HPaned		PACKAGE = Gtk::HPaned	PREFIX = gtk_hpaned_
 
 #ifdef GTK_HPANED
 
-Gtk::HPaned
+Gtk::HPaned_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -20,11 +20,11 @@ MODULE = Gtk::Text		PACKAGE = Gtk::Text		PREFIX = gtk_text_
 
 #ifdef GTK_TEXT
 
-Gtk::Text
+Gtk::Text_Sink
 new(Class, hadjustment=0, vadjustment=0)
 	SV *	Class
-	Gtk::AdjustmentOrNULL	hadjustment
-	Gtk::AdjustmentOrNULL	vadjustment
+	Gtk::Adjustment_OrNULL	hadjustment
+	Gtk::Adjustment_OrNULL	vadjustment
 	CODE:
 	RETVAL = GTK_TEXT(gtk_text_new(hadjustment, vadjustment));
 	OUTPUT:

@@ -18,7 +18,7 @@ MODULE = Gtk::ColorSelection		PACKAGE = Gtk::ColorSelection	PREFIX = gtk_color_s
 
 #ifdef GTK_COLOR_SELECTION
 
-Gtk::ColorSelection
+Gtk::ColorSelection_Sink
 new(Class)
 	SV *	Class
 	CODE:

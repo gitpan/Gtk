@@ -20,7 +20,7 @@ MODULE = Gtk::AspectFrame		PACKAGE = Gtk::AspectFrame		PREFIX = gtk_aspect_frame
 
 #ifdef GTK_ASPECT_FRAME
 
-Gtk::AspectFrame
+Gtk::AspectFrame_Sink
 new(Class, label, xalign, yalign, ratio, obey_child)
 	SV *	Class
 	char *	label

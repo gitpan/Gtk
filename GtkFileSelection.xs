@@ -21,7 +21,7 @@ MODULE = Gtk::FileSelection		PACKAGE = Gtk::FileSelection	PREFIX = gtk_file_sele
 
 #ifdef GTK_FILE_SELECTION
 
-Gtk::FileSelection
+Gtk::FileSelection_Sink
 new(Class, title)
 	SV *	Class
 	char *	title
@@ -47,7 +47,7 @@ void
 gtk_file_selection_hide_fileop_buttons (self)
 	Gtk::FileSelection	self
 
-upGtk::Widget
+Gtk::Widget_Up
 ok_button(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -55,7 +55,7 @@ ok_button(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 cancel_button(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -63,7 +63,7 @@ cancel_button(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 dir_list(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -71,7 +71,7 @@ dir_list(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 file_list(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -79,7 +79,7 @@ file_list(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 selection_entry(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -87,7 +87,7 @@ selection_entry(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 selection_text(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -95,7 +95,7 @@ selection_text(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 main_vbox(fs)
 	Gtk::FileSelection	fs
 	CODE:
@@ -103,7 +103,7 @@ main_vbox(fs)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 help_button(fs)
 	Gtk::FileSelection	fs
 	CODE:

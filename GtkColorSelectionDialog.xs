@@ -19,7 +19,7 @@ MODULE = Gtk::ColorSelectionDialog		PACKAGE = Gtk::ColorSelectionDialog
 
 #ifdef GTK_COLOR_SELECTION_DIALOG
 
-Gtk::ColorSelectionDialog
+Gtk::ColorSelectionDialog_Sink
 new(Class, title)
 	SV *	Class
 	char *	title

@@ -19,7 +19,7 @@ MODULE = Gtk::TipsQuery		PACKAGE = Gtk::TipsQuery		PREFIX = gtk_tips_query_
 
 #ifdef GTK_TIPS_QUERY
 
-Gtk::TipsQuery
+Gtk::TipsQuery_Sink
 new(Class)
 	SV * Class
 	CODE:

@@ -20,7 +20,7 @@ MODULE = Gtk::Label		PACKAGE = Gtk::Label		PREFIX = gtk_label_
 
 #ifdef GTK_LABEL
 
-Gtk::Label
+Gtk::Label_Sink
 new(Class, string)
 	SV *	Class
 	char *	string

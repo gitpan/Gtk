@@ -20,7 +20,7 @@ MODULE = Gtk::Dialog		PACKAGE = Gtk::Dialog
 
 #ifdef GTK_DIALOG
 
-Gtk::Dialog
+Gtk::Dialog_Sink
 new(Class)
 	SV *	Class
 	CODE:
@@ -28,7 +28,7 @@ new(Class)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 vbox(dialog)
 	Gtk::Dialog	dialog
 	CODE:
@@ -36,7 +36,7 @@ vbox(dialog)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 action_area(dialog)
 	Gtk::Dialog	dialog
 	CODE:

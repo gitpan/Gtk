@@ -20,11 +20,11 @@ MODULE = Gtk::RadioMenuItem		PACKAGE = Gtk::RadioMenuItem		PREFIX = gtk_menu_ite
 
 #ifdef GTK_RADIO_MENU_ITEM
 
-Gtk::RadioMenuItem
+Gtk::RadioMenuItem_Sink
 new(Class, label=0, previous=0)
 	SV *	Class
 	SV *	label
-	Gtk::RadioMenuItemOrNULL	previous
+	Gtk::RadioMenuItem_OrNULL	previous
 	CODE:
 	{
 		GSList * group = 0;
@@ -38,11 +38,11 @@ new(Class, label=0, previous=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::RadioMenuItem
+Gtk::RadioMenuItem_Sink
 new_with_label(Class, label, previous=0)
 	SV *	Class
 	char *	label
-	Gtk::RadioMenuItemOrNULL	previous
+	Gtk::RadioMenuItem_OrNULL	previous
 	CODE:
 	{
 		GSList * group = 0;

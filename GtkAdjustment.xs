@@ -18,7 +18,7 @@ MODULE = Gtk::Adjustment		PACKAGE = Gtk::Adjustment
 
 #ifdef GTK_ADJUSTMENT
 
-Gtk::Adjustment
+Gtk::Adjustment_Sink
 new(Class, value, lower, upper, step_increment, page_increment, page_size)
 	SV *	Class
 	double	value

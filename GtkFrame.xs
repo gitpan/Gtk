@@ -21,7 +21,7 @@ MODULE = Gtk::Frame		PACKAGE = Gtk::Frame		PREFIX = gtk_frame_
 
 #ifdef GTK_FRAME
 
-Gtk::Frame
+Gtk::Frame_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label

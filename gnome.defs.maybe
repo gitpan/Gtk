@@ -1,0 +1,58 @@
+
+;
+; These non-Gtk widgets will default to the Gtk::Gnome::* namespace. This
+; can be altered by adding a perl argument, like this:
+;
+;    (define-object GnomeAbout (GtkWindow) (perl Gnome::About))
+;
+
+(define-object GnomeAbout (GtkWindow))
+(define-object GnomeApp (GtkWindow))
+(define-object GnomeClient (GtkObject))
+(define-object GnomeEntry (GtkCombo))
+(define-object GnomeFontSelector (GtkDialog))
+(define-object GnomePixmap (GtkWidget))
+(define-object GnomeScores (GtkWindow))
+(define-object GnomeMessageBox (GtkWindow) (cast GNOME_MESSAGEBOX))
+(define-object GtkClock (GtkLabel))
+(define-object GtkTed (GtkTable))
+
+
+(define-enum GnomeAppWidgetPositionType ; Can say "Gnome::AppWidgetPositionType" here 
+										; to override default of "Gtk::Gnome::AppWidgetPositionType"
+	(top GNOME_APP_POS_TOP)
+	(bottom GNOME_APP_POS_BOTTOM)
+	(left GNOME_APP_POS_LEFT)
+	(right GNOME_APP_POS_RIGHT)
+	(floating GNOME_APP_POS_FLOATING))
+
+(define-enum GnomeInteractStyle
+	(none GNOME_INTERACT_NONE)
+	(errors GNOME_INTERACT_ERRORS)
+	(any GNOME_INTERACT_ANY))
+
+(define-enum GnomeDialogType
+	(error GNOME_DIALOG_ERROR)
+	(normal GNOME_DIALOG_NORMAL))
+
+(define-enum GnomeRestartStyle
+	(if-running GNOME_RESTART_IF_RUNNING)
+	(anyway GNOME_RESTART_ANYWAY)
+	(immediately GNOME_RESTART_IMMEDIATELY)
+	(never GNOME_RESTART_NEVER))
+
+(define-enum GnomeSaveStyle
+	(global GNOME_SAVE_GLOBAL)
+	(local GNOME_SAVE_LOCAL)
+	(both GNOME_SAVE_BOTH))
+
+(define-enum GnomeClientState
+	(idle GNOME_CLIENT_IDLE)
+	(saving GNOME_CLIENT_SAVING)
+	(waiting GNOME_CLIENT_WAITING))
+
+(define-enum GtkClockType
+	(increasing GTK_CLOCK_INCREASING)
+	(decreasing GTK_CLOCK_DECREASING)
+	(realtime GTK_CLOCK_REALTIME))
+

@@ -19,7 +19,7 @@ MODULE = Gtk::Alignment		PACKAGE = Gtk::Alignment	PREFIX = gtk_alignment_
 
 #ifdef GTK_ALIGNMENT
 
-Gtk::Alignment
+Gtk::Alignment_Sink
 new(Class, xalign, yalign, xscale, yscale)
 	SV *	Class
 	double	xalign

@@ -20,7 +20,7 @@ MODULE = Gtk::HRuler		PACKAGE = Gtk::HRuler
 
 #ifdef GTK_HRULER
 
-Gtk::HRuler
+Gtk::HRuler_Sink
 new(Class)
 	SV *	Class
 	CODE:

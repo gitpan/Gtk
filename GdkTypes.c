@@ -45,6 +45,22 @@ GdkFont * SvGdkFontRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Font"); }
 /*SV * newSVGdkImageRef(GdkImage * i) { return newSVMiscRef(i, "Gtk::Gdk::Image",0); }
 GdkImage * SvGdkImageRef(SV * data) { return SvMiscRef(data, "Gtk::Gdk::Image"); }*/
 
+SV * newSVGdkWindow(GdkWindow * value) {
+	int n = 0;
+	SV * result;
+	result = newSVMiscRef(value, 
+		(value && (gdk_window_get_type(value) == GDK_WINDOW_PIXMAP)) ? 
+			"Gtk::Gdk::Pixmap" :
+			"Gtk::Gdk::Window"
+		, &n);
+	if (n && value)
+		gdk_window_ref(value);
+	return result;
+}
+
+GdkWindow * SvGdkWindow(SV * value) { return (GdkWindow*)SvMiscRef(value, "Gtk::Gdk::Pixmap"); }
+
+
 SV * newSVGdkRectangle(GdkRectangle * rect)
 {
 	AV * a;

@@ -19,7 +19,7 @@ MODULE = Gtk::Tooltips		PACKAGE = Gtk::Tooltips		PREFIX = gtk_tooltips_
 
 #ifdef GTK_TOOLTIPS
 
-Gtk::Tooltips
+Gtk::Tooltips_Sink
 new(Class)
 	SV * Class
 	CODE:

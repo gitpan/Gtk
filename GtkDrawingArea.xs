@@ -21,7 +21,7 @@ MODULE = Gtk::DrawingArea		PACKAGE = Gtk::DrawingArea		PREFIX = gtk_drawing_area
 
 #ifdef GTK_DRAWING_AREA
 
-Gtk::DrawingArea
+Gtk::DrawingArea_Sink
 new(Class)
 	SV *	Class
 	CODE:

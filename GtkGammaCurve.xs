@@ -21,7 +21,7 @@ MODULE = Gtk::GammaCurve		PACKAGE = Gtk::GammaCurve	PREFIX = gtk_gamma_curve_
 
 #ifdef GTK_GAMMA_CURVE
 
-Gtk::GammaCurve
+Gtk::GammaCurve_Sink
 new(Class)
 	SV *	Class
 	CODE:
@@ -29,7 +29,7 @@ new(Class)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 curve(curve)
 	Gtk::GammaCurve	curve
 	CODE:

@@ -1,0 +1,21 @@
+
+
+  GTK widget abc_def_ghi becomes Perl widget Gtk::Abc::DefGhi
+  
+  GTK widget gtk_def_ghi becomes Perl widget Gtk::DefGhi
+  
+  GDK widget gdk_def_ghi becomes Perl widget Gtk::Gdk::DefGhi
+  
+  GNOME widget gnome_foo_bar becomes Perl widget Gtk::Gnome::FooBar
+  
+  GNOME widget gtk_gnome_foo_bar becomes Perl widget Gtk::Gnome::FooBar
+  
+  
+  XS code may refer to PerlGtk objects, along with these variants:
+  
+     Gtk::FooBar_Sink = sink the object before returning it
+     Gtk::Widget_Up = upcast the object to it's real object type
+     Gtk::Widget_Sink_Up
+     Gtk::Widget_OrNULL = accept undef as a zero ptr
+     
+     

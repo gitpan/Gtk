@@ -1,4 +1,31 @@
 
+0.1.16		Fri Apr 10, 1998	Kenneth Albanowski
+
+	Uses gtk-0.99.10:
+	
+		Memory management overhauled, should be much better. Gtk_objects
+		shouldn't leak in any common cases. (They'll be cleaned up soon
+		after all Perl and Gtk references vanish. Note that as soon as Perl
+		sees any gtk_object, it'll forge a connection that lasts until the
+		object is completely unreferenced. It is therefore safe to refer to
+		the Perl side from Gtk/C code, or store data in the Perl side.
+		
+		This requires some GC magic, which is reliable & safe, but is
+		slightly time-consuming. Be aware that idle & timer tasks are being
+		used by perl to implement this garbage collection.)
+		
+		Support added for most Gnome widgets, including GtkTty widget set
+		(including GtkLed), and the Gnome UI widget set. Please read
+		Makefile.PL for the list of available flags. (You may need to patch
+		up libraries or headers to build properly.)
+		
+		The Gnome support currently places the gnome-* widgets into the
+		Gtk::Gnome::* namespace, and only includes widget support -- no
+		other Gnome functions are bound.
+
+		More of Paolo Molaro's <lupus@lettere.unipd.it> patches applied.
+		
+
 0.1.16		Fri Apr  3, 1998	Kenneth Albanowski
 
 	Uses gtk-0.99.8:

@@ -20,7 +20,7 @@ MODULE = Gtk::VScrollbar		PACKAGE = Gtk::VScrollbar
 
 #ifdef GTK_VSCROLLBAR
 
-Gtk::VScrollbar
+Gtk::VScrollbar_Sink
 new(Class, adjustment)
 	SV *	Class
 	Gtk::Adjustment	adjustment

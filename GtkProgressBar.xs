@@ -21,7 +21,7 @@ MODULE = Gtk::ProgressBar		PACKAGE = Gtk::ProgressBar		PREFIX = gtk_progress_bar
 
 #ifdef GTK_PROGRESS_BAR
 
-Gtk::ProgressBar
+Gtk::ProgressBar_Sink
 new(Class)
 	SV *	Class
 	CODE:

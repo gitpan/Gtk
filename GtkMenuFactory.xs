@@ -110,3 +110,19 @@ DESTROY(factory)
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), factory);
 
+Gtk::Widget_Up
+widget(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->widget;
+	OUTPUT:
+	RETVAL
+
+Gtk::AcceleratorTable
+table(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->table;
+	OUTPUT:
+	RETVAL
+

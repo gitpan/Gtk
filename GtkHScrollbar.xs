@@ -20,7 +20,7 @@ MODULE = Gtk::HScrollbar		PACKAGE = Gtk::HScrollbar
 
 #ifdef GTK_HSCROLLBAR
 
-Gtk::HScrollbar
+Gtk::HScrollbar_Sink
 new(Class, adjustment)
 	SV *	Class
 	Gtk::Adjustment	adjustment

@@ -21,7 +21,7 @@ MODULE = Gtk::Preview		PACKAGE = Gtk::Preview		PREFIX = gtk_preview_
 
 #ifdef GTK_PREVIEW
 
-Gtk::Preview
+Gtk::Preview_Sink
 new(Class, type)
 	SV *	Class
 	Gtk::PreviewType	type

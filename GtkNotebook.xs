@@ -19,7 +19,7 @@ MODULE = Gtk::Notebook		PACKAGE = Gtk::Notebook		PREFIX = gtk_notebook_
 
 #ifdef GTK_NOTEBOOK
 
-Gtk::Notebook
+Gtk::Notebook_Sink
 new(Class)
 	SV *	Class
 	CODE:

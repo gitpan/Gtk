@@ -20,7 +20,7 @@ MODULE = Gtk::RadioButton		PACKAGE = Gtk::RadioButton		PREFIX = gtk_radio_button
 
 #ifdef GTK_RADIO_BUTTON
 
-Gtk::RadioButton
+Gtk::RadioButton_Sink
 new(Class, label=0, previous=0)
 	SV *	Class
 	SV *	label
@@ -40,7 +40,7 @@ new(Class, label=0, previous=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::RadioButton
+Gtk::RadioButton_Sink
 new_with_label(Class, label, previous=0)
 	SV *	Class
 	char *	label

@@ -19,7 +19,7 @@ MODULE = Gtk::OptionMenu		PACKAGE = Gtk::OptionMenu		PREFIX = gtk_option_menu_
 
 #ifdef GTK_OPTION_MENU
 
-Gtk::OptionMenu
+Gtk::OptionMenu_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -20,7 +20,7 @@ MODULE = Gtk::Pixmap		PACKAGE = Gtk::Pixmap		PREFIX = gtk_pixmap_
 
 #ifdef GTK_PIXMAP
 
-Gtk::Pixmap
+Gtk::Pixmap_Sink
 new(Class, pixmap, mask)
 	SV *	Class
 	Gtk::Gdk::Pixmap	pixmap

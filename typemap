@@ -13,7 +13,8 @@ Gtk::Gdk::Atom		T_SimpleVal
 Gtk::MenuFactory	T_MISCPTROBJ
 Gtk::SelectionData      T_MISCPTROBJ
 
-upGtk::Widget		T_GtkUPPTROBJ
+Gtk::Widget_Up		T_GtkPTROBJUp
+Gtk::Widget_Sink_Up		T_GtkPTROBJSinkUp
 
 Gtk::Gdk::Event		T_SimpleVal
 Gtk::Gdk::Region	T_SimpleVal
@@ -21,6 +22,11 @@ Gtk::Gdk::Rectangle	T_SimplePtr
 Gtk::Gdk::Color		T_SimpleVal
 
 gfloat				T_FLOAT
+gboolean			T_BOOL
+guint				T_IV
+gint				T_IV
+glong				T_IV
+gulong				T_IV
 
 bool				T_BOOL
 
@@ -36,15 +42,21 @@ T_GtkPTROBJ
 		croak(\"$var is not of type ${ntype}\")
 
 T_GtkPTROBJOrNULL
-	$var = SvTRUE($arg) ? Cast$type(SvGtkObjectRef($arg, \"" . ($foo=$ntype,$foo=~s/OrNULL//,$foo). "\")) : 0
+	$var = SvTRUE($arg) ? Cast$type(SvGtkObjectRef($arg, \"" . ($foo=$ntype,$foo=~s/_OrNULL//,$foo). "\")) : 0
 
-T_GtkUPPTROBJ
+T_GtkPTROBJUp
+	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
+
+T_GtkPTROBJSink
+	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
+
+T_GtkPTROBJSinkUp
 	$var = Cast$type(SvGtkObjectRef($arg, \"${ntype}\"))
 
 T_GtkPTRREF
 	$var = Cast$type(SvGtkObjectRef($arg, 0))
 
-T_GtkUPPTRREF
+T_GtkPTRREF_Up
 	$var = Cast$type(SvGtkObjectRef($arg, 0))
 
 T_MISCPTROBJ
@@ -77,15 +89,28 @@ T_GtkPTROBJ
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"${ntype}\"));
 	SvREFCNT_dec(SvRV($arg));
 
+T_GtkPTROBJSink
+    if (!$var) {
+    	croak("failed to return mandatory object of type @{[grep {s/_Sink//,1} $ntype]}");
+    }
+	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"@{[grep {s/_Sink//,1} $ntype]}\"));
+	gtk_object_sink(GTK_OBJECT($var));
+	SvREFCNT_dec(SvRV($arg));
+
 T_GtkPTROBJOrNULL
     if ($var) {
-		sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"@{[map(s/OrNULL//,$ntype)]}\"));
+		sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), \"@{[grep {s/_OrNULL//,1} $ntype]}\"));
 		SvREFCNT_dec(SvRV($arg));
 	} else
 		sv_setsv($arg, newSVsv(&sv_undef));
 
-T_GtkUPPTROBJ
+T_GtkPTROBJUp
 	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));
+	SvREFCNT_dec(SvRV($arg));
+
+T_GtkPTROBJSinkUp
+	sv_setsv($arg, newSVGtkObjectRef(GTK_OBJECT($var), 0));
+	gtk_object_sink(GTK_OBJECT($var));
 	SvREFCNT_dec(SvRV($arg));
 
 T_MISCPTROBJ

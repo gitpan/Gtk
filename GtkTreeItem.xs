@@ -20,7 +20,7 @@ MODULE = Gtk::TreeItem		PACKAGE = Gtk::TreeItem		PREFIX = gtk_tree_item_
 
 #ifdef GTK_TREE_ITEM
 
-Gtk::TreeItem
+Gtk::TreeItem_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -32,7 +32,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::TreeItem
+Gtk::TreeItem_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

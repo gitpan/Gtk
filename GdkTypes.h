@@ -119,3 +119,10 @@ extern GdkWindowAttr * SvGdkWindowAttr(SV * data, GdkWindowAttr * attr, gint * m
 
 #define newSVGdkImage(data) newSVMiscRef((void*)data, "Gtk::Gdk::Image", 0)
 #define SvGdkImage(data) (GdkImage*)SvMiscRef(data,0)
+
+extern SV * newSVGdkWindow(GdkWindow * value);
+extern GdkWindow * SvGdkWindow(SV * value);
+#define newSVGdkBitmap(x) newSVGdkWindow(x)
+#define SvGdkBitmap(x) SvGdkWindow(x)
+#define newSVGdkPixmap(x) newSVGdkWindow(x)
+#define SvGdkPixmap(x) SvGdkWindow(x)

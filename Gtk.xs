@@ -306,8 +306,8 @@ void     callXS (void (*subaddr)(CV* cv), CV *cv, SV **mark)
 	PUTBACK;  /* Forget the return values */
 }
 
-static int init_gtk = 0;
-static int init_gdk = 0;
+int did_we_init_gtk = 0;
+int did_we_init_gdk = 0;
 
 void g_error_handler(char * msg) {
 	croak("Gtk error: %s", msg);
@@ -324,7 +324,7 @@ void GtkInit() {
 	SV * ARGV0;
 	int i;
 
-	if (init_gtk)
+	if (did_we_init_gtk)
 		return;
 			
 			g_set_error_handler(g_error_handler);
@@ -334,7 +334,7 @@ void GtkInit() {
 			ARGV = perl_get_av("ARGV", FALSE);
 			ARGV0 = perl_get_sv("0", FALSE);
 			
-			if (init_gdk)
+			if (did_we_init_gdk)
 				croak("GTK cannot be initalized after GDK has been initialized");
 			
 			argc = av_len(ARGV)+2;
@@ -348,8 +348,8 @@ void GtkInit() {
 			i = argc;
 			gtk_init(&argc, &argv);
 
-			init_gtk = 1;
-			init_gdk = 1;
+			did_we_init_gtk = 1;
+			did_we_init_gdk = 1;
 			
 			while(argc<i--)
 				av_shift(ARGV);
@@ -562,7 +562,7 @@ get_current_event(Class=0)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 get_event_widget(Class=0, event)
 	SV *	Class
 	Gtk::Gdk::Event	event
@@ -820,6 +820,21 @@ DESTROY(factory)
 	CODE:
 	UnregisterMisc((HV*)SvRV(ST(0)), factory);
 
+Gtk::Widget_Up
+widget(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->widget;
+	OUTPUT:
+	RETVAL
+
+Gtk::AcceleratorTable
+table(factory)
+	Gtk::MenuFactory	factory
+	CODE:
+	RETVAL = factory->table;
+	OUTPUT:
+	RETVAL
 
 MODULE = Gtk		PACKAGE = Gtk::Style	PREFIX = gtk_style_
 
@@ -1202,7 +1217,7 @@ init(Class)
 	SV *	Class
 	CODE:
 	{
-		if (!init_gdk) {
+		if (!did_we_init_gdk) {
 			int argc;
 			char ** argv = 0;
 			AV * ARGV = perl_get_av("ARGV", FALSE);
@@ -1220,7 +1235,7 @@ init(Class)
 			i = argc;
 			gdk_init(&argc, &argv);
 
-			init_gdk = 1;
+			did_we_init_gdk = 1;
 			
 			while(argc<i--)
 				av_shift(ARGV);

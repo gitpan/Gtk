@@ -20,7 +20,7 @@ MODULE = Gtk::VRuler		PACKAGE = Gtk::VRuler	PREFIX = gtk_vruler_
 
 #ifdef GTK_VRULER
 
-Gtk::VRuler
+Gtk::VRuler_Sink
 new(Class)
 	SV *	Class
 	CODE:

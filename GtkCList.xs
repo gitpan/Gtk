@@ -24,7 +24,7 @@ MODULE = Gtk::CList		PACKAGE = Gtk::CList		PREFIX = gtk_clist_
 
 #ifdef GTK_CLIST
 
-Gtk::CList
+Gtk::CList_Sink
 new(Class, columns)
 	SV* Class
 	int columns
@@ -33,7 +33,7 @@ new(Class, columns)
 	OUTPUT:
 	RETVAL
 
-Gtk::CList
+Gtk::CList_Sink
 new_with_titles(Class, title, ...)
 	SV *    Class
 	SV *	title

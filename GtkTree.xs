@@ -20,7 +20,7 @@ MODULE = Gtk::Tree		PACKAGE = Gtk::Tree		PREFIX = gtk_tree_
 
 #ifdef GTK_TREE
 
-Gtk::Tree
+Gtk::Tree_Sink
 new(Class)
 	SV *	Class
 	CODE:

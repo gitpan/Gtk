@@ -20,7 +20,7 @@ MODULE = Gtk::VButtonBox		PACKAGE = Gtk::VButtonBox		PREFIX = gtk_vbutton_box_
 
 #ifdef GTK_VBUTTON_BOX
 
-Gtk::VButtonBox
+Gtk::VButtonBox_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -20,7 +20,7 @@ MODULE = Gtk::Viewport		PACKAGE = Gtk::Viewport		PREFIX = gtk_viewport_
 
 #ifdef GTK_VIEWPORT
 
-Gtk::Viewport
+Gtk::Viewport_Sink
 new(Class, hadjustment, vadjustment)
 	SV *	Class
 	Gtk::Adjustment	hadjustment

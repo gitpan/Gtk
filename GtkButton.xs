@@ -19,7 +19,7 @@ MODULE = Gtk::Button		PACKAGE = Gtk::Button		PREFIX = gtk_button_
 
 #ifdef GTK_BUTTON
 
-Gtk::Button
+Gtk::Button_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -31,7 +31,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::Button
+Gtk::Button_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

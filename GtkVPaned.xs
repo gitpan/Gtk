@@ -20,7 +20,7 @@ MODULE = Gtk::VPaned		PACKAGE = Gtk::VPaned	PREFIX = gtk_vpaned_
 
 #ifdef GTK_VPANED
 
-Gtk::VPaned
+Gtk::VPaned_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -84,6 +84,8 @@ SV * newSVMiscRef(void * object, char * classname, int * newref)
 {
 	HV * previous = RetrieveMisc(object);
 	SV * result;
+	if (!object)
+		return newSVsv(&sv_undef);
 	if (previous) {
 		/*printf("Retriveing object %d as HV %d\n", object, previous);*/
 		result = newRV((SV*)previous);

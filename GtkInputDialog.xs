@@ -20,7 +20,7 @@ MODULE = Gtk::InputDialog		PACKAGE = Gtk::InputDialog	PREFIX = gtk_input_dialog_
 
 #ifdef GTK_INPUT_DIALOG
 
-Gtk::InputDialog
+Gtk::InputDialog_Sink
 new(Class)
 	SV *	Class
 	CODE:
@@ -28,7 +28,7 @@ new(Class)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 axis_list(dialog)
 	Gtk::InputDialog	dialog
 	CODE:
@@ -36,7 +36,7 @@ axis_list(dialog)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 axis_listbox(dialog)
 	Gtk::InputDialog	dialog
 	CODE:
@@ -44,7 +44,7 @@ axis_listbox(dialog)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 mode_optionmenu(dialog)
 	Gtk::InputDialog	dialog
 	CODE:
@@ -52,7 +52,7 @@ mode_optionmenu(dialog)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 close_button(dialog)
 	Gtk::InputDialog	dialog
 	CODE:
@@ -60,7 +60,7 @@ close_button(dialog)
 	OUTPUT:
 	RETVAL
 
-upGtk::Widget
+Gtk::Widget_Up
 save_button(dialog)
 	Gtk::InputDialog	dialog
 	CODE:

@@ -230,11 +230,11 @@ gtk_widget_set_extension_events(widget, events)
 	Gtk::Widget	widget
 	Gtk::Gdk::EventMask	events
 
-upGtk::Widget
+Gtk::Widget_Up
 gtk_widget_get_toplevel(widget)
 	Gtk::Widget	widget
 
-upGtk::Widget
+Gtk::Widget_Up
 gtk_widget_get_ancestor(widget, type_name)
 	Gtk::Widget	widget
 	char *	type_name
@@ -583,7 +583,7 @@ gtk_widget_user_style(widget, newvalue=0)
 
 #endif
 
-upGtk::Widget
+Gtk::Widget_Up
 parent(self)
 	Gtk::Widget	self
 	CODE:
@@ -622,7 +622,7 @@ grab_remove(self)
 	CODE:
 	gtk_grab_remove(self);
 
-upGtk::Widget
+Gtk::Widget_Sink_Up
 new(Class, widget_class, ...)
 	SV *	Class
 	char *	widget_class
@@ -644,10 +644,9 @@ new(Class, widget_class, ...)
 		
 			if ((p+1)>=items)
 				croak("too few arguments");
+			
+			FindArgumentType(o, ST(p), &argv[0]);
 
-			argv[0].name = SvPV(ST(p),na);
-			t = gtk_object_get_arg_type(argv[0].name);
-			argv[0].type = t;
 			value = ST(p+1);
 		
 			argc = 1;
@@ -730,9 +729,10 @@ selection_add_handler (self, selection, target, handler, ...)
 
 		if (SvOK(handler))
 		{
-			av_push(args, newSVsv(ST(3)));
+			PackCallbackST(args, 3);
+			/*av_push(args, newSVsv(ST(3)));
 			for (j=4;j<items;j++)
-				av_push(args, newSVsv(ST(j)));
+				av_push(args, newSVsv(ST(j)));*/
 
 			gtk_selection_add_handler_full (self, selection, target,
 						   selection_handler, NULL, (gpointer) args,

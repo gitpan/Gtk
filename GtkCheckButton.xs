@@ -19,7 +19,7 @@ MODULE = Gtk::CheckButton		PACKAGE = Gtk::CheckButton
 
 #ifdef GTK_CHECK_BUTTON
 
-Gtk::CheckButton
+Gtk::CheckButton_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -31,7 +31,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::CheckButton
+Gtk::CheckButton_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

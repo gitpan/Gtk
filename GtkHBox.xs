@@ -21,7 +21,7 @@ MODULE = Gtk::HBox		PACKAGE = Gtk::HBox
 
 #ifdef GTK_HBOX
 
-Gtk::HBox
+Gtk::HBox_Sink
 new(Class, homogeneous, spacing)
 	SV *	Class
 	bool	homogeneous

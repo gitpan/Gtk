@@ -21,7 +21,7 @@ MODULE = Gtk::EventBox		PACKAGE = Gtk::EventBox	PREFIX = gtk_event_box_
 
 #ifdef GTK_EVENT_BOX
 
-Gtk::EventBox
+Gtk::EventBox_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -20,7 +20,7 @@ MODULE = Gtk::Image		PACKAGE = Gtk::Image		PREFIX = gtk_image_
 
 #ifdef GTK_IMAGE
 
-Gtk::Image
+Gtk::Image_Sink
 new(Class, val, mask)
 	SV *	Class
 	Gtk::Gdk::Image	val

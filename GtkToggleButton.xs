@@ -20,7 +20,7 @@ MODULE = Gtk::ToggleButton		PACKAGE = Gtk::ToggleButton		PREFIX = gtk_toggle_but
 
 #ifdef GTK_TOGGLE_BUTTON
 
-Gtk::ToggleButton
+Gtk::ToggleButton_Sink
 new(Class, label=0)
 	SV *	Class
 	char *	label
@@ -32,7 +32,7 @@ new(Class, label=0)
 	OUTPUT:
 	RETVAL
 
-Gtk::ToggleButton
+Gtk::ToggleButton_Sink
 new_with_label(Class, label)
 	SV *	Class
 	char *	label

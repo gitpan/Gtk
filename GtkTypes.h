@@ -1,11 +1,14 @@
 
-/* Copyright (C) 1997, Kenneth Albanowski.
+/* Copyright (C) 1997,1998, Kenneth Albanowski.
    This code may be distributed under the same terms as Perl itself. */
+
+#include "inc.h"
    
 typedef GtkMenuFactory * Gtk__MenuFactory;
 typedef GtkSelectionData * Gtk__SelectionData;
 
-typedef GtkWidget * upGtk__Widget;
+typedef GtkWidget * Gtk__Widget_Up;
+typedef GtkWidget * Gtk__Widget_Sink_Up;
 
 #define CastupGtk__Widget GTK_WIDGET
 
@@ -25,4 +28,16 @@ extern GtkSelectionData * SvGtkSelectionDataRef(SV * data);
 
 extern void GCGtkObjects(void);
 
+extern void FreeHVObject(HV * hv_object);
+
 int type_name(char * name);
+
+extern void FindArgumentType(GtkObject * object, SV * name, GtkArg * result);
+
+#ifdef GTK_TTY
+
+#define gtk_vtemu_ref(x) do{}while(0)
+#define gtk_vtemu_unref(x) do{}while(0)
+
+#endif
+

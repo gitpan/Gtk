@@ -21,7 +21,7 @@ MODULE = Gtk::Fixed		PACKAGE = Gtk::Fixed		PREFIX = gtk_fixed_
 
 #ifdef GTK_FIXED
 
-Gtk::Fixed
+Gtk::Fixed_Sink
 new(Class)
 	SV *	Class
 	CODE:

@@ -17,6 +17,7 @@
 #endif
 
 typedef GdkImlibImage * Gtk__Gdk__ImlibImage;
+typedef GdkImlibColorModifier * Gtk__Gdk__Imlib__ColorModifier;
 
 SV * newSVGdkImlibImage(GdkImlibImage * value) {
 	int n = 0;
@@ -25,6 +26,50 @@ SV * newSVGdkImlibImage(GdkImlibImage * value) {
 }
 
 GdkImlibImage * SvGdkImlibImage(SV * value) { return (GdkImlibImage*)SvMiscRef(value, "Gtk::Gdk::ImlibImage"); }
+
+SV * newSVGdkImlibColorModifier(GdkImlibColorModifier * m)
+{
+	HV * h;
+	SV * r;
+	
+	if (!m)
+		return newSVsv(&sv_undef);
+		
+	h = newHV();
+	r = newRV((SV*)h);
+	SvREFCNT_dec(h);
+
+	hv_store(h, "gamma", 5, newSViv(m->gamma), 0);
+	hv_store(h, "contrast", 8, newSViv(m->contrast), 0);
+	hv_store(h, "brightness", 10, newSViv(m->brightness), 0);
+	
+	return r;
+}
+
+GdkImlibColorModifier * SvGdkImlibColorModifier(SV * data)
+{
+	HV * h;
+	SV ** s;
+	GdkImlibColorModifier * m;
+
+	if ((!data) || (!SvOK(data)) || (!SvRV(data)) || (SvTYPE(SvRV(data)) != SVt_PVHV))
+		return 0;
+		
+	h = (HV*)SvRV(data);
+
+	m = alloc_temp(sizeof(GdkImlibColorModifier));
+	
+	memset(m,0,sizeof(GdkImlibColorModifier));
+
+	if ((s=hv_fetch(h, "gamma", 5, 0)) && SvOK(*s))
+		m->gamma = SvIV(*s);
+	if ((s=hv_fetch(h, "contrast", 8, 0)) && SvOK(*s))
+		m->contrast = SvIV(*s);
+	if ((s=hv_fetch(h, "brightness", 10, 0)) && SvOK(*s))
+		m->brightness = SvIV(*s);
+
+	return m;
+}
 
 
 MODULE = Gtk::Gdk::ImlibImage	PACKAGE = Gtk::Gdk::Pixmap
@@ -47,7 +92,6 @@ MODULE = Gtk::Gdk::ImlibImage	PACKAGE = Gtk::Gdk::ImlibImage	PREFIX = gdk_imlib_
 
 void
 gdk_imlib_init(Class)
-	SV * Class
 	CODE:
 	gdk_imlib_init();
 
@@ -160,7 +204,73 @@ gdk_imlib_load_file_to_pixmap(Class, file)
 		}
 	}
 
-# comment missing *modifier
+void
+gdk_imlib_set_image_modifier(self, mod)
+	Gtk::Gdk::ImlibImage self
+	Gtk::Gdk::Imlib::ColorModifier mod
+
+void
+gdk_imlib_set_image_red_modifier(self, mod)
+	Gtk::Gdk::ImlibImage self
+	Gtk::Gdk::Imlib::ColorModifier mod
+
+void
+gdk_imlib_set_image_green_modifier(self, mod)
+	Gtk::Gdk::ImlibImage self
+	Gtk::Gdk::Imlib::ColorModifier mod
+
+void
+gdk_imlib_set_image_blue_modifier(self, mod)
+	Gtk::Gdk::ImlibImage self
+	Gtk::Gdk::Imlib::ColorModifier mod
+
+Gtk::Gdk::Imlib::ColorModifier
+gdk_imlib_get_image_modifier(self)
+	Gtk::Gdk::ImlibImage self
+	CODE:
+	{
+		GdkImlibColorModifier mod;
+		gdk_imlib_get_image_modifier(self, &mod);
+		RETVAL = &mod;
+	}
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Imlib::ColorModifier
+gdk_imlib_get_image_red_modifier(self)
+	Gtk::Gdk::ImlibImage self
+	CODE:
+	{
+		GdkImlibColorModifier mod;
+		gdk_imlib_get_image_red_modifier(self, &mod);
+		RETVAL = &mod;
+	}
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Imlib::ColorModifier
+gdk_imlib_get_image_green_modifier(self)
+	Gtk::Gdk::ImlibImage self
+	CODE:
+	{
+		GdkImlibColorModifier mod;
+		gdk_imlib_get_image_green_modifier(self, &mod);
+		RETVAL = &mod;
+	}
+	OUTPUT:
+	RETVAL
+
+Gtk::Gdk::Imlib::ColorModifier
+gdk_imlib_get_image_blue_modifier(self)
+	Gtk::Gdk::ImlibImage self
+	CODE:
+	{
+		GdkImlibColorModifier mod;
+		gdk_imlib_get_image_blue_modifier(self, &mod);
+		RETVAL = &mod;
+	}
+	OUTPUT:
+	RETVAL
 
 void
 gdk_imlib_set_image_red_curve(self, mod)

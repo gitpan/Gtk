@@ -237,7 +237,7 @@ void
 DESTROY(self)
 	SV *	self
 	CODE:
-	disconnect_GtkObjectRef(ST(0));
+	FreeHVObject((HV*)SvRV(ST(0)));
 
 SV *
 set(self, name, value, ...)
@@ -256,10 +256,9 @@ set(self, name, value, ...)
 		
 			if ((p+1)>=items)
 				croak("too few arguments");
+				
+			FindArgumentType(self, ST(p), &argv[0]);
 
-			argv[0].name = SvPV(ST(p),na);
-			t = gtk_object_get_arg_type(argv[0].name);
-			argv[0].type = t;
 			value = ST(p+1);
 		
 			argc = 1;
@@ -286,9 +285,7 @@ get(self, name, ...)
 		
 		for(p=1;p<items;) {
 		
-			argv[0].name = SvPV(ST(p),na);
-			t = gtk_object_get_arg_type(argv[0].name);
-			argv[0].type = t;
+			FindArgumentType(self, ST(p), &argv[0]);
 		
 			argc = 1;
 			
@@ -320,15 +317,18 @@ new(klass, ...)
 		
 		RETVAL = newSVGtkObjectRef(object, SvPV(klass, na));
 		
+		gtk_object_sink(object);
+		
 		for(p=1;p<items;) {
+			char * argname;
 		
 			if ((p+1)>=items)
 				croak("too few arguments");
+			
+			argname = SvPV(ST(p), na);
+			
+			FindArgumentType(object, ST(p), &argv[0]);
 
-			argv[0].name = SvPV(ST(p),na);
-			t = gtk_object_get_arg_type(argv[0].name);
-			argv[0].type = t;
-		
 			argc = 1;
 			
 			GtkSetArg(&argv[0], ST(p+1), RETVAL, object);
@@ -463,7 +463,7 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		PUSHMARK(sp);
 		XPUSHs(sv_2mortal(newSVsv(parentClass)));
 		PUTBACK;
-		count = perl_call_method("get_type", G_SCALAR);
+		count = perl_call_method("get_object_type", G_SCALAR);
 		SPAGAIN;
 		if (count != 1)
 			croak("Big trouble\n");
@@ -481,7 +481,7 @@ register_type(perlClass, signals=0, gtkName=0, parentClass=0)
 		PUSHMARK(sp);
 		XPUSHs(sv_2mortal(newSVsv(parentClass)));
 		PUTBACK;
-		count = perl_call_method("get_size", G_SCALAR);
+		count = perl_call_method("get_object_size", G_SCALAR);
 		SPAGAIN;
 		if (count != 1)
 			croak("Big trouble\n");
@@ -551,6 +551,5 @@ destroy(self)
 	Gtk::Object	self
 	CODE:
 	gtk_object_destroy(self);
-	disconnect_GtkObjectRef(ST(0));
 
 #endif

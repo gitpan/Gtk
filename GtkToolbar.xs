@@ -18,7 +18,7 @@ MODULE = Gtk::Toolbar		PACKAGE = Gtk::Toolbar		PREFIX = gtk_toolbar_
 
 #ifdef GTK_TOOLBAR
 
-Gtk::Toolbar
+Gtk::Toolbar_Sink
 new(Class, orientation, style)
 	SV *	Class
 	Gtk::Orientation	orientation

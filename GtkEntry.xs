@@ -19,7 +19,7 @@ MODULE = Gtk::Entry		PACKAGE = Gtk::Entry	PREFIX = gtk_entry_
 
 #ifdef GTK_ENTRY
 
-Gtk::Entry
+Gtk::Entry_Sink
 new(Class)
 	SV *	Class
 	CODE:
@@ -27,7 +27,7 @@ new(Class)
 	OUTPUT:
 	RETVAL
 
-Gtk::Entry
+Gtk::Entry_Sink
 new_with_max_length(Class, len)
 	SV *	Class
 	int     len

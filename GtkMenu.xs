@@ -55,7 +55,7 @@ MODULE = Gtk::Menu		PACKAGE = Gtk::Menu		PREFIX = gtk_menu_
 
 #ifdef GTK_MENU
 
-Gtk::Menu
+Gtk::Menu_Sink
 new(Class)
 	SV *	Class
 	CODE:
